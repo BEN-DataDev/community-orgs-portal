@@ -5,6 +5,9 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
 
 const supabase: Handle = async ({ event, resolve }) => {
+	if (event.url.pathname === '/api/cron') {
+		return await resolve(event);
+	}
 	/**
 	 * Creates a Supabase client specific to this server request.
 	 *
