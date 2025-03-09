@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js';
 const supabase = createClient(PUBLIC_SUPABASE_URL, PRIVATE_SUPABASE_SERVICE_ROLE_KEY);
 
 // Make sure to export the POST handler
-export const POST: RequestHandler = async ({ request }) => {
+export const GET: RequestHandler = async ({ request }) => {
 	const authHeader = request.headers.get('authorization');
 	if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
 		return new Response('Unauthorized', { status: 401 });
