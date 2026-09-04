@@ -1,95 +1,73 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import type { Database } from '$lib/db.types';
 
-	interface ContactInfo {
-		org_id: string;
-		email: string;
-		phone: string;
-		website?: string;
-		street_address: string;
-		city: string;
-		state: string;
-		postal_code: string;
-		country: string;
-	}
+	type ContactInfo = Database['community_orgs']['Tables']['contact_info']['Row'];
 
 	interface Props {
-		contactInfo: ContactInfo;
+		contactInfo: ContactInfo | null;
+		errors?: Record<string, string[] | undefined>;
 		onSave?: () => void;
 	}
 
-	let { contactInfo, onSave }: Props = $props();
+	let { contactInfo = null, errors, onSave }: Props = $props();
+
+	/** `phone` is a jsonb column, stored as `{ primary: "..." }`. */
+	let phone = $derived.by(() => {
+		const value = contactInfo?.phone;
+		if (value && typeof value === 'object' && 'primary' in value) {
+			const primary = (value as { primary?: unknown }).primary;
+			if (typeof primary === 'string') return primary;
+		}
+		return '';
+	});
 </script>
 
 <form
 	method="POST"
 	action="?/updateContact"
 	use:enhance={() => {
-		return ({ result }: { result: { type: string } }) => {
-			if (result.type === 'success') {
-				onSave?.();
-			}
+		return ({ result, update }) => {
+			if (result.type === 'success') onSave?.();
+			return update();
 		};
 	}}
 	class="space-y-6"
 >
-	<input type="hidden" name="orgId" value={contactInfo.org_id} />
-
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 		<div>
 			<label for="email">Email</label>
-			<input id="email" type="email" name="email" value={contactInfo.email} required />
+			<input id="email" type="email" name="email" value={contactInfo?.email ?? ''} />
+			{#if errors?.email}<p class="text-sm text-red-600">{errors.email[0]}</p>{/if}
 		</div>
 
 		<div>
 			<label for="phone">Phone</label>
-			<input id="phone" type="tel" name="phone" value={contactInfo.phone} required />
+			<input id="phone" type="tel" name="phone" value={phone} />
 		</div>
 
 		<div>
 			<label for="website">Website</label>
-			<input id="website" type="url" name="website" value={contactInfo.website} />
+			<input id="website" type="url" name="website" value={contactInfo?.website ?? ''} />
+			{#if errors?.website}<p class="text-sm text-red-600">{errors.website[0]}</p>{/if}
 		</div>
 
 		<div>
-			<label for="street_address">Street Address</label>
-			<input
-				id="street_address"
-				type="text"
-				name="street_address"
-				value={contactInfo.street_address}
-				required
-			/>
+			<label for="physical_address">Physical Address</label>
+			<textarea id="physical_address" name="physical_address" rows="3"
+				>{contactInfo?.physical_address ?? ''}</textarea
+			>
 		</div>
 
 		<div>
-			<label for="city">City</label>
-			<input id="city" type="text" name="city" value={contactInfo.city} required />
-		</div>
-
-		<div>
-			<label for="state">State</label>
-			<input id="state" type="text" name="state" value={contactInfo.state} required />
-		</div>
-
-		<div>
-			<label for="postal_code">Postal Code</label>
-			<input
-				id="postal_code"
-				type="text"
-				name="postal_code"
-				value={contactInfo.postal_code}
-				required
-			/>
-		</div>
-
-		<div>
-			<label for="country">Country</label>
-			<input id="country" type="text" name="country" value={contactInfo.country} required />
+			<label for="postal_address">Postal Address</label>
+			<textarea id="postal_address" name="postal_address" rows="3"
+				>{contactInfo?.postal_address ?? ''}</textarea
+			>
 		</div>
 	</div>
 
 	<div class="flex justify-end">
-		<button class="variant-filled btn" type="submit">Save Changes</button>
+		<button class="btn preset-filled" type="submit">Save Changes</button>
 	</div>
 </form>

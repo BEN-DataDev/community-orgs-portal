@@ -89,16 +89,12 @@
     CREATE INDEX idx_access_policies_priority ON community_orgs.access_policies(priority);
 ```
 
-These tables work together to:
-    - Store and manage attribute definitions
-    - Link attributes to resources
-    - Define access policies
-    - Log access decisions
-    - Support efficient querying through indexes
+These tables work together to: - Store and manage attribute definitions - Link attributes to resources - Define access policies - Log access decisions - Support efficient querying through indexes
 
 The system is now ready to implement access control decisions using these attributes through the policy evaluation function we created earlier.
 
 Next steps would be to:
+
 - Create triggers to automatically populate attribute tables
 - Define default policies
 - Create helper functions for common access patterns
@@ -119,7 +115,7 @@ Next steps would be to:
             attributes
         ) VALUES (
             TG_ARGV[0], -- table name passed as trigger argument
-            CASE 
+            CASE
                 WHEN TG_TABLE_NAME = 'financial_info' THEN 'confidential'
                 WHEN TG_TABLE_NAME = 'legal_details' THEN 'confidential'
                 ELSE 'internal'
@@ -175,24 +171,24 @@ Next steps would be to:
             clearance_level,
             access_level,
             is_verified
-        ) 
+        )
         VALUES (
             NEW.user_id,
             ARRAY[NEW.role],
             ARRAY[NEW.org_id],
-            CASE 
+            CASE
                 WHEN NEW.role = 'admin' THEN 'elevated'
                 ELSE 'basic'
             END,
-            CASE 
+            CASE
                 WHEN NEW.role = 'admin' THEN 'full'
                 WHEN NEW.role = 'member' THEN 'limited'
                 ELSE 'basic'
             END,
             true
         )
-        ON CONFLICT (subject_id) DO UPDATE 
-        SET 
+        ON CONFLICT (subject_id) DO UPDATE
+        SET
             roles = array_append(subject_attributes.roles, NEW.role),
             org_memberships = array_append(subject_attributes.org_memberships, NEW.org_id),
             last_modified_at = CURRENT_TIMESTAMP;
@@ -226,7 +222,7 @@ Next steps would be to:
             true,
             NULL
         );
-        
+
         RETURN NEW;
     END;
     $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -236,14 +232,9 @@ Next steps would be to:
         AFTER INSERT OR UPDATE OR DELETE ON community_orgs.organisations
         FOR EACH ROW
         EXECUTE FUNCTION community_orgs.log_access_decision();
-``` 
+```
 
-These triggers:
-    - Automatically create and link resource attributes when new records are created
-    - Update subject attributes when organization memberships change
-    - Log all access decisions for audit purposes
-    - Handle data classification automatically based on resource type
-    - Maintain relationship between resources and their attributes
+These triggers: - Automatically create and link resource attributes when new records are created - Update subject attributes when organization memberships change - Log all access decisions for audit purposes - Handle data classification automatically based on resource type - Maintain relationship between resources and their attributes
 The triggers ensure the ABAC system stays current and consistent as data changes in the application.
 
 # Here's how to test the triggers:
@@ -259,9 +250,9 @@ The triggers ensure the ABAC system stays current and consistent as data changes
     ) RETURNING org_id;
 
     -- Verify resource attributes were created
-    SELECT * FROM community_orgs.resource_attributes 
-    WHERE type = 'organisation' 
-    ORDER BY created_at DESC 
+    SELECT * FROM community_orgs.resource_attributes
+    WHERE type = 'organisation'
+    ORDER BY created_at DESC
     LIMIT 1;
 
     -- Test subject attribute creation
@@ -276,13 +267,13 @@ The triggers ensure the ABAC system stays current and consistent as data changes
     );
 
     -- Verify subject attributes were created
-    SELECT * FROM community_orgs.subject_attributes 
+    SELECT * FROM community_orgs.subject_attributes
     WHERE subject_id = auth.uid();
 
     -- Test access logging
-    SELECT * FROM community_orgs.access_logs 
-    WHERE subject_id = auth.uid() 
-    ORDER BY timestamp DESC 
+    SELECT * FROM community_orgs.access_logs
+    WHERE subject_id = auth.uid()
+    ORDER BY timestamp DESC
     LIMIT 1;
 ```
 
@@ -294,15 +285,15 @@ The triggers ensure the ABAC system stays current and consistent as data changes
     RETURNS TRIGGER AS $$
     BEGIN
         IF NEW.annual_budget > 1000000 THEN
-            UPDATE community_orgs.resource_attributes 
+            UPDATE community_orgs.resource_attributes
             SET data_classification = 'confidential',
                 attributes = attributes || jsonb_build_object(
                     'high_value', true,
                     'requires_audit', true
                 )
             WHERE resource_id IN (
-                SELECT attribute_id 
-                FROM community_orgs.resource_attribute_links 
+                SELECT attribute_id
+                FROM community_orgs.resource_attribute_links
                 WHERE resource_id = NEW.org_id
             );
         END IF;
@@ -321,7 +312,7 @@ The triggers ensure the ABAC system stays current and consistent as data changes
     BEGIN
         IF EXISTS (
             SELECT 1 FROM community_orgs.financial_info
-            WHERE org_id = NEW.org_id 
+            WHERE org_id = NEW.org_id
             AND 'government' = ANY(funding_sources)
         ) THEN
             INSERT INTO community_orgs.org_visibility (
@@ -331,7 +322,7 @@ The triggers ensure the ABAC system stays current and consistent as data changes
                 NEW.org_id,
                 'public'
             )
-            ON CONFLICT (org_id) DO UPDATE 
+            ON CONFLICT (org_id) DO UPDATE
             SET visibility_type = 'public';
         END IF;
         RETURN NEW;
@@ -352,12 +343,12 @@ The triggers ensure the ABAC system stays current and consistent as data changes
             -- Add partner org to allowed_org_ids
             UPDATE community_orgs.org_visibility
             SET visibility_type = 'limited',
-                allowed_org_ids = array_append(allowed_org_ids, 
-                    (SELECT org_id FROM community_orgs.organisations 
+                allowed_org_ids = array_append(allowed_org_ids,
+                    (SELECT org_id FROM community_orgs.organisations
                     WHERE legal_name = NEW.partner_org)
                 )
             WHERE org_id = NEW.org_id;
-            
+
             -- Update resource attributes
             INSERT INTO community_orgs.resource_attributes (
                 type,
@@ -395,11 +386,11 @@ The triggers ensure the ABAC system stays current and consistent as data changes
             attributes
         ) VALUES (
             TG_TABLE_NAME,
-            CASE 
+            CASE
                 WHEN NEW.valid_until IS NOT NULL THEN 'internal'
                 ELSE 'public'
             END,
-            CASE 
+            CASE
                 WHEN NEW.valid_until < CURRENT_DATE THEN 'inactive'
                 ELSE 'active'
             END,
@@ -419,12 +410,7 @@ The triggers ensure the ABAC system stays current and consistent as data changes
         EXECUTE FUNCTION community_orgs.manage_temporal_access();
 ```
 
-These triggers handle:
-    - Financial data sensitivity adjustments
-    - Automatic program visibility based on funding sources
-    - Partnership-based access modifications
-    - Time-based access controls
-    - Relationship-driven attribute updates
+These triggers handle: - Financial data sensitivity adjustments - Automatic program visibility based on funding sources - Partnership-based access modifications - Time-based access controls - Relationship-driven attribute updates
 
 # Here are powerful custom attribute handlers for specific business rules:
 
@@ -464,9 +450,9 @@ These triggers handle:
     CREATE OR REPLACE FUNCTION community_orgs.handle_staff_size_attributes()
     RETURNS TRIGGER AS $$
     BEGIN
-        UPDATE community_orgs.resource_attributes 
+        UPDATE community_orgs.resource_attributes
         SET attributes = attributes || jsonb_build_object(
-            'org_size', CASE 
+            'org_size', CASE
                 WHEN (NEW.staff_count_paid + NEW.staff_count_volunteer) > 100 THEN 'large'
                 WHEN (NEW.staff_count_paid + NEW.staff_count_volunteer) > 20 THEN 'medium'
                 ELSE 'small'
@@ -474,8 +460,8 @@ These triggers handle:
             'requires_board', (NEW.staff_count_paid > 50)
         )
         WHERE resource_id IN (
-            SELECT attribute_id 
-            FROM community_orgs.resource_attribute_links 
+            SELECT attribute_id
+            FROM community_orgs.resource_attribute_links
             WHERE resource_id = NEW.org_id
         );
         RETURN NEW;
@@ -483,7 +469,7 @@ These triggers handle:
     $$ LANGUAGE plpgsql SECURITY DEFINER;
 
     CREATE TRIGGER tr_staff_size_attributes
-        AFTER INSERT OR UPDATE OF staff_count_paid, staff_count_volunteer 
+        AFTER INSERT OR UPDATE OF staff_count_paid, staff_count_volunteer
         ON community_orgs.operational_details
         FOR EACH ROW
         EXECUTE FUNCTION community_orgs.handle_staff_size_attributes();
@@ -531,11 +517,11 @@ These triggers handle:
     ) AS $$
     BEGIN
         RETURN QUERY
-        SELECT 
+        SELECT
             o.org_id,
             o.legal_name,
-            CASE 
-                WHEN ra.attributes->>'geo_restricted' = 'true' 
+            CASE
+                WHEN ra.attributes->>'geo_restricted' = 'true'
                 AND user_region = ANY(ra.attributes->'allowed_regions') THEN 'full'
                 WHEN ra.attributes->>'geo_restricted' = 'true' THEN 'limited'
                 ELSE 'public'
@@ -557,7 +543,7 @@ These triggers handle:
     ) AS $$
     BEGIN
         RETURN QUERY
-        SELECT 
+        SELECT
             o.org_id,
             o.legal_name,
             (op.staff_count_paid + op.staff_count_volunteer) as staff_total,
@@ -585,7 +571,7 @@ These triggers handle:
     BEGIN
         RETURN QUERY
         WITH user_permissions AS (
-            SELECT 
+            SELECT
                 sa.roles,
                 sa.clearance_level
             FROM community_orgs.subject_attributes sa
@@ -594,9 +580,9 @@ These triggers handle:
         SELECT DISTINCT
             o.org_id,
             o.legal_name,
-            CASE 
+            CASE
                 WHEN 'admin' = ANY((SELECT roles FROM user_permissions)) THEN 'full'
-                WHEN ra.attributes->>'geo_restricted' = 'true' 
+                WHEN ra.attributes->>'geo_restricted' = 'true'
                     AND p_region = ANY(ra.attributes->'allowed_regions') THEN 'regional'
                 ELSE 'limited'
             END as access_level,
@@ -636,12 +622,8 @@ These triggers handle:
         'en'
     );
 ```
-These queries demonstrate how to:
-    - Combine multiple attribute conditions
-    - Handle geographic restrictions
-    - Process language requirements
-    - Apply user-specific permissions
-    - Implement complex business rules
+
+These queries demonstrate how to: - Combine multiple attribute conditions - Handle geographic restrictions - Process language requirements - Apply user-specific permissions - Implement complex business rules
 
 # Here are the default policies for your community organizations ABAC system:
 
@@ -656,7 +638,7 @@ These queries demonstrate how to:
         environment_conditions,
         effect,
         priority
-    ) VALUES 
+    ) VALUES
     -- System Admin Policy
     (
         'system_admin_full_access',
@@ -776,235 +758,226 @@ These queries demonstrate how to:
     $$ LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
-These policies provide:
-    - Hierarchical access control
-    - Data classification protection
-    - Role-based permissions
-    - Partnership-aware sharing
-    - Public access controls
+These policies provide: - Hierarchical access control - Data classification protection - Role-based permissions - Partnership-aware sharing - Public access controls
 
 ### 5. Implement Access Control in SvelteKit
+
 Here's how to use these policies in your SvelteKit application:
 
 ```typescript
 // src/lib/server/auth.ts
-    import { createServerClient } from '@supabase/ssr'
-    import type { Database } from '$lib/types/supabase'
+import { createServerClient } from '@supabase/ssr';
+import type { Database } from '$lib/types/supabase';
 
-    export async function checkAccess(
-        supabase: ReturnType<typeof createServerClient<Database>>,
-        resourceType: string,
-        operation: string,
-        orgId?: number
-    ) {
-        const { data, error } = await supabase.rpc('check_access_policy', {
-            p_subject_id: (await supabase.auth.getUser()).data.user?.id,
-            p_resource_type: resourceType,
-            p_operation: operation,
-            p_org_id: orgId
-        })
-        return { allowed: data, error }
-    }
+export async function checkAccess(
+	supabase: ReturnType<typeof createServerClient<Database>>,
+	resourceType: string,
+	operation: string,
+	orgId?: number
+) {
+	const { data, error } = await supabase.rpc('check_access_policy', {
+		p_subject_id: (await supabase.auth.getUser()).data.user?.id,
+		p_resource_type: resourceType,
+		p_operation: operation,
+		p_org_id: orgId
+	});
+	return { allowed: data, error };
+}
 ```
 
 ```typescript
 // src/routes/orgs/[id]/+page.server.ts
-    import { error, fail } from '@sveltejs/kit'
-    import { checkAccess } from '$lib/server/auth'
+import { error, fail } from '@sveltejs/kit';
+import { checkAccess } from '$lib/server/auth';
 
-    export const load = async ({ params, locals: { supabase } }) => {
-        const { allowed } = await checkAccess(supabase, 'organisation', 'read', parseInt(params.id))
-        
-        if (!allowed) {
-            throw error(403, 'Access denied')
-        }
+export const load = async ({ params, locals: { supabase } }) => {
+	const { allowed } = await checkAccess(supabase, 'organisation', 'read', parseInt(params.id));
 
-        const { data: org } = await supabase
-            .from('organisations')
-            .select(`
+	if (!allowed) {
+		throw error(403, 'Access denied');
+	}
+
+	const { data: org } = await supabase
+		.from('organisations')
+		.select(
+			`
                 *,
                 contact_info (*),
                 operational_details (*)
-            `)
-            .eq('org_id', params.id)
-            .single()
+            `
+		)
+		.eq('org_id', params.id)
+		.single();
 
-        return { org }
-    }
+	return { org };
+};
 
-    export const actions = {
-        update: async ({ request, params, locals: { supabase } }) => {
-            const { allowed } = await checkAccess(supabase, 'organisation', 'update', parseInt(params.id))
-            
-            if (!allowed) {
-                return fail(403, { message: 'Not authorized to update this organization' })
-            }
+export const actions = {
+	update: async ({ request, params, locals: { supabase } }) => {
+		const { allowed } = await checkAccess(supabase, 'organisation', 'update', parseInt(params.id));
 
-            const formData = await request.formData()
-            const updates = Object.fromEntries(formData)
+		if (!allowed) {
+			return fail(403, { message: 'Not authorized to update this organization' });
+		}
 
-            const { error: updateError } = await supabase
-                .from('organisations')
-                .update(updates)
-                .eq('org_id', params.id)
+		const formData = await request.formData();
+		const updates = Object.fromEntries(formData);
 
-            if (updateError) {
-                return fail(500, { message: 'Failed to update organization' })
-            }
+		const { error: updateError } = await supabase
+			.from('organisations')
+			.update(updates)
+			.eq('org_id', params.id);
 
-            return { success: true }
-        }
-    }
+		if (updateError) {
+			return fail(500, { message: 'Failed to update organization' });
+		}
+
+		return { success: true };
+	}
+};
 ```
+
 ```typescript
-    //server.ts
-    import { json } from '@sveltejs/kit'
+//server.ts
+import { json } from '@sveltejs/kit';
 
-    export async function GET({ url, locals: { supabase } }) {
-        const { allowed } = await checkAccess(supabase, 'organisation', 'list')
-        
-        if (!allowed) {
-            return new Response('Forbidden', { status: 403 })
-        }
+export async function GET({ url, locals: { supabase } }) {
+	const { allowed } = await checkAccess(supabase, 'organisation', 'list');
 
-        const { data: orgs } = await supabase
-            .from('organisations')
-            .select('*')
-            .order('legal_name')
+	if (!allowed) {
+		return new Response('Forbidden', { status: 403 });
+	}
 
-        return json(orgs)
-    }
+	const { data: orgs } = await supabase.from('organisations').select('*').order('legal_name');
+
+	return json(orgs);
+}
 ```
+
 /
+
 ```svelte
-    //server.ts
-    <script lang="ts">
-        export let data
-        
-        $: ({ org } = data)
-    </script>
+<script lang="ts">
+	export let data;
 
-    <div class="org-details">
-        <h1>{org.legal_name}</h1>
-        {#if org.contact_info}
-            <section class="contact">
-                <h2>Contact Information</h2>
-                <p>{org.contact_info.physical_address}</p>
-                <p>{org.contact_info.email}</p>
-            </section>
-        {/if}
-        
-        {#if org.operational_details}
-            <section class="operations">
-                <h2>Operations</h2>
-                <p>Service Area: {org.operational_details.service_area}</p>
-                <p>Staff: {org.operational_details.staff_count_paid} paid, 
-                {org.operational_details.staff_count_volunteer} volunteers</p>
-            </section>
-        {/if}
-    </div>
+	$: ({ org } = data);
+</script>
+
+//server.ts
+<div class="org-details">
+	<h1>{org.legal_name}</h1>
+	{#if org.contact_info}
+		<section class="contact">
+			<h2>Contact Information</h2>
+			<p>{org.contact_info.physical_address}</p>
+			<p>{org.contact_info.email}</p>
+		</section>
+	{/if}
+
+	{#if org.operational_details}
+		<section class="operations">
+			<h2>Operations</h2>
+			<p>Service Area: {org.operational_details.service_area}</p>
+			<p>
+				Staff: {org.operational_details.staff_count_paid} paid,
+				{org.operational_details.staff_count_volunteer} volunteers
+			</p>
+		</section>
+	{/if}
+</div>
 ```
-This implementation:
-    - Centralizes access control checks
-    - Enforces policies at the server level
-    - Provides type safety with TypeScript
-    - Handles both API and page routes
-    - Integrates with SvelteKit's form actions
 
+This implementation: - Centralizes access control checks - Enforces policies at the server level - Provides type safety with TypeScript - Handles both API and page routes - Integrates with SvelteKit's form actions
 
 # Here are powerful helper functions for common access patterns:
 
 ```typescript
 // permissions.ts
-    import type { SupabaseClient } from '@supabase/supabase-js'
-    import type { Database } from '$lib/types/supabase'
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '$lib/types/supabase';
 
-    export class PermissionManager {
-        constructor(private supabase: SupabaseClient<Database>) {}
+export class PermissionManager {
+	constructor(private supabase: SupabaseClient<Database>) {}
 
-        // Check if user can manage an organization
-        async canManageOrg(orgId: number) {
-            const { data } = await this.supabase.rpc('check_access_policy', {
-                p_resource_type: 'organisation',
-                p_operation: 'update',
-                p_org_id: orgId
-            })
-            return !!data
-        }
+	// Check if user can manage an organization
+	async canManageOrg(orgId: number) {
+		const { data } = await this.supabase.rpc('check_access_policy', {
+			p_resource_type: 'organisation',
+			p_operation: 'update',
+			p_org_id: orgId
+		});
+		return !!data;
+	}
 
-        // Check if user can view financial data
-        async canViewFinancials(orgId: number) {
-            const { data } = await this.supabase.rpc('check_access_policy', {
-                p_resource_type: 'financial',
-                p_operation: 'read',
-                p_org_id: orgId
-            })
-            return !!data
-        }
+	// Check if user can view financial data
+	async canViewFinancials(orgId: number) {
+		const { data } = await this.supabase.rpc('check_access_policy', {
+			p_resource_type: 'financial',
+			p_operation: 'read',
+			p_org_id: orgId
+		});
+		return !!data;
+	}
 
-        // Check multiple permissions at once
-        async checkMultiplePermissions(orgId: number, operations: string[]) {
-            const checks = operations.map(op => 
-                this.supabase.rpc('check_access_policy', {
-                    p_resource_type: 'organisation',
-                    p_operation: op,
-                    p_org_id: orgId
-                })
-            )
-            const results = await Promise.all(checks)
-            return Object.fromEntries(
-                operations.map((op, i) => [op, !!results[i].data])
-            )
-        }
+	// Check multiple permissions at once
+	async checkMultiplePermissions(orgId: number, operations: string[]) {
+		const checks = operations.map((op) =>
+			this.supabase.rpc('check_access_policy', {
+				p_resource_type: 'organisation',
+				p_operation: op,
+				p_org_id: orgId
+			})
+		);
+		const results = await Promise.all(checks);
+		return Object.fromEntries(operations.map((op, i) => [op, !!results[i].data]));
+	}
 
-        // Get all organizations user can access
-        async getAccessibleOrgs() {
-            const { data } = await this.supabase
-                .from('organisations')
-                .select(`
+	// Get all organizations user can access
+	async getAccessibleOrgs() {
+		const { data } = await this.supabase.from('organisations').select(`
                     org_id,
                     legal_name,
                     trading_name,
                     org_visibility (visibility_type, allowed_org_ids)
-                `)
-            
-            return data?.filter(org => 
-                org.org_visibility.visibility_type === 'public' ||
-                (org.org_visibility.visibility_type === 'limited' && 
-                org.org_visibility.allowed_org_ids?.includes(org.org_id))
-            )
-        }
-    }
+                `);
+
+		return data?.filter(
+			(org) =>
+				org.org_visibility.visibility_type === 'public' ||
+				(org.org_visibility.visibility_type === 'limited' &&
+					org.org_visibility.allowed_org_ids?.includes(org.org_id))
+		);
+	}
+}
 ```
+
 ```typescript
-    // roles.ts
-    export class RoleManager {
-        constructor(private supabase: SupabaseClient<Database>) {}
+// roles.ts
+export class RoleManager {
+	constructor(private supabase: SupabaseClient<Database>) {}
 
-        // Check if user has specific role for organization
-        async hasRole(orgId: number, role: string) {
-            const { data } = await this.supabase
-                .from('org_members')
-                .select('role')
-                .eq('org_id', orgId)
-                .single()
-            
-            return data?.role === role
-        }
+	// Check if user has specific role for organization
+	async hasRole(orgId: number, role: string) {
+		const { data } = await this.supabase
+			.from('org_members')
+			.select('role')
+			.eq('org_id', orgId)
+			.single();
 
-        // Get all roles for user across organizations
-        async getUserRoles() {
-            const { data } = await this.supabase
-                .from('org_members')
-                .select(`
+		return data?.role === role;
+	}
+
+	// Get all roles for user across organizations
+	async getUserRoles() {
+		const { data } = await this.supabase.from('org_members').select(`
                     org_id,
                     role,
                     organisations (legal_name)
-                `)
-            
-            return data
-        }
-    }
+                `);
+
+		return data;
+	}
+}
 ```
 
 ## Usage in SvelteKit routes:
@@ -1032,6 +1005,7 @@ This implementation:
         }
     }
 ```
+
 ```svelte
 // hooks.server.ts
     import { PermissionManager } from '$lib/server/permissions'
@@ -1040,185 +1014,168 @@ This implementation:
         if (event.locals.supabase) {
             event.locals.permissions = new PermissionManager(event.locals.supabase)
         }
-        
+
         return resolve(event)
     }
 ```
 
-These helpers provide:
-    - Reusable permission checks
-    - Role management utilities
-    - Batch permission checking
-    - Organization visibility handling
-    - Type-safe access patterns
+These helpers provide: - Reusable permission checks - Role management utilities - Batch permission checking - Organization visibility handling - Type-safe access patterns
 
 # Here are advanced permission patterns that extend our existing system:
 
 ```typescript
-    // advanced-permissions.ts
-    import type { SupabaseClient } from '@supabase/supabase-js'
-    import type { Database } from '$lib/types/supabase'
+// advanced-permissions.ts
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '$lib/types/supabase';
 
-    export class AdvancedPermissionManager {
-        constructor(private supabase: SupabaseClient<Database>) {}
+export class AdvancedPermissionManager {
+	constructor(private supabase: SupabaseClient<Database>) {}
 
-        // Hierarchical Permission Checking
-        async checkHierarchicalAccess(orgId: number) {
-            const { data: hierarchy } = await this.supabase
-                .from('organisations')
-                .select(`
+	// Hierarchical Permission Checking
+	async checkHierarchicalAccess(orgId: number) {
+		const { data: hierarchy } = await this.supabase
+			.from('organisations')
+			.select(
+				`
                     org_id,
                     parent_org_id,
                     child_orgs:organisations!child_org_fk(org_id)
-                `)
-                .eq('org_id', orgId)
-                .single()
+                `
+			)
+			.eq('org_id', orgId)
+			.single();
 
-            return {
-                canAccessParent: await this.checkAccess(hierarchy.parent_org_id),
-                canAccessChildren: await Promise.all(
-                    hierarchy.child_orgs.map(child => 
-                        this.checkAccess(child.org_id)
-                    )
-                )
-            }
-        }
+		return {
+			canAccessParent: await this.checkAccess(hierarchy.parent_org_id),
+			canAccessChildren: await Promise.all(
+				hierarchy.child_orgs.map((child) => this.checkAccess(child.org_id))
+			)
+		};
+	}
 
-        // Time-based Permission Patterns
-        async checkTemporalAccess(orgId: number) {
-            const now = new Date()
-            const { data: schedule } = await this.supabase
-                .from('operational_details')
-                .select('operating_hours')
-                .eq('org_id', orgId)
-                .single()
+	// Time-based Permission Patterns
+	async checkTemporalAccess(orgId: number) {
+		const now = new Date();
+		const { data: schedule } = await this.supabase
+			.from('operational_details')
+			.select('operating_hours')
+			.eq('org_id', orgId)
+			.single();
 
-            const currentHours = schedule.operating_hours[now.getDay()]
-            const isWithinHours = this.isTimeWithinRange(
-                now,
-                currentHours.start,
-                currentHours.end
-            )
+		const currentHours = schedule.operating_hours[now.getDay()];
+		const isWithinHours = this.isTimeWithinRange(now, currentHours.start, currentHours.end);
 
-            return {
-                isWithinOperatingHours: isWithinHours,
-                nextAvailableTime: this.getNextAvailableTime(schedule.operating_hours)
-            }
-        }
+		return {
+			isWithinOperatingHours: isWithinHours,
+			nextAvailableTime: this.getNextAvailableTime(schedule.operating_hours)
+		};
+	}
 
-        // Geographic Permission Boundaries
-        async checkGeographicAccess(orgId: number, userLocation: { lat: number; lng: number }) {
-            const { data: serviceArea } = await this.supabase
-                .from('operational_details')
-                .select('service_area')
-                .eq('org_id', orgId)
-                .single()
+	// Geographic Permission Boundaries
+	async checkGeographicAccess(orgId: number, userLocation: { lat: number; lng: number }) {
+		const { data: serviceArea } = await this.supabase
+			.from('operational_details')
+			.select('service_area')
+			.eq('org_id', orgId)
+			.single();
 
-            return {
-                isInServiceArea: this.isPointInPolygon(userLocation, serviceArea.boundaries),
-                nearestServiceLocation: this.findNearestLocation(userLocation, serviceArea.locations)
-            }
-        }
+		return {
+			isInServiceArea: this.isPointInPolygon(userLocation, serviceArea.boundaries),
+			nearestServiceLocation: this.findNearestLocation(userLocation, serviceArea.locations)
+		};
+	}
 
-        // Dynamic Team-based Permissions
-        async checkTeamAccess(orgId: number, teamId: number) {
-            const { data: teamPermissions } = await this.supabase
-                .from('team_permissions')
-                .select(`
+	// Dynamic Team-based Permissions
+	async checkTeamAccess(orgId: number, teamId: number) {
+		const { data: teamPermissions } = await this.supabase
+			.from('team_permissions')
+			.select(
+				`
                     permissions,
                     inheritance_rules,
                     delegated_access
-                `)
-                .eq('team_id', teamId)
-                .single()
+                `
+			)
+			.eq('team_id', teamId)
+			.single();
 
-            return {
-                directAccess: teamPermissions.permissions,
-                inheritedAccess: await this.resolveInheritedPermissions(
-                    teamPermissions.inheritance_rules
-                ),
-                delegatedAccess: await this.resolveDelegatedAccess(
-                    teamPermissions.delegated_access
-                )
-            }
-        }
+		return {
+			directAccess: teamPermissions.permissions,
+			inheritedAccess: await this.resolveInheritedPermissions(teamPermissions.inheritance_rules),
+			delegatedAccess: await this.resolveDelegatedAccess(teamPermissions.delegated_access)
+		};
+	}
 
-        // Attribute-based Dynamic Rules
-        async evaluateComplexRules(orgId: number) {
-            const { data: attributes } = await this.supabase
-                .from('resource_attributes')
-                .select('*')
-                .eq('org_id', orgId)
+	// Attribute-based Dynamic Rules
+	async evaluateComplexRules(orgId: number) {
+		const { data: attributes } = await this.supabase
+			.from('resource_attributes')
+			.select('*')
+			.eq('org_id', orgId);
 
-            return {
-                financialAccess: this.evaluateFinancialRules(attributes.financial),
-                sensitiveDataAccess: this.evaluateSensitivityRules(attributes.sensitivity),
-                complianceLevel: this.evaluateComplianceRules(attributes.compliance)
-            }
-        }
+		return {
+			financialAccess: this.evaluateFinancialRules(attributes.financial),
+			sensitiveDataAccess: this.evaluateSensitivityRules(attributes.sensitivity),
+			complianceLevel: this.evaluateComplianceRules(attributes.compliance)
+		};
+	}
 
-        // Workflow-based Permissions
-        async checkWorkflowStageAccess(workflowId: number) {
-            const { data: workflow } = await this.supabase
-                .from('workflows')
-                .select(`
+	// Workflow-based Permissions
+	async checkWorkflowStageAccess(workflowId: number) {
+		const { data: workflow } = await this.supabase
+			.from('workflows')
+			.select(
+				`
                     current_stage,
                     stage_permissions,
                     required_approvals,
                     completion_criteria
-                `)
-                .eq('workflow_id', workflowId)
-                .single()
+                `
+			)
+			.eq('workflow_id', workflowId)
+			.single();
 
-            return {
-                canProgress: await this.evaluateWorkflowProgress(workflow),
-                requiredApprovals: this.getPendingApprovals(workflow),
-                nextStageRequirements: this.getNextStageRequirements(workflow)
-            }
-        }
-    }
+		return {
+			canProgress: await this.evaluateWorkflowProgress(workflow),
+			requiredApprovals: this.getPendingApprovals(workflow),
+			nextStageRequirements: this.getNextStageRequirements(workflow)
+		};
+	}
+}
 ```
 
 ## Usage in a complex scenario:
 
 ```ts
-    // +page.server.ts
-    export async function load({ params, locals: { supabase } }) {
-        const advancedPerms = new AdvancedPermissionManager(supabase)
-        
-        const [
-            hierarchyAccess,
-            temporalAccess,
-            workflowAccess
-        ] = await Promise.all([
-            advancedPerms.checkHierarchicalAccess(parseInt(params.id)),
-            advancedPerms.checkTemporalAccess(parseInt(params.id)),
-            advancedPerms.checkWorkflowStageAccess(parseInt(params.id))
-        ])
+// +page.server.ts
+export async function load({ params, locals: { supabase } }) {
+	const advancedPerms = new AdvancedPermissionManager(supabase);
 
-        return {
-            hierarchyAccess,
-            temporalAccess,
-            workflowAccess,
-            permissionMatrix: {
-                canAccessHierarchy: hierarchyAccess.canAccessParent && 
-                                hierarchyAccess.canAccessChildren.every(access => access),
-                isOperational: temporalAccess.isWithinOperatingHours,
-                workflowStatus: workflowAccess.canProgress
-            }
-        }
-    }
+	const [hierarchyAccess, temporalAccess, workflowAccess] = await Promise.all([
+		advancedPerms.checkHierarchicalAccess(parseInt(params.id)),
+		advancedPerms.checkTemporalAccess(parseInt(params.id)),
+		advancedPerms.checkWorkflowStageAccess(parseInt(params.id))
+	]);
+
+	return {
+		hierarchyAccess,
+		temporalAccess,
+		workflowAccess,
+		permissionMatrix: {
+			canAccessHierarchy:
+				hierarchyAccess.canAccessParent &&
+				hierarchyAccess.canAccessChildren.every((access) => access),
+			isOperational: temporalAccess.isWithinOperatingHours,
+			workflowStatus: workflowAccess.canProgress
+		}
+	};
+}
 ```
 
-These patterns enable:
-    - Hierarchical organization access control
-    - Time-based permission restrictions
-    - Geographic boundary enforcement
-    - Team-based permission inheritance
-    - Complex attribute-based rules
-    - Workflow stage permissions
+These patterns enable: - Hierarchical organization access control - Time-based permission restrictions - Geographic boundary enforcement - Team-based permission inheritance - Complex attribute-based rules - Workflow stage permissions
 
 # Frontend Components
+
 Here are the frontend components that consume the advanced permission patterns:
 
 <script lang="ts">
@@ -1254,6 +1211,7 @@ Here are the frontend components that consume the advanced permission patterns:
 </div>
 
 HierarchyAccess.svelte
+
 <script lang="ts">
     import { onMount } from 'svelte'
     import type { TemporalAccess } from '$lib/types/permissions'
@@ -1289,6 +1247,7 @@ HierarchyAccess.svelte
 </div>
 
 TemporalAccess.svelte
+
 <script lang="ts">
     import type { WorkflowAccess } from '$lib/types/permissions'
     
@@ -1356,14 +1315,10 @@ Usage in a page component:
 </div>
 
 +page.svelte
-These components provide:
-    - Visual hierarchy representation
-    - Real-time operational status
-    - Workflow progress tracking
-    - Dynamic permission updates
-    - Interactive user feedback
+These components provide: - Visual hierarchy representation - Real-time operational status - Workflow progress tracking - Dynamic permission updates - Interactive user feedback
 
 # Interactive Features
+
 Here are powerful interactive permission features that enhance user experience and control:
 
 <script lang="ts">
@@ -1400,6 +1355,7 @@ Here are powerful interactive permission features that enhance user experience a
 </div>
 
 PermissionEditor.svelte
+
 <script lang="ts">
     import { DragDropList } from '$lib/components/DragDrop'
     import type { Permission } from '$lib/types/permissions'
@@ -1440,6 +1396,7 @@ PermissionEditor.svelte
 </div>
 
 RoleBuilder.svelte
+
 <script lang="ts">
     import { Calendar } from '$lib/components/Calendar'
     import type { Schedule } from '$lib/types/permissions'
@@ -1528,21 +1485,17 @@ Usage in an admin interface:
 </div>
 
 +page.svelte
-These features provide:
-    - Visual permission management
-    - Drag-and-drop role building
-    - Time-based access scheduling
-    - Real-time permission updates
-    - Interactive configuration tools
+These features provide: - Visual permission management - Drag-and-drop role building - Time-based access scheduling - Real-time permission updates - Interactive configuration tools
 
 # Backend Implementations
+
 Here are the backend implementations that support the interactive permission features:
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '$lib/types/permissions'
 
 export class InteractivePermissionManager {
-    constructor(private supabase: SupabaseClient<Database>) {}
+constructor(private supabase: SupabaseClient<Database>) {}
 
     // Update permission matrix
     async updatePermission(resource: string, action: string, value: boolean) {
@@ -1609,85 +1562,94 @@ export class InteractivePermissionManager {
 
         return { data, error }
     }
+
 }
 
 interactive-permissions.ts
 -- Function to batch update permissions
 CREATE OR REPLACE FUNCTION community_orgs.batch_update_permissions(
-    updates jsonb[]
+updates jsonb[]
 ) RETURNS jsonb AS $$
 DECLARE
-    result jsonb = '[]'::jsonb;
-    update_record jsonb;
+result jsonb = '[]'::jsonb;
+update_record jsonb;
 BEGIN
-    FOR update_record IN SELECT * FROM jsonb_array_elements(updates)
-    LOOP
-        -- Update the permission
-        INSERT INTO community_orgs.access_policies (
-            name,
-            subject_conditions,
-            resource_conditions,
-            action_conditions,
-            effect
-        ) VALUES (
-            update_record->>'name',
-            update_record->'subject_conditions',
-            update_record->'resource_conditions',
-            update_record->'action_conditions',
-            update_record->>'effect'
-        )
-        ON CONFLICT (name) DO UPDATE
-        SET 
-            subject_conditions = EXCLUDED.subject_conditions,
-            resource_conditions = EXCLUDED.resource_conditions,
-            action_conditions = EXCLUDED.action_conditions,
-            effect = EXCLUDED.effect
-        RETURNING jsonb_build_object(
-            'name', name,
-            'status', 'updated'
-        ) INTO result;
-    END LOOP;
+FOR update_record IN SELECT \* FROM jsonb_array_elements(updates)
+LOOP
+-- Update the permission
+INSERT INTO community_orgs.access_policies (
+name,
+subject_conditions,
+resource_conditions,
+action_conditions,
+effect
+) VALUES (
+update_record->>'name',
+update_record->'subject_conditions',
+update_record->'resource_conditions',
+update_record->'action_conditions',
+update_record->>'effect'
+)
+ON CONFLICT (name) DO UPDATE
+SET
+subject_conditions = EXCLUDED.subject_conditions,
+resource_conditions = EXCLUDED.resource_conditions,
+action_conditions = EXCLUDED.action_conditions,
+effect = EXCLUDED.effect
+RETURNING jsonb_build_object(
+'name', name,
+'status', 'updated'
+) INTO result;
+END LOOP;
 
     RETURN result;
+
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+$$
+LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Function to get effective permissions
 CREATE OR REPLACE FUNCTION community_orgs.get_effective_permissions(
     p_user_id uuid,
     p_org_id integer
-) RETURNS jsonb AS $$
+) RETURNS jsonb AS
+$$
+
 DECLARE
-    result jsonb;
+result jsonb;
 BEGIN
-    WITH user_roles AS (
-        SELECT array_agg(role) as roles
-        FROM community_orgs.org_members
-        WHERE user_id = p_user_id
-        AND org_id = p_org_id
-    ),
-    applicable_policies AS (
-        SELECT 
-            ap.name,
-            ap.effect,
-            ap.priority
-        FROM community_orgs.access_policies ap
-        CROSS JOIN user_roles ur
-        WHERE ap.subject_conditions->>'roles' <@ ur.roles::text[]
-    )
-    SELECT jsonb_agg(
-        jsonb_build_object(
-            'policy_name', name,
-            'effect', effect,
-            'priority', priority
-        )
-    ) INTO result
-    FROM applicable_policies
-    ORDER BY priority DESC;
+WITH user_roles AS (
+SELECT array_agg(role) as roles
+FROM community_orgs.org_members
+WHERE user_id = p_user_id
+AND org_id = p_org_id
+),
+applicable_policies AS (
+SELECT
+ap.name,
+ap.effect,
+ap.priority
+FROM community_orgs.access_policies ap
+CROSS JOIN user_roles ur
+WHERE ap.subject_conditions->>'roles' <@ ur.roles::text[]
+)
+SELECT jsonb_agg(
+jsonb_build_object(
+'policy_name', name,
+'effect', effect,
+'priority', priority
+)
+) INTO result
+FROM applicable_policies
+ORDER BY priority DESC;
 
     RETURN result;
+
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+$$
+LANGUAGE plpgsql SECURITY DEFINER;
 
 06_interactive_functions.sql
 Usage in SvelteKit endpoints:
@@ -1855,7 +1817,7 @@ export class AdvancedPermissionManager {
 
     async checkPermission(request: PermissionRequest) {
         const startTime = performance.now()
-        
+
         // Try cache first
         const cached = await this.cache.getCachedPermission(request.key)
         if (cached) return cached
@@ -1868,7 +1830,7 @@ export class AdvancedPermissionManager {
 
         // Evaluate decision
         const decision = this.evaluatePermissions(permissions, request)
-        
+
         // Record metrics
         await this.metrics.recordDecision({
             ...decision,
@@ -1905,15 +1867,15 @@ Here are the frontend components that utilize the advanced patterns, along with 
     import { onMount } from 'svelte'
     import { PermissionObserver } from '$lib/client/PermissionObserver'
     import type { Permission } from '$lib/types/permissions'
-    
+
     export let orgId: number
-    
+
     let permissions: Permission[] = []
     let observer: PermissionObserver
-    
+
     onMount(() => {
         observer = new PermissionObserver()
-        
+
         return observer.observePermissionChanges(orgId, (updates) => {
             permissions = updates
         })
@@ -1935,9 +1897,9 @@ AdvancedPermissionMonitor.svelte
 <script lang="ts">
     import { LineChart } from '$lib/components/charts'
     import type { PermissionMetrics } from '$lib/types/permissions'
-    
+
     export let metrics: PermissionMetrics
-    
+
     $: chartData = transformMetricsData(metrics)
 </script>
 
@@ -1948,7 +1910,7 @@ AdvancedPermissionMonitor.svelte
         yAxis="count"
         series={['granted', 'denied']}
     />
-    
+
     <div class="metrics-summary">
         <div class="metric-card">
             <h3>Success Rate</h3>
@@ -1968,7 +1930,7 @@ import { AdvancedPermissionManager } from '$lib/server/AdvancedPermissionManager
 
 export async function load({ params, locals: { supabase } }) {
     const permManager = new AdvancedPermissionManager(supabase)
-    
+
     const [permissions, metrics] = await Promise.all([
         permManager.checkPermission({
             userId: locals.user.id,
@@ -1985,7 +1947,7 @@ export async function load({ params, locals: { supabase } }) {
             timeframe: 'last_7_days'
         })
     ])
-    
+
     return {
         permissions,
         metrics
@@ -1996,18 +1958,18 @@ export async function load({ params, locals: { supabase } }) {
 <script lang="ts">
     import AdvancedPermissionMonitor from '$lib/components/permissions/AdvancedPermissionMonitor.svelte'
     import PermissionMetricsDisplay from '$lib/components/permissions/PermissionMetricsDisplay.svelte'
-    
+
     export let data
 </script>
 
 <div class="permission-dashboard">
     <h1>Permission Management</h1>
-    
+
     <section class="real-time-monitoring">
         <h2>Real-time Permission Updates</h2>
         <AdvancedPermissionMonitor orgId={data.orgId} />
     </section>
-    
+
     <section class="metrics">
         <h2>Permission Metrics</h2>
         <PermissionMetricsDisplay metrics={data.metrics} />
@@ -2052,31 +2014,35 @@ CREATE TABLE community_orgs.audit_logs (
 
 -- Create audit logging function
 CREATE OR REPLACE FUNCTION community_orgs.log_audit_event()
-RETURNS trigger AS $$
+RETURNS trigger AS
+$$
+
 BEGIN
-    INSERT INTO community_orgs.audit_logs (
-        user_id,
-        org_id,
-        action,
-        resource_type,
-        resource_id,
-        changes,
-        context
-    ) VALUES (
-        auth.uid(),
-        NEW.org_id,
-        TG_OP,
-        TG_TABLE_NAME,
-        NEW.org_id::text,
-        jsonb_build_object(
-            'old_value', row_to_json(OLD),
-            'new_value', row_to_json(NEW)
-        ),
-        current_setting('app.context', true)::jsonb
-    );
-    RETURN NEW;
+INSERT INTO community_orgs.audit_logs (
+user_id,
+org_id,
+action,
+resource_type,
+resource_id,
+changes,
+context
+) VALUES (
+auth.uid(),
+NEW.org_id,
+TG_OP,
+TG_TABLE_NAME,
+NEW.org_id::text,
+jsonb_build_object(
+'old_value', row_to_json(OLD),
+'new_value', row_to_json(NEW)
+),
+current_setting('app.context', true)::jsonb
+);
+RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+$$
+LANGUAGE plpgsql SECURITY DEFINER;
 
 07_audit_logging.sql
 export class AuditLogger {
@@ -2114,11 +2080,11 @@ export class AuditLogger {
         const query = this.supabase
             .from('audit_logs')
             .select('*')
-            
+
         if (filters.orgId) {
             query.eq('org_id', filters.orgId)
         }
-        
+
         if (filters.dateRange) {
             query.gte('timestamp', filters.dateRange.start)
                 .lte('timestamp', filters.dateRange.end)
@@ -2151,7 +2117,7 @@ Usage in routes:
 
 export async function PUT({ params, request, locals }) {
     const updates = await request.json()
-    
+
     try {
         const { data, error } = await locals.supabase
             .from('organisations')
@@ -2210,11 +2176,11 @@ Here are powerful audit log visualizations and advanced patterns:
     import { DataTable } from '$lib/components/table'
     import { TimelineView } from '$lib/components/timeline'
     import type { AuditLog } from '$lib/types/audit'
-    
+
     export let logs: AuditLog[]
-    
+
     let viewMode: 'table' | 'timeline' = 'table'
-    
+
     const columns = [
         { key: 'timestamp', title: 'Time', sortable: true },
         { key: 'user_id', title: 'User' },
@@ -2226,14 +2192,14 @@ Here are powerful audit log visualizations and advanced patterns:
 
 <div class="audit-viewer">
     <div class="view-controls">
-        <button 
-            class:active={viewMode === 'table'} 
+        <button
+            class:active={viewMode === 'table'}
             on:click={() => viewMode = 'table'}
         >
             Table View
         </button>
-        <button 
-            class:active={viewMode === 'timeline'} 
+        <button
+            class:active={viewMode === 'timeline'}
             on:click={() => viewMode = 'timeline'}
         >
             Timeline View
@@ -2243,7 +2209,7 @@ Here are powerful audit log visualizations and advanced patterns:
     {#if viewMode === 'table'}
         <DataTable {columns} data={logs} />
     {:else}
-        <TimelineView 
+        <TimelineView
             events={logs}
             groupBy="resource_type"
         />
@@ -2254,9 +2220,9 @@ AuditLogViewer.svelte
 <script lang="ts">
     import { PieChart, BarChart } from '$lib/components/charts'
     import type { AuditMetrics } from '$lib/types/audit'
-    
+
     export let metrics: AuditMetrics
-    
+
     $: actionDistribution = transformActionMetrics(metrics.actions)
     $: userActivity = transformUserMetrics(metrics.users)
 </script>
@@ -2270,7 +2236,7 @@ AuditLogViewer.svelte
             valueKey="count"
         />
     </div>
-    
+
     <div class="chart-container">
         <h3>User Activity</h3>
         <BarChart
@@ -2290,7 +2256,7 @@ export class AdvancedAuditLogger {
 
     async logWithDiff(before: any, after: any, context: AuditContext) {
         const diff = this.generateDiff(before, after)
-        
+
         await this.supabase.from('audit_logs').insert({
             ...context,
             changes: diff,
@@ -2321,12 +2287,12 @@ Usage in a dashboard:
     import AuditLogViewer from '$lib/components/audit/AuditLogViewer.svelte'
     import AuditMetrics from '$lib/components/audit/AuditMetrics.svelte'
     import { onMount } from 'svelte'
-    
+
     export let data
 
     let selectedTimeframe = '7d'
     let anomalies = []
-    
+
     onMount(async () => {
         anomalies = await loadAnomalies(selectedTimeframe)
     })
@@ -2346,7 +2312,7 @@ Usage in a dashboard:
 
     <div class="dashboard-grid">
         <AuditMetrics metrics={data.metrics} />
-        
+
         <div class="anomalies-panel">
             <h2>Detected Anomalies</h2>
             {#each anomalies as anomaly}
@@ -2386,16 +2352,16 @@ Here are powerful advanced UI patterns for interactive permission features:
 <script lang="ts">
     import { FlowEditor } from '$lib/components/flow'
     import type { PermissionFlow } from '$lib/types/permissions'
-    
+
     export let initialFlow: PermissionFlow
-    
+
     const nodeTypes = {
         role: RoleNode,
         condition: ConditionNode,
         action: ActionNode,
         decision: DecisionNode
     }
-    
+
     function handleFlowUpdate(flow: PermissionFlow) {
         dispatch('update', { flow })
     }
@@ -2420,9 +2386,9 @@ PermissionFlowBuilder.svelte
 <script lang="ts">
     import { QueryBuilder } from '$lib/components/query'
     import type { PermissionRule } from '$lib/types/permissions'
-    
+
     export let rules: PermissionRule[]
-    
+
     const operators = {
         equals: 'Equals',
         contains: 'Contains',
@@ -2430,7 +2396,7 @@ PermissionFlowBuilder.svelte
         lessThan: 'Less Than',
         in: 'In List'
     }
-    
+
     function handleRuleChange(rule: PermissionRule) {
         dispatch('ruleChange', { rule })
     }
@@ -2453,20 +2419,20 @@ DynamicRuleBuilder.svelte
     import PermissionFlowBuilder from '$lib/components/permissions/PermissionFlowBuilder.svelte'
     import DynamicRuleBuilder from '$lib/components/permissions/DynamicRuleBuilder.svelte'
     import { PermissionSimulator } from '$lib/components/permissions/PermissionSimulator.svelte'
-    
+
     let currentFlow = {
         nodes: [],
         edges: []
     }
-    
+
     let rules = []
-    
+
     async function handleFlowSave() {
         const result = await savePermissionFlow({
             flow: currentFlow,
             rules
         })
-        
+
         if (result.success) {
             notify.success('Permission flow saved successfully')
         }
@@ -2555,7 +2521,7 @@ export class PermissionFlowEngine {
 
     async saveFlow(flow: PermissionFlow) {
         const { nodes, edges, rules } = flow
-        
+
         // Transaction to save entire flow atomically
         const { data, error } = await this.supabase.rpc('save_permission_flow', {
             p_nodes: nodes,
@@ -2570,7 +2536,7 @@ export class PermissionFlowEngine {
     async evaluateFlow(flowId: string, context: EvaluationContext) {
         const flow = await this.loadFlow(flowId)
         const result = await this.executeFlow(flow, context)
-        
+
         await this.logEvaluation({
             flowId,
             context,
@@ -2593,7 +2559,7 @@ export class DynamicRuleEngine {
         const results = await Promise.all(
             rules.map(rule => this.evaluateRule(rule, context))
         )
-        
+
         return this.aggregateResults(results)
     }
 
@@ -2609,7 +2575,7 @@ export class DynamicRuleEngine {
             spatial: new SpatialEvaluator(),
             resource: new ResourceEvaluator()
         }
-        
+
         return evaluators[type]
     }
 }
@@ -2621,25 +2587,27 @@ CREATE OR REPLACE FUNCTION community_orgs.save_permission_flow(
     p_edges jsonb,
     p_rules jsonb,
     p_version timestamp
-) RETURNS jsonb AS $$
+) RETURNS jsonb AS
+$$
+
 DECLARE
-    flow_id uuid;
+flow_id uuid;
 BEGIN
-    -- Create new flow version
-    INSERT INTO community_orgs.permission_flows (
-        nodes,
-        edges,
-        rules,
-        version,
-        status
-    ) VALUES (
-        p_nodes,
-        p_edges,
-        p_rules,
-        p_version,
-        'draft'
-    )
-    RETURNING id INTO flow_id;
+-- Create new flow version
+INSERT INTO community_orgs.permission_flows (
+nodes,
+edges,
+rules,
+version,
+status
+) VALUES (
+p_nodes,
+p_edges,
+p_rules,
+p_version,
+'draft'
+)
+RETURNING id INTO flow_id;
 
     -- Return the created flow
     RETURN jsonb_build_object(
@@ -2647,44 +2615,52 @@ BEGIN
         'status', 'draft',
         'version', p_version
     );
+
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+$$
+LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Function to evaluate permission flows
 CREATE OR REPLACE FUNCTION community_orgs.evaluate_permission_flow(
     p_flow_id uuid,
     p_context jsonb
-) RETURNS jsonb AS $$
+) RETURNS jsonb AS
+$$
+
 DECLARE
-    result jsonb;
+result jsonb;
 BEGIN
-    -- Execute flow evaluation
-    WITH flow_execution AS (
-        SELECT 
-            nodes,
-            edges,
-            rules
-        FROM community_orgs.permission_flows
-        WHERE id = p_flow_id
-    ),
-    evaluation AS (
-        SELECT 
-            community_orgs.evaluate_nodes(nodes, p_context) as node_results,
-            community_orgs.evaluate_rules(rules, p_context) as rule_results
-        FROM flow_execution
-    )
-    SELECT jsonb_build_object(
-        'allowed', 
-        (node_results->>'result')::boolean AND (rule_results->>'result')::boolean,
-        'reason',
-        COALESCE(node_results->>'reason', rule_results->>'reason', 'Unknown')
-    )
-    INTO result
-    FROM evaluation;
+-- Execute flow evaluation
+WITH flow_execution AS (
+SELECT
+nodes,
+edges,
+rules
+FROM community_orgs.permission_flows
+WHERE id = p_flow_id
+),
+evaluation AS (
+SELECT
+community_orgs.evaluate_nodes(nodes, p_context) as node_results,
+community_orgs.evaluate_rules(rules, p_context) as rule_results
+FROM flow_execution
+)
+SELECT jsonb_build_object(
+'allowed',
+(node_results->>'result')::boolean AND (rule_results->>'result')::boolean,
+'reason',
+COALESCE(node_results->>'reason', rule_results->>'reason', 'Unknown')
+)
+INTO result
+FROM evaluation;
 
     RETURN result;
+
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+$$
+LANGUAGE plpgsql SECURITY DEFINER;
 
 08_flow_engine.sql
 Usage in API endpoints:
@@ -2695,14 +2671,14 @@ import { RuleEngine } from '$lib/server/RuleEngine'
 export async function POST({ request, locals: { supabase } }) {
     const flowEngine = new FlowEngine(supabase)
     const ruleEngine = new RuleEngine()
-    
+
     const { flow, context } = await request.json()
-    
+
     const [flowResult, ruleResult] = await Promise.all([
         flowEngine.evaluateFlow(flow.id, context),
         ruleEngine.evaluateRules(flow.rules, context)
     ])
-    
+
     return json({
         allowed: flowResult.allowed && ruleResult.allowed,
         reasons: [...flowResult.reasons, ...ruleResult.reasons]
@@ -2727,21 +2703,23 @@ create or replace function public.custom_access_token_hook(event jsonb)
 returns jsonb
 language plpgsql
 stable
-as $$
+as
+$$
+
 declare
-    claims jsonb;
-    user_attributes jsonb;
-    effective_permissions jsonb;
+claims jsonb;
+user_attributes jsonb;
+effective_permissions jsonb;
 begin
-    -- Fetch the user's ABAC attributes
-    select 
-        jsonb_build_object(
-            'attributes', attributes,
-            'clearance_level', clearance_level,
-            'context', context
-        ) into user_attributes 
-    from community_orgs.subject_attributes 
-    where subject_id = (event->>'user_id')::uuid;
+-- Fetch the user's ABAC attributes
+select
+jsonb_build_object(
+'attributes', attributes,
+'clearance_level', clearance_level,
+'context', context
+) into user_attributes
+from community_orgs.subject_attributes
+where subject_id = (event->>'user_id')::uuid;
 
     -- Calculate effective permissions
     select jsonb_agg(
@@ -2755,7 +2733,7 @@ begin
     where subject_conditions <@ user_attributes;
 
     claims := event->'claims';
-    
+
     -- Set ABAC claims
     if user_attributes is not null then
         claims := jsonb_set(
@@ -2772,8 +2750,11 @@ begin
     end if;
 
     return jsonb_set(event, '{claims}', claims);
+
 end;
-$$;
+
+$$
+;
 
 grant usage on schema community_orgs to supabase_auth_admin;
 
@@ -2786,13 +2767,13 @@ grant select on community_orgs.access_policies to supabase_auth_admin;
 revoke all on community_orgs.subject_attributes from authenticated, anon, public;
 revoke all on community_orgs.access_policies from authenticated, anon, public;
 
-create policy "Allow auth admin to read subject attributes" 
+create policy "Allow auth admin to read subject attributes"
 on community_orgs.subject_attributes
 as permissive for select
 to supabase_auth_admin
 using (true);
 
-create policy "Allow auth admin to read access policies" 
+create policy "Allow auth admin to read access policies"
 on community_orgs.access_policies
 as permissive for select
 to supabase_auth_admin
@@ -2805,3 +2786,4 @@ Calculates effective permissions based on policies
 Adds them to the JWT claims
 Properly secures access to ABAC tables
 Maintains necessary permissions for auth hooks
+$$

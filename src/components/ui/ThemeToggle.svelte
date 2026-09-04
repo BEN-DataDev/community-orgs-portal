@@ -1,31 +1,18 @@
 <script lang="ts">
 	import { Moon, Sun } from 'lucide-svelte';
-	import { onMount } from 'svelte';
-
-	let darkMode = false;
-
-	onMount(() => {
-		const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-		const storedDarkMode = localStorage.getItem('darkMode') === 'true';
-		darkMode = storedDarkMode ?? isDarkMode;
-		updateDarkMode(darkMode);
-	});
-
-	function toggleDarkMode() {
-		darkMode = !darkMode;
-		updateDarkMode(darkMode);
-	}
-
-	function updateDarkMode(isDark: boolean) {
-		localStorage.setItem('darkMode', isDark.toString());
-		document.documentElement.classList.toggle('dark', isDark);
-	}
+	import { theme } from '$lib/theme.svelte';
 </script>
 
-<button type="button" class="variant-ghost-surface btn" on:click={toggleDarkMode}>
-	{#if darkMode}
-		<Sun size={24} />
+<button
+	type="button"
+	class="btn-icon preset-tonal"
+	aria-label={theme.dark ? 'Switch to light mode' : 'Switch to dark mode'}
+	aria-pressed={theme.dark}
+	onclick={() => theme.toggleDark()}
+>
+	{#if theme.dark}
+		<Sun size={20} />
 	{:else}
-		<Moon size={24} />
+		<Moon size={20} />
 	{/if}
 </button>

@@ -1,21 +1,28 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import OrganisationSearch from '$components/common/OrganisationSearch.svelte';
-	import type { SupabaseClient } from '@supabase/supabase-js';
+	import type { TypedSupabaseClient } from '$lib/supabase-client';
+	import type { Database } from '$lib/db.types';
+
+	type Organisation = Database['community_orgs']['Tables']['organisations']['Row'];
 
 	interface Props {
+		/** Excluded from the partner search so an organisation cannot partner itself. */
 		orgId: number;
+		errors?: Record<string, string[] | undefined>;
 		onSave?: () => void;
-		supabase: SupabaseClient;
+		supabase: TypedSupabaseClient;
 	}
 
-	let { orgId, onSave, supabase }: Props = $props();
+	let { orgId, errors, onSave, supabase }: Props = $props();
 
-	let selectedPartner: any = $state(null);
-	let relationshipType = $state('');
-	let startDate = $state('');
-	let endDate = $state('');
-	let description = $state('');
+	/**
+	 * `relationships.partner_org` is a text column, not a foreign key, so the
+	 * partner is stored by name. Picking from the register keeps those names
+	 * consistent with the organisations already on file.
+	 */
+	let selectedPartner = $state<Organisation | null>(null);
+	let partnerName = $derived(selectedPartner?.entity_name ?? '');
 
 	const relationshipTypes = [
 		'Partnership',
@@ -31,31 +38,31 @@
 	method="POST"
 	action="?/createRelationship"
 	use:enhance={() => {
-		return ({ result }: { result: { type: string } }) => {
-			if (result.type === 'success') {
-				onSave?.();
-			}
+		return ({ result, update }) => {
+			if (result.type === 'success') onSave?.();
+			return update();
 		};
 	}}
 	class="space-y-6"
 >
-	<input type="hidden" name="org_id" value={orgId} />
-	<input type="hidden" name="partner_org_id" value={selectedPartner?.org_id} />
+	<input type="hidden" name="partner_org" value={partnerName} />
 
 	<div>
 		<label for="partner-organisation">Partner Organisation</label>
-		<OrganisationSearch bind:selected={selectedPartner} id="partner-organisation" {supabase} />
+		<OrganisationSearch
+			bind:selected={selectedPartner}
+			id="partner-organisation"
+			excludeIds={[orgId]}
+			{supabase}
+		/>
+		{#if errors?.partner_org}
+			<p class="text-sm text-red-600">{errors.partner_org[0]}</p>
+		{/if}
 	</div>
 
 	<div>
 		<label for="relationship-type">Relationship Type</label>
-		<select
-			bind:value={relationshipType}
-			name="relationship_type"
-			required
-			class="w-full"
-			id="relationship-type"
-		>
+		<select name="relationship_type" required class="w-full" id="relationship-type">
 			<option value="">Select type...</option>
 			{#each relationshipTypes as type}
 				<option value={type}>{type}</option>
@@ -66,21 +73,17 @@
 	<div class="grid grid-cols-2 gap-4">
 		<div>
 			<label for="start-date">Start Date</label>
-			<input type="date" bind:value={startDate} name="start_date" required id="start-date" />
+			<input type="date" name="start_date" required id="start-date" />
 		</div>
 		<div>
 			<label for="end-date">End Date</label>
-			<input type="date" bind:value={endDate} name="end_date" id="end-date" />
+			<input type="date" name="end_date" id="end-date" />
 		</div>
 	</div>
 
-	<div>
-		<label for="description">Description</label>
-		<textarea bind:value={description} name="description" rows="3" class="w-full" id="description"
-		></textarea>
-	</div>
-
 	<div class="flex justify-end gap-4">
-		<button type="submit" disabled={!selectedPartner}>Create Relationship</button>
+		<button class="btn preset-filled" type="submit" disabled={!selectedPartner}>
+			Create Relationship
+		</button>
 	</div>
 </form>

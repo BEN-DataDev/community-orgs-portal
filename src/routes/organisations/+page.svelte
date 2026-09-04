@@ -3,7 +3,7 @@
 	import Pagination from '$components/common/Pagination.svelte';
 	import OrganisationForm from '$components/forms/OrganisationForm.svelte';
 
-	let { data } = $props();
+	let { data, form } = $props();
 	let { organisations, totalCount, currentPage, totalPages } = $derived(data);
 	let showCreateForm = $state(false);
 </script>
@@ -14,15 +14,23 @@
 			<h1 class="text-2xl font-bold">Organisations</h1>
 			<p class="text-gray-600">Total: {totalCount}</p>
 		</div>
-		<button class="btn btn-md preset-filled" onclick={() => (showCreateForm = true)}>
-			Add Organisation
+		<button class="btn btn-md preset-filled" onclick={() => (showCreateForm = !showCreateForm)}>
+			{showCreateForm ? 'Cancel' : 'Add Organisation'}
 		</button>
 	</div>
 
+	{#if form?.message}
+		<p class="mb-4 text-red-600">{form.message}</p>
+	{/if}
+
 	{#if showCreateForm}
-		<card class="mb-6">
-			<OrganisationForm onSave={() => (showCreateForm = false)} />
-		</card>
+		<div class="mb-6 rounded-lg border p-4">
+			<OrganisationForm
+				action="createOrganisation"
+				errors={form?.errors}
+				onSave={() => (showCreateForm = false)}
+			/>
+		</div>
 	{/if}
 
 	<OrganisationTable organisations={organisations ?? []} />

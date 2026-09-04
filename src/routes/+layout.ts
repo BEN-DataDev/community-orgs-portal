@@ -1,5 +1,7 @@
 import { createBrowserClient, createServerClient, isBrowser } from '@supabase/ssr';
 import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public';
+import type { Database } from '$lib/db.types';
+import type { TypedSupabaseClient } from '$lib/supabase-client';
 import type { LayoutLoad } from './$types';
 
 export const load: LayoutLoad = async ({ data, depends, fetch }) => {
@@ -10,22 +12,33 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 	depends('supabase:auth');
 	depends('app:root');
 
-	const supabase = isBrowser()
-		? createBrowserClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
-				global: {
-					fetch
+	/**
+	 * Every table in this project lives in the `community_orgs` schema, so the
+	 * schema is pinned on both clients — the default is `public`, which holds
+	 * none of them.
+	 */
+	const supabase = (isBrowser()
+		? createBrowserClient<Database, 'community_orgs'>(
+				PUBLIC_SUPABASE_URL,
+				PUBLIC_SUPABASE_ANON_KEY,
+				{
+					db: { schema: 'community_orgs' },
+					global: { fetch }
 				}
-			})
-		: createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
-				global: {
-					fetch
-				},
-				cookies: {
-					getAll() {
-						return data.cookies;
+			)
+		: createServerClient<Database, 'community_orgs'>(
+				PUBLIC_SUPABASE_URL,
+				PUBLIC_SUPABASE_ANON_KEY,
+				{
+					db: { schema: 'community_orgs' },
+					global: { fetch },
+					cookies: {
+						getAll() {
+							return data.cookies;
+						}
 					}
 				}
-			});
+			)) as unknown as TypedSupabaseClient;
 
 	/**
 	 * It's fine to use `getSession` here, because on the client, `getSession` is

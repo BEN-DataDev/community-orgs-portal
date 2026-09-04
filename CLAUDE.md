@@ -33,13 +33,13 @@ This project uses an AI-assisted development system for design documentation, co
 
 ## Project Context
 
-| Attribute | Value |
-|-----------|-------|
-| **Project name** | community-orgs-portal |
-| **Domain** | Community Environmental Management |
-| **Design docs** | `~/ai-dev-system/projects/community-orgs-portal/design/` |
-| **Current iteration** | v0.1 |
-| **Related project** | bendev-web (same repo) |
+| Attribute             | Value                                                    |
+| --------------------- | -------------------------------------------------------- |
+| **Project name**      | community-orgs-portal                                    |
+| **Domain**            | Community Environmental Management                       |
+| **Design docs**       | `~/ai-dev-system/projects/community-orgs-portal/design/` |
+| **Current iteration** | v0.1                                                     |
+| **Related project**   | bendev-web (same repo)                                   |
 
 ## Technology Stack
 
@@ -69,5 +69,5 @@ npm run check
 
 ## Related Project
 
-This project shares a repository with `bendev-web`. 
+This project shares a repository with `bendev-web`.
 Design docs for that project: `~/ai-dev-system/projects/bendev-web/design/`

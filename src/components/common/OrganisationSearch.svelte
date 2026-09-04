@@ -2,7 +2,7 @@
 	import { debounce } from '$lib/utils/debounce';
 
 	import type { Database } from '$lib/db.types';
-	import type { SupabaseClient } from '@supabase/supabase-js';
+	import type { TypedSupabaseClient } from '$lib/supabase-client';
 
 	type Organisation = Database['community_orgs']['Tables']['organisations']['Row'];
 
@@ -11,7 +11,7 @@
 		placeholder?: string;
 		excludeIds?: number[];
 		id?: string;
-		supabase: SupabaseClient;
+		supabase: TypedSupabaseClient;
 	}
 
 	let {
@@ -35,12 +35,18 @@
 
 		isLoading = true;
 
-		const { data, error } = await supabase
+		let request = supabase
 			.from('organisations')
 			.select('*')
-			.ilike('legal_name', `%${term}%`)
-			.not('org_id', 'in', `(${excludeIds.join(',')})`)
+			.ilike('entity_name', `%${escapeFilterValue(term)}%`)
 			.limit(10);
+
+		// `in.()` is a PostgREST syntax error, so only add the clause when it has members.
+		if (excludeIds.length > 0) {
+			request = request.not('org_id', 'in', `(${excludeIds.join(',')})`);
+		}
+
+		const { data, error } = await request;
 
 		isLoading = false;
 
@@ -49,9 +55,19 @@
 		}
 	}, 300);
 
+	/**
+	 * PostgREST parses filter values out of the query string, where commas,
+	 * parentheses and quotes are structural. Left raw, a search term containing
+	 * them reshapes the filter instead of being matched. `%` and `_` are LIKE
+	 * wildcards and are escaped so a search for them is literal.
+	 */
+	function escapeFilterValue(value: string): string {
+		return value.replace(/[%_\\]/g, '\\$&').replace(/[(),."']/g, ' ');
+	}
+
 	function handleSelect(org: Organisation) {
 		selected = org;
-		searchTerm = org.legal_name;
+		searchTerm = org.entity_name;
 		showResults = false;
 	}
 
@@ -84,7 +100,7 @@
 	/>
 
 	{#if isLoading}
-		<div class="absolute right-3 top-2.5">
+		<div class="absolute top-2.5 right-3">
 			<div
 				class="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"
 			></div>
@@ -101,9 +117,9 @@
 					class="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
 					onclick={() => handleSelect(org)}
 				>
-					<div>{org.legal_name}</div>
-					{#if org.trading_name}
-						<div class="text-sm text-gray-600">Trading as: {org.trading_name}</div>
+					<div>{org.entity_name}</div>
+					{#if org.description}
+						<div class="text-sm text-gray-600">{org.description}</div>
 					{/if}
 				</button>
 			{/each}

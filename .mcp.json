@@ -13,15 +13,27 @@
 		},
 		"core-knowledge": {
 			"command": "npx",
-			"args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/akeown/projects/ai/ai-dev-system/core"]
+			"args": [
+				"-y",
+				"@modelcontextprotocol/server-filesystem",
+				"/home/akeown/projects/ai/ai-dev-system/core"
+			]
 		},
 		"domain-knowledge": {
 			"command": "npx",
-			"args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/akeown/projects/ai/ai-dev-system/domains/community-environmental-management"]
+			"args": [
+				"-y",
+				"@modelcontextprotocol/server-filesystem",
+				"/home/akeown/projects/ai/ai-dev-system/domains/community-environmental-management"
+			]
 		},
 		"project-design": {
 			"command": "npx",
-			"args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/akeown/projects/ai/ai-dev-system/projects/community-orgs-portal"]
+			"args": [
+				"-y",
+				"@modelcontextprotocol/server-filesystem",
+				"/home/akeown/projects/ai/ai-dev-system/projects/community-orgs-portal"
+			]
 		},
 		"github": {
 			"command": "npx",
@@ -32,7 +44,11 @@
 		},
 		"git": {
 			"command": "/home/akeown/.local/bin/uvx",
-			"args": ["mcp-server-git", "--repository", "/home/akeown/projects/javascript/bendev_git/community-orgs-portal"]
+			"args": [
+				"mcp-server-git",
+				"--repository",
+				"/home/akeown/projects/javascript/bendev_git/community-orgs-portal"
+			]
 		},
 		"fetch": {
 			"command": "/home/akeown/.local/bin/uvx",

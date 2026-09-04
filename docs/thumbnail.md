@@ -1,5 +1,5 @@
-This DDL script defines a comprehensive database schema for managing information about community organisations. 
-The schema, named "community_orgs," consists of 12 interconnected tables that capture various aspects of organisational data. 
+This DDL script defines a comprehensive database schema for managing information about community organisations.
+The schema, named "community_orgs," consists of 12 interconnected tables that capture various aspects of organisational data.
 
 Here's a description of the database structure:
 
@@ -51,7 +51,5 @@ The schema utilizes a variety of data types to efficiently store information:
 
 The design defines a comprehensive schema for managing detailed information about community organisations.
 
-The design follows a normalized approach, separating different aspects of organisational data into distinct tables. 
+The design follows a normalized approach, separating different aspects of organisational data into distinct tables.
 This structure allows for efficient data management and querying while maintaining data integrity through foreign key relationships.
-
-

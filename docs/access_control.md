@@ -59,9 +59,9 @@
         TO authenticated
         USING (
             EXISTS (
-                SELECT 1 
+                SELECT 1
                 FROM community_orgs.org_access oa
-                JOIN community_orgs.role_definitions rd 
+                JOIN community_orgs.role_definitions rd
                 ON oa.role_id = rd.role_id
                 WHERE oa.org_id = organizations.org_id
                 AND oa.user_id = auth.uid()
@@ -74,4 +74,3 @@
     CREATE INDEX idx_org_access_user ON community_orgs.org_access(user_id);
     CREATE INDEX idx_role_definitions_org ON community_orgs.role_definitions(org_id);
 ```
-

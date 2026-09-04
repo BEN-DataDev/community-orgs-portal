@@ -10,11 +10,11 @@
 	}
 
 	let {
-		email = '',
-		password = '',
+		email = $bindable(''),
+		password = $bindable(''),
 		required = false,
-		onValidationChange = (valid: boolean) => {},
-		onPasswordChange = (pwd: string) => {}
+		onValidationChange = () => {},
+		onPasswordChange = () => {}
 	}: Props = $props();
 
 	let show = $state(false);
@@ -38,7 +38,7 @@
 
 	<input
 		type="email"
-		class="variant-filled input"
+		class="input"
 		name="email"
 		placeholder="Email"
 		autocomplete="email"
@@ -46,31 +46,30 @@
 		bind:value={email}
 	/>
 
-	<input
-		id="show-password"
-		class="variant-filled input"
-		type={show ? 'text' : 'password'}
-		placeholder="Password"
-		autocomplete="current-password"
-		{required}
-		bind:value={password}
-	/>
-
-	{#snippet right()}
+	<div class="relative">
+		<input
+			id="show-password"
+			class="input"
+			type={show ? 'text' : 'password'}
+			placeholder="Password"
+			autocomplete="current-password"
+			{required}
+			bind:value={password}
+		/>
 		<button
-			onclick={(event) => {
-				event.preventDefault();
-				show = !show;
-			}}
-			class="variant-ghost btn-icon"
+			type="button"
+			aria-label={show ? 'Hide password' : 'Show password'}
+			aria-pressed={show}
+			class="btn-icon preset-tonal absolute top-1/2 right-1 -translate-y-1/2"
+			onclick={() => (show = !show)}
 		>
 			{#if show}
-				<Eye class="h-6 w-6" />
+				<Eye class="h-5 w-5" />
 			{:else}
-				<EyeOff class="h-6 w-6" />
+				<EyeOff class="h-5 w-5" />
 			{/if}
 		</button>
-	{/snippet}
+	</div>
 
 	<div class="mt-6 flex items-center justify-center gap-2">
 		<span>Not registered?</span>
@@ -78,6 +77,6 @@
 	</div>
 
 	{#if email && !emailValid}
-		<p class="mt-1 text-sm text-error-500">Please enter a valid email address</p>
+		<p class="text-error-500 mt-1 text-sm">Please enter a valid email address</p>
 	{/if}
 </div>

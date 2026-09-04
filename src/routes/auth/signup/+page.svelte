@@ -22,7 +22,7 @@
 		[key: string]: string | undefined;
 	}
 
-	let form = $props<{ form: ActionData | null }>();
+	let { form }: { form: ActionData | null } = $props();
 
 	const formDefault: FormData = {
 		email: '',
@@ -35,8 +35,8 @@
 	let loading = $state(false);
 
 	$effect(() => {
-		if (form?.form) {
-			const actionData = form.form as unknown as {
+		if (form) {
+			const actionData = form as unknown as {
 				errors?: FormErrors;
 				data?: Partial<FormData>;
 				error?: string;
@@ -129,7 +129,7 @@
 		<input type="hidden" name="provider" bind:value={formData.provider} />
 		<button
 			type="submit"
-			class="btn min-w-full preset-filled-primary-500"
+			class="btn preset-filled-primary-500 min-w-full"
 			disabled={!submissionValid || loading}
 		>
 			{loading ? 'Submitting...' : 'Submit'}

@@ -2,3 +2,13 @@
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
+
+# Build output — prettier would otherwise reformat generated and minified
+# files, the same way ESLint was reporting thousands of errors from .vercel/.
+.svelte-kit
+.vercel
+build
+.output
+
+# Generated from the database by `npm run update-db-types`
+src/lib/db.types.ts

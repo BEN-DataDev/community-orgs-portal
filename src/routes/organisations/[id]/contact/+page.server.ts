@@ -1,36 +1,99 @@
+import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
+import { requireOrgAccess, requireOrgEditor } from '$lib/server/authorization';
+import {
+	actionFailure,
+	actionSuccess,
+	auditColumns,
+	contactSchema,
+	orgIdSchema,
+	toColumns
+} from '$lib/server/validation';
 
-export const load: PageServerLoad = async ({ locals: { supabase }, params }) => {
-	const { data: contactInfo } = await supabase
+export const load: PageServerLoad = async ({ locals: { supabase, user }, params }) => {
+	const orgId = orgIdSchema.safeParse(params.id);
+	if (!orgId.success) {
+		error(404, 'Organisation not found.');
+	}
+
+	/**
+	 * The organisation is fetched separately rather than embedded in the
+	 * contact_info row, so the page still renders its heading when an
+	 * organisation has no contact details recorded yet.
+	 */
+	const { data: organisation, error: organisationError } = await supabase
+		.from('organisations')
+		.select('org_id, entity_name, slug, is_public')
+		.eq('org_id', orgId.data)
+		.maybeSingle();
+
+	if (organisationError) {
+		console.error('Failed to load organisation:', organisationError);
+		error(500, 'Could not load this organisation.');
+	}
+
+	if (!organisation) {
+		error(404, 'Organisation not found.');
+	}
+
+	const roleLevel = await requireOrgAccess(supabase, user?.id, orgId.data, organisation.is_public);
+
+	const { data: detail, error: detailError } = await supabase
 		.from('contact_info')
-		.select(
-			`
-            *,
-            organisations (
-                legal_name,
-                trading_name
-            )
-        `
-		)
-		.eq('org_id', params.id)
-		.single();
+		.select('*')
+		.eq('org_id', orgId.data)
+		.maybeSingle();
 
-	return { contactInfo };
+	if (detailError) {
+		console.error('Failed to load contact details:', detailError);
+		error(500, 'Could not load the contact details.');
+	}
+
+	return {
+		organisation,
+		roleLevel,
+		contactInfo: detail
+	};
 };
 
 export const actions: Actions = {
-	updateContact: async ({ request, locals: { supabase } }) => {
-		const formData = await request.formData();
-		const { orgId, ...contactData } = Object.fromEntries(formData);
+	updateContact: async ({ request, locals: { supabase, user }, params }) => {
+		const orgId = orgIdSchema.safeParse(params.id);
+		if (!orgId.success) {
+			return fail(400, actionFailure('Not a valid organisation id.'));
+		}
+		await requireOrgEditor(supabase, user?.id, orgId.data);
 
-		const { data, error } = await supabase
-			.from('contact_info')
-			.upsert({
-				org_id: orgId,
-				...contactData
-			})
-			.select();
+		const form = Object.fromEntries(await request.formData());
+		const parsed = contactSchema.safeParse(form);
 
-		return { success: !error, data };
+		if (!parsed.success) {
+			return fail(
+				400,
+				actionFailure('Please correct the highlighted fields.', parsed.error.flatten().fieldErrors)
+			);
+		}
+
+		/**
+		 * `onConflict` is required here. This table is keyed on `contact_id`, which
+		 * the payload does not carry, so without it every save would insert a
+		 * new row instead of updating the existing one — and the `maybeSingle`
+		 * in the load above would then start erroring on duplicates.
+		 */
+		const { error: saveError } = await supabase.from('contact_info').upsert(
+			{
+				org_id: orgId.data,
+				...toColumns(parsed.data),
+				...auditColumns(user?.id)
+			},
+			{ onConflict: 'org_id' }
+		);
+
+		if (saveError) {
+			console.error('Failed to save contact details:', saveError);
+			return fail(400, actionFailure('Could not save your changes.'));
+		}
+
+		return actionSuccess();
 	}
 };

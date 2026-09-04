@@ -1,23 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	const features = [
-		{
-			title: 'Contact Management',
-			description: "Keep track of all your organisation's contact information in one place."
-		},
-		{
-			title: 'Financial Tracking',
-			description: 'Monitor financial information and funding sources efficiently.'
-		},
-		{
-			title: 'Legal Compliance',
-			description: 'Stay on top of legal requirements and documentation.'
-		},
-		{
-			title: 'Operations Overview',
-			description: 'Manage locations, staff, and service areas effectively.'
-		}
-	];
 </script>
 
 <div class="min-h-screen bg-gradient-to-b from-blue-50 to-white">
@@ -28,7 +10,7 @@
 				Track relationships, manage contacts, and monitor financial data for your organisation
 				network
 			</p>
-			<button class="variant-filled-primary btn text-lg" onclick={() => goto('/dashboard')}>
+			<button class="btn preset-filled-primary-500 text-lg" onclick={() => goto('/organisations')}>
 				Get Started
 			</button>
 		</header>
@@ -59,7 +41,7 @@
 
 		<div class="mt-24 text-center">
 			<h2 class="mb-8 text-3xl font-bold text-blue-900">Ready to streamline your organisation?</h2>
-			<button class="variant-filled-primary btn text-lg" onclick={() => goto('/dashboard')}>
+			<button class="btn preset-filled-primary-500 text-lg" onclick={() => goto('/organisations')}>
 				Start Now
 			</button>
 		</div>

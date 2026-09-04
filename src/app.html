@@ -1,21 +1,44 @@
 <!doctype html>
-<html class="dark" lang="en">
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="apple-touch-icon" sizes="180x180" href="%sveltekit.assets%/apple-touch-icon.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="%sveltekit.assets%/favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="%sveltekit.assets%/favicon-16x16.png" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.ico" />
+		<link rel="manifest" href="%sveltekit.assets%/site.webmanifest" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			/*
+			 * Applies the stored theme before first paint. Without this the page
+			 * renders with the default and then jumps when the client mounts.
+			 * Keys must match src/lib/theme.svelte.ts.
+			 */
+			(function () {
+				try {
+					var theme = localStorage.getItem('theme') || 'seafoam';
+					var stored = localStorage.getItem('darkMode');
+					var dark =
+						stored === null
+							? window.matchMedia('(prefers-color-scheme: dark)').matches
+							: stored === 'true';
+					document.documentElement.setAttribute('data-theme', theme);
+					document.documentElement.classList.toggle('dark', dark);
+				} catch (error) {
+					document.documentElement.setAttribute('data-theme', 'seafoam');
+				}
+			})();
+		</script>
+		%sveltekit.head%
+	</head>
 
-<head>
-	<meta charset="utf-8" />
-	<link rel="apple-touch-icon" sizes="180x180" href="%sveltekit.assets%/apple-touch-icon.png" />
-	<link rel="icon" type="image/png" sizes="32x32" href="%sveltekit.assets%/favicon-32x32.png" />
-	<link rel="icon" type="image/png" sizes="16x16" href="%sveltekit.assets%/favicon-16x16.png" />
-	<link rel="icon" href="%sveltekit.assets%/favicon.ico" />
-	<link rel="manifest" href="%sveltekit.assets%/site.webmanifest" />
-	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-		rel="stylesheet">
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	%sveltekit.head%
-</head>
-
-<body data-theme="seafoam" class="bg-surface-50 dark:bg-surface-900" data-sveltekit-preload-data="hover">
-	<div style="display: contents">%sveltekit.body%</div>
-</body>
-
+	<body class="bg-surface-50 dark:bg-surface-900" data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
 </html>

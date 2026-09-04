@@ -14,11 +14,11 @@
 	}
 
 	let {
-		email = '',
-		password = '',
+		email = $bindable(''),
+		password = $bindable(''),
 		required = false,
-		onValidationChange = (valid: boolean) => {},
-		onPasswordChange = (pwd: string) => {}
+		onValidationChange = () => {},
+		onPasswordChange = () => {}
 	}: Props = $props();
 
 	let passwordStrength = $state('');
@@ -86,7 +86,7 @@
 
 	<input
 		type="email"
-		class="variant-filled input"
+		class="input"
 		name="email"
 		placeholder="Email"
 		autocomplete="email"
@@ -94,34 +94,33 @@
 		bind:value={email}
 	/>
 
-	<input
-		id="show-password1"
-		class="variant-filled input"
-		type={show ? 'text' : 'password'}
-		placeholder="Password"
-		autocomplete="current-password"
-		{required}
-		bind:value={password}
-		oninput={updatePasswordStrength}
-	/>
-
-	{#snippet left()}
+	<div class="relative">
+		<input
+			id="show-password1"
+			class="input"
+			type={show ? 'text' : 'password'}
+			placeholder="Password"
+			autocomplete="current-password"
+			{required}
+			bind:value={password}
+			oninput={updatePasswordStrength}
+		/>
 		<button
-			onclick={(event) => {
-				event.preventDefault();
-				show = !show;
-			}}
-			class="variant-ghost btn-icon"
+			type="button"
+			aria-label={show ? 'Hide password' : 'Show password'}
+			aria-pressed={show}
+			class="btn-icon preset-tonal absolute top-1/2 right-1 -translate-y-1/2"
+			onclick={() => (show = !show)}
 		>
 			{#if show}
-				<Eye class="h-6 w-6" />
+				<Eye class="h-5 w-5" />
 			{:else}
-				<EyeOff class="h-6 w-6" />
+				<EyeOff class="h-5 w-5" />
 			{/if}
 		</button>
-	{/snippet}
+	</div>
 
-	<div class="mb-4 mt-2">
+	<div class="mt-2 mb-4">
 		<div class="mb-1 flex justify-between">
 			<span class="text-sm font-medium">Password strength</span>
 			<span
@@ -154,31 +153,30 @@
 		</div>
 	</div>
 
-	<input
-		id="show-passwordAgain"
-		class="variant-filled input"
-		type={showAgain ? 'text' : 'password'}
-		placeholder="Password Again"
-		autocomplete="current-password"
-		{required}
-		bind:value={passwordConfirmation}
-	/>
-
-	{#snippet right()}
+	<div class="relative">
+		<input
+			id="show-passwordAgain"
+			class="input"
+			type={showAgain ? 'text' : 'password'}
+			placeholder="Password Again"
+			autocomplete="current-password"
+			{required}
+			bind:value={passwordConfirmation}
+		/>
 		<button
-			onclick={(event) => {
-				event.preventDefault();
-				showAgain = !showAgain;
-			}}
-			class="variant-ghost btn-icon"
+			type="button"
+			aria-label={showAgain ? 'Hide password confirmation' : 'Show password confirmation'}
+			aria-pressed={showAgain}
+			class="btn-icon preset-tonal absolute top-1/2 right-1 -translate-y-1/2"
+			onclick={() => (showAgain = !showAgain)}
 		>
 			{#if showAgain}
-				<Eye class="h-6 w-6" />
+				<Eye class="h-5 w-5" />
 			{:else}
-				<EyeOff class="h-6 w-6" />
+				<EyeOff class="h-5 w-5" />
 			{/if}
 		</button>
-	{/snippet}
+	</div>
 
 	<div class="mt-6 flex items-center justify-center gap-2">
 		<span>Have an account?</span>
@@ -186,6 +184,6 @@
 	</div>
 
 	{#if password && passwordConfirmation && !passwordsMatch}
-		<p class="mt-1 text-sm text-error-500">Passwords do not match</p>
+		<p class="text-error-500 mt-1 text-sm">Passwords do not match</p>
 	{/if}
 </div>

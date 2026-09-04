@@ -28,11 +28,11 @@ your-project/
 
 ## Configuration Differences
 
-| Aspect | Claude Code CLI | VSCode |
-| ------ | --------------- | ------ |
-| **File location** | `.mcp.json` (project root) | `.vscode/mcp.json` |
-| **Root key** | `"mcpServers"` | `"servers"` |
-| **Env vars** | `"env": {}` inline object | `"envFile": "path"` |
+| Aspect            | Claude Code CLI            | VSCode              |
+| ----------------- | -------------------------- | ------------------- |
+| **File location** | `.mcp.json` (project root) | `.vscode/mcp.json`  |
+| **Root key**      | `"mcpServers"`             | `"servers"`         |
+| **Env vars**      | `"env": {}` inline object  | `"envFile": "path"` |
 
 ---
 
@@ -62,23 +62,23 @@ Create `.mcp.json` in your project root:
 
 ```json
 {
-  "mcpServers": {
-    "supabase": {
-      "type": "stdio",
-      "command": "<path-to-node-bin>/mcp-server-supabase",
-      "args": [],
-      "env": {
-        "SUPABASE_ACCESS_TOKEN": "your-supabase-access-token",
-        "SUPABASE_PROJECT_REF": "your-project-reference"
-      }
-    },
-    "svelte": {
-      "type": "stdio",
-      "command": "<path-to-node-bin>/svelte-mcp",
-      "args": [],
-      "env": {}
-    }
-  }
+	"mcpServers": {
+		"supabase": {
+			"type": "stdio",
+			"command": "<path-to-node-bin>/mcp-server-supabase",
+			"args": [],
+			"env": {
+				"SUPABASE_ACCESS_TOKEN": "your-supabase-access-token",
+				"SUPABASE_PROJECT_REF": "your-project-reference"
+			}
+		},
+		"svelte": {
+			"type": "stdio",
+			"command": "<path-to-node-bin>/svelte-mcp",
+			"args": [],
+			"env": {}
+		}
+	}
 }
 ```
 
@@ -96,17 +96,17 @@ Create `.vscode/mcp.json`:
 
 ```json
 {
-  "servers": {
-    "supabase": {
-      "type": "stdio",
-      "command": "<path-to-node-bin>/mcp-server-supabase",
-      "envFile": "${workspaceFolder}/.envrc"
-    },
-    "svelte": {
-      "type": "stdio",
-      "command": "<path-to-node-bin>/svelte-mcp"
-    }
-  }
+	"servers": {
+		"supabase": {
+			"type": "stdio",
+			"command": "<path-to-node-bin>/mcp-server-supabase",
+			"envFile": "${workspaceFolder}/.envrc"
+		},
+		"svelte": {
+			"type": "stdio",
+			"command": "<path-to-node-bin>/svelte-mcp"
+		}
+	}
 }
 ```
 
@@ -170,7 +170,7 @@ Provides tools for:
 **Environment Variables:**
 
 | Variable                | Description                                                |
-|-------------------------|------------------------------------------------------------|
+| ----------------------- | ---------------------------------------------------------- |
 | `SUPABASE_ACCESS_TOKEN` | Personal access token from Supabase dashboard              |
 | `SUPABASE_PROJECT_REF`  | Project reference ID (optional, for single-project setups) |
 

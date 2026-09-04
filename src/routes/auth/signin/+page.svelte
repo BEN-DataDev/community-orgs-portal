@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { page } from '$app/state';
 	import EmailSignInInput from '$components/ui/auth/EmailSignInInput.svelte';
 	import type { ActionData } from './$types';
 	import type { SubmitFunction } from '@sveltejs/kit';
@@ -22,7 +23,7 @@
 		[key: string]: string | undefined;
 	}
 
-	let form = $props<{ form: ActionData | null }>();
+	let { form }: { form: ActionData | null } = $props();
 
 	const formDefault: FormData = {
 		email: '',
@@ -35,8 +36,8 @@
 	let loading = $state(false);
 
 	$effect(() => {
-		if (form?.form) {
-			const actionData = form.form as unknown as {
+		if (form) {
+			const actionData = form as unknown as {
 				errors?: FormErrors;
 				data?: Partial<FormData>;
 				error?: string;
@@ -116,6 +117,7 @@
 			required={true}
 		/>
 		<input type="hidden" name="password" bind:value={formData.password} />
+		<input type="hidden" name="redirectTo" value={page.url.searchParams.get('redirectTo') ?? ''} />
 		{#if formErrors.email}
 			<p class="text-sm text-red-500">{formErrors.email}</p>
 		{/if}
@@ -125,7 +127,7 @@
 		<input type="hidden" name="provider" bind:value={formData.provider} />
 		<button
 			type="submit"
-			class="btn min-w-full preset-filled-primary-500"
+			class="btn preset-filled-primary-500 min-w-full"
 			disabled={!submissionValid || loading}
 		>
 			{loading ? 'Signing in...' : 'Sign In'}
