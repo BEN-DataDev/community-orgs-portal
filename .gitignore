@@ -50,3 +50,10 @@ desktop.ini
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# WSL
+#
+# Windows writes an alternate data stream next to any file downloaded from the
+# internet; under WSL it surfaces as a sibling `<name>:Zone.Identifier` file.
+# It is download provenance metadata, never project content.
+*:Zone.Identifier
