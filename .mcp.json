@@ -7,6 +7,10 @@
 				"Authorization": "Bearer ${SUPABASE_ACCESS_TOKEN}"
 			}
 		},
+		"vercel": {
+			"type": "http",
+			"url": "https://mcp.vercel.com"
+		},
 		"svelte": {
 			"command": "npx",
 			"args": ["-y", "@sveltejs/mcp"]

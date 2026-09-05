@@ -5,10 +5,13 @@ import { EDITOR_LEVEL, ROLE_LEVEL } from '$lib/role-levels';
 export { EDITOR_LEVEL, ROLE_LEVEL };
 
 /**
- * IMPORTANT: these are application-level checks only. Row-level security is
- * currently disabled on most `community_orgs` tables, so anyone holding the
- * anon key can bypass this module entirely by talking to PostgREST directly.
- * These checks are a usability and defence-in-depth layer, not the boundary.
+ * These checks mirror the database's row-level security policies, which are the
+ * actual boundary: every `community_orgs` table enforces the same rules through
+ * `community_orgs.can_view_org` / `can_edit_org`, so a caller who bypasses this
+ * application and talks to PostgREST directly gets the same answer.
+ *
+ * Checking here as well means the UI can hide controls the user cannot use, and
+ * failures surface as a 403 page rather than an opaque database error.
  */
 
 export async function orgRoleLevel(

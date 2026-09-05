@@ -1193,11 +1193,11 @@ Here are the frontend components that consume the advanced permission patterns:
             <slot name="parent" />
         </div>
     {/if}
-    
+
     <div class="current-org">
         <slot />
     </div>
-    
+
     {#if canAccessChildren.length}
         <div class="child-orgs">
             <h3>Child Organizations</h3>
@@ -1208,6 +1208,7 @@ Here are the frontend components that consume the advanced permission patterns:
             {/each}
         </div>
     {/if}
+
 </div>
 
 HierarchyAccess.svelte
@@ -1266,7 +1267,7 @@ TemporalAccess.svelte
             </div>
         {/each}
     </div>
-    
+
     {#if canProgress}
         <button on:click>Advance to Next Stage</button>
     {:else}
@@ -1281,6 +1282,7 @@ TemporalAccess.svelte
             </ul>
         </div>
     {/if}
+
 </div>
 
 WorkflowAccess.svelte
@@ -1301,17 +1303,18 @@ Usage in a page component:
         <div slot="parent">
             <h2>{data.parentOrg.name}</h2>
         </div>
-        
+
         <div>Current Organization Details</div>
-        
+
         <div slot="child" let:i>
             <h2>{data.childOrgs[i].name}</h2>
         </div>
     </HierarchyAccess>
-    
+
     <TemporalAccess {temporalAccess} />
-    
+
     <WorkflowAccess {workflowAccess} />
+
 </div>
 
 +page.svelte
@@ -1382,7 +1385,7 @@ PermissionEditor.svelte
             </div>
         </div>
     </DragDropList>
-    
+
     <div class="selected-permissions">
         {#each selectedPermissions as permission}
             <div class="selected-permission">
@@ -1393,6 +1396,7 @@ PermissionEditor.svelte
             </div>
         {/each}
     </div>
+
 </div>
 
 RoleBuilder.svelte
@@ -1465,7 +1469,7 @@ Usage in an admin interface:
             on:update={handlePermissionUpdate}
         />
     </section>
-    
+
     <section class="roles">
         <h2>Role Configuration</h2>
         <RoleBuilder
@@ -1474,7 +1478,7 @@ Usage in an admin interface:
             on:permissionChange={handleRoleUpdate}
         />
     </section>
-    
+
     <section class="scheduling">
         <h2>Access Scheduling</h2>
         <AccessScheduler
@@ -1482,6 +1486,7 @@ Usage in an admin interface:
             on:scheduleUpdate={handleScheduleUpdate}
         />
     </section>
+
 </div>
 
 +page.svelte
