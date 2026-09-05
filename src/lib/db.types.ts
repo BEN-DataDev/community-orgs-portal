@@ -908,7 +908,7 @@ export type Database = {
 					action: string;
 					created_at: string | null;
 					id: string;
-					organization_id: string;
+					organisation_id: string;
 					performed_by: string | null;
 					reason: string | null;
 					role_id: string;
@@ -918,7 +918,7 @@ export type Database = {
 					action: string;
 					created_at?: string | null;
 					id?: string;
-					organization_id: string;
+					organisation_id: string;
 					performed_by?: string | null;
 					reason?: string | null;
 					role_id: string;
@@ -928,7 +928,7 @@ export type Database = {
 					action?: string;
 					created_at?: string | null;
 					id?: string;
-					organization_id?: string;
+					organisation_id?: string;
 					performed_by?: string | null;
 					reason?: string | null;
 					role_id?: string;
@@ -936,8 +936,8 @@ export type Database = {
 				};
 				Relationships: [
 					{
-						foreignKeyName: 'role_audit_log_organization_id_fkey';
-						columns: ['organization_id'];
+						foreignKeyName: 'role_audit_log_organisation_id_fkey';
+						columns: ['organisation_id'];
 						isOneToOne: false;
 						referencedRelation: 'organisations';
 						referencedColumns: ['org_id'];
