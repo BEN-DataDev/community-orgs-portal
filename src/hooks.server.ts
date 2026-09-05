@@ -22,13 +22,20 @@ function isPublicPath(pathname: string): boolean {
 
 /**
  * Paths under `/auth` that stay reachable while signed in: the sign-out flow,
- * the email confirmation callback, and the error page. The rest of `/auth` is
- * redirected away so a signed-in user does not land on a sign-in form.
+ * the two provider callbacks, the OAuth hand-off, and the error page. The rest
+ * of `/auth` is redirected away so a signed-in user does not land on a sign-in
+ * form.
+ *
+ * `/auth/callback` in particular must stay reachable. A stale session cookie
+ * can still be present when GitHub returns, and bouncing that request to
+ * /organisations would discard the code before it is exchanged.
  */
 function isSignedInAuthPath(pathname: string): boolean {
 	return (
 		pathname.startsWith('/auth/signout') ||
 		pathname.startsWith('/auth/confirm') ||
+		pathname.startsWith('/auth/callback') ||
+		pathname.startsWith('/auth/github') ||
 		pathname.startsWith('/auth/error')
 	);
 }
@@ -108,11 +115,8 @@ const supabase: Handle = async ({ event, resolve }) => {
  * `safeGetSession()` again.
  *
  * This is a coarse gate: it establishes *who* the caller is. Per-organisation
- * permissions are checked in each route via `$lib/server/authorization`.
- *
- * Neither layer is a security boundary while row-level security is disabled on
- * most `community_orgs` tables: anyone holding the anon key can bypass the
- * application and query PostgREST directly.
+ * permissions are checked in each route via `$lib/server/authorization`, and
+ * enforced independently by row-level security in the database.
  */
 const authGuard: Handle = async ({ event, resolve }) => {
 	if (event.url.pathname === CRON_PATH) {

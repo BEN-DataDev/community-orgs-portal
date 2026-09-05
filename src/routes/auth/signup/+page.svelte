@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { Github } from 'lucide-svelte';
+	import { page } from '$app/state';
 	import EmailRegistrationInput from '$components/ui/auth/EmailRegistrationInput.svelte';
 	import type { ActionData } from './$types';
 	import type { SubmitFunction } from '@sveltejs/kit';
@@ -133,6 +135,25 @@
 			disabled={!submissionValid || loading}
 		>
 			{loading ? 'Submitting...' : 'Submit'}
+		</button>
+	</form>
+
+	<div class="my-4 flex items-center gap-3">
+		<hr class="flex-1 border-gray-400" />
+		<span class="text-sm text-gray-600 dark:text-gray-700">or</span>
+		<hr class="flex-1 border-gray-400" />
+	</div>
+
+	<!--
+		Deliberately outside the form above and without `use:enhance`. The
+		response is a redirect to github.com, and enhance would hand that to
+		`goto()`, which cannot navigate off-site.
+	-->
+	<form method="POST" action="/auth/github">
+		<input type="hidden" name="redirectTo" value={page.url.searchParams.get('redirectTo') ?? ''} />
+		<button type="submit" class="btn preset-tonal min-w-full" disabled={loading}>
+			<Github size={18} />
+			<span>Sign up with GitHub</span>
 		</button>
 	</form>
 </div>
