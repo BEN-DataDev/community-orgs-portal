@@ -1,5 +1,4 @@
 node_modules
-.envrc*
 
 # Output
 .output
@@ -7,18 +6,46 @@ node_modules
 /.svelte-kit
 /build
 
+# Caches
+.eslintcache
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
 # OS
 .DS_Store
+._*
 Thumbs.db
+desktop.ini
+
+# Editors
+.idea/
+*.swp
+*.swo
+*~
+
+# Claude Code — the shared config is committed, per-machine overrides are not
+.claude/settings.local.json
 
 # Local
 /documentation
 
+# direnv — .envrc can hold secrets, .direnv is its cache
+.envrc*
+.direnv/
+
 # Env
+#
+# `.env.example` is the tracked template. Every other .env file is ignored:
+# this project has no test tooling, so an `.env.test` escape hatch would only
+# ever be a way to commit real credentials by accident.
 .env
 .env.*
 !.env.example
-!.env.test
 
 # Vite
 vite.config.js.timestamp-*
