@@ -49,9 +49,11 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 		data: { session }
 	} = await supabase.auth.getSession();
 
-	const {
-		data: { user }
-	} = await supabase.auth.getUser();
-
-	return { session, supabase, user };
+	/**
+	 * `data.user` was validated with `getUser()` on the server, so take it from
+	 * there rather than making a third auth round-trip per navigation. The
+	 * `depends('supabase:auth')` above is what re-runs this load — and the
+	 * server load with it — when the session changes.
+	 */
+	return { session, supabase, user: data.user };
 };

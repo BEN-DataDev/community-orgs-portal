@@ -46,7 +46,7 @@ This project uses an AI-assisted development system for design documentation, co
 - **Frontend**: SvelteKit + Skeleton UI (Svelte 5 runes)
 - **Backend**: Supabase (PostgreSQL + PostGIS)
 - **Spatial**: PostGIS
-- **Mapping**: [Leaflet/OpenLayers]
+- **Mapping**: MapLibre GL JS (`maplibre-gl`) — settled; Leaflet and OpenLayers are not used
 
 ## Key Commands
 

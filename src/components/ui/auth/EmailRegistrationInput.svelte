@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core';
-	import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
-	import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en';
 	import { Eye, EyeOff } from 'lucide-svelte';
 
 	interface Props {
@@ -24,17 +21,29 @@
 	let passwordStrength = $state('');
 	let passwordStrengthClass = $state('');
 
-	const { translations } = zxcvbnEnPackage;
-	const { adjacencyGraphs: graphs, dictionary: commonDictionary } = zxcvbnCommonPackage;
-	const { dictionary: englishDictionary } = zxcvbnEnPackage;
+	/**
+	 * The zxcvbn dictionaries are several hundred kilobytes of word lists. They
+	 * are only needed once someone actually types a password, so they are pulled
+	 * in with a dynamic `import()` on the first keystroke instead of riding
+	 * along in the sign-up route's initial bundle.
+	 */
+	let scorer: Promise<(password: string) => { score: number }> | null = null;
 
-	const options = {
-		translations,
-		graphs,
-		dictionary: { ...commonDictionary, ...englishDictionary }
-	};
+	async function loadScorer() {
+		const [core, common, en] = await Promise.all([
+			import('@zxcvbn-ts/core'),
+			import('@zxcvbn-ts/language-common'),
+			import('@zxcvbn-ts/language-en')
+		]);
 
-	zxcvbnOptions.setOptions(options);
+		core.zxcvbnOptions.setOptions({
+			translations: en.translations,
+			graphs: common.adjacencyGraphs,
+			dictionary: { ...common.dictionary, ...en.dictionary }
+		});
+
+		return core.zxcvbn;
+	}
 
 	let show = $state(false);
 	let showAgain = $state(false);
@@ -44,9 +53,19 @@
 		return emailRegex.test(email);
 	}
 
-	function updatePasswordStrength() {
-		const result = zxcvbn(password);
-		const strength = result.score;
+	async function updatePasswordStrength() {
+		scorer ??= loadScorer();
+
+		/**
+		 * Remember what was typed when this call started: the dictionaries load
+		 * asynchronously, so a slower earlier keystroke must not overwrite the
+		 * verdict for what is in the field now.
+		 */
+		const scored = password;
+		const zxcvbn = await scorer;
+		if (scored !== password) return;
+
+		const strength = zxcvbn(password).score;
 		switch (strength) {
 			case 0:
 				passwordStrength = 'Weak';
