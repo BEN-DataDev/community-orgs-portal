@@ -9,14 +9,14 @@ import type { RequestHandler } from './$types';
  *
  * Distinct from `/auth/confirm`, which handles the email link flow and its
  * `token_hash` / `type` pair. This one handles the PKCE `code` that
- * `/auth/github` set up.
+ * `/auth/oauth/[provider]` set up.
  */
 export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	const code = url.searchParams.get('code');
 
 	/**
-	 * `next` has been outside our control since it was handed to GitHub, so it
-	 * is re-checked here rather than trusted. `safeRedirect` falls back to
+	 * `next` has been outside our control since it was handed to the provider,
+	 * so it is re-checked here rather than trusted. `safeRedirect` falls back to
 	 * /organisations for anything that is not a plain in-app path.
 	 */
 	const next = safeRedirect(url.searchParams.get('next'));
@@ -27,12 +27,12 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	 */
 	const providerError = url.searchParams.get('error_description') ?? url.searchParams.get('error');
 	if (providerError) {
-		console.error('GitHub returned an error:', providerError);
-		redirect(303, '/auth/error');
+		console.error('OAuth provider returned an error:', providerError);
+		redirect(303, '/auth/error?reason=declined');
 	}
 
 	if (!code) {
-		redirect(303, '/auth/error');
+		redirect(303, '/auth/error?reason=exchange');
 	}
 
 	const { error } = await supabase.auth.exchangeCodeForSession(code);
@@ -43,8 +43,8 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 		 * cookie that is missing — a stale callback URL being reloaded, for
 		 * instance.
 		 */
-		console.error('Could not complete GitHub sign-in:', error.message);
-		redirect(303, '/auth/error');
+		console.error('Could not complete OAuth sign-in:', error.message);
+		redirect(303, '/auth/error?reason=exchange');
 	}
 
 	redirect(303, next);

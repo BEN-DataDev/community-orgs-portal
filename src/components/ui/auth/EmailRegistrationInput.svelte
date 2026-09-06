@@ -1,103 +1,39 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { Eye, EyeOff } from 'lucide-svelte';
+	import { isValidEmail, passwordProblems } from '$lib/auth/schemas';
+	import PasswordStrengthMeter from './PasswordStrengthMeter.svelte';
 
 	interface Props {
 		email: string;
 		password: string;
 		required?: boolean;
 		onValidationChange: (matches: boolean) => void;
-		onPasswordChange: (password: string) => void;
-		// Add any events you were dispatching as callback props
 	}
 
 	let {
 		email = $bindable(''),
 		password = $bindable(''),
 		required = false,
-		onValidationChange = () => {},
-		onPasswordChange = () => {}
+		onValidationChange = () => {}
 	}: Props = $props();
-
-	let passwordStrength = $state('');
-	let passwordStrengthClass = $state('');
-
-	/**
-	 * The zxcvbn dictionaries are several hundred kilobytes of word lists. They
-	 * are only needed once someone actually types a password, so they are pulled
-	 * in with a dynamic `import()` on the first keystroke instead of riding
-	 * along in the sign-up route's initial bundle.
-	 */
-	let scorer: Promise<(password: string) => { score: number }> | null = null;
-
-	async function loadScorer() {
-		const [core, common, en] = await Promise.all([
-			import('@zxcvbn-ts/core'),
-			import('@zxcvbn-ts/language-common'),
-			import('@zxcvbn-ts/language-en')
-		]);
-
-		core.zxcvbnOptions.setOptions({
-			translations: en.translations,
-			graphs: common.adjacencyGraphs,
-			dictionary: { ...common.dictionary, ...en.dictionary }
-		});
-
-		return core.zxcvbn;
-	}
 
 	let show = $state(false);
 	let showAgain = $state(false);
 
-	function validateEmail(email: string) {
-		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		return emailRegex.test(email);
-	}
-
-	async function updatePasswordStrength() {
-		scorer ??= loadScorer();
-
-		/**
-		 * Remember what was typed when this call started: the dictionaries load
-		 * asynchronously, so a slower earlier keystroke must not overwrite the
-		 * verdict for what is in the field now.
-		 */
-		const scored = password;
-		const zxcvbn = await scorer;
-		if (scored !== password) return;
-
-		const strength = zxcvbn(password).score;
-		switch (strength) {
-			case 0:
-				passwordStrength = 'Weak';
-				passwordStrengthClass = 'weak';
-				break;
-			case 1:
-				passwordStrength = 'Fair';
-				passwordStrengthClass = 'fair';
-				break;
-			case 2:
-				passwordStrength = 'Good';
-				passwordStrengthClass = 'good';
-				break;
-			case 3:
-			case 4:
-				passwordStrength = 'Strong';
-				passwordStrengthClass = 'strong';
-				break;
-			default:
-				passwordStrength = '';
-				passwordStrengthClass = '';
-		}
-	}
-
 	let passwordConfirmation = $state('');
 	let passwordsMatch = $derived(password === passwordConfirmation && password !== '');
-	let emailValid = $derived(validateEmail(email));
+	let emailValid = $derived(isValidEmail(email));
+
+	/**
+	 * The zxcvbn meter below is advice; these are the rules the server and GoTrue
+	 * will actually enforce. Showing them here means the submit button and the
+	 * server agree on what is acceptable.
+	 */
+	let problems = $derived(passwordProblems(password));
 
 	$effect(() => {
-		onValidationChange(passwordsMatch && emailValid);
-		onPasswordChange(password);
+		onValidationChange(passwordsMatch && emailValid && problems.length === 0);
 	});
 </script>
 
@@ -119,11 +55,11 @@
 			id="show-password1"
 			class="input"
 			type={show ? 'text' : 'password'}
+			name="password"
 			placeholder="Password"
-			autocomplete="current-password"
+			autocomplete="new-password"
 			{required}
 			bind:value={password}
-			oninput={updatePasswordStrength}
 		/>
 		<button
 			type="button"
@@ -140,38 +76,7 @@
 		</button>
 	</div>
 
-	<div class="mt-2 mb-4">
-		<div class="mb-1 flex justify-between">
-			<span class="text-sm font-medium">Password strength</span>
-			<span
-				class="text-sm font-medium"
-				class:text-error-500={passwordStrengthClass === 'weak'}
-				class:text-warning-500={passwordStrengthClass === 'fair'}
-				class:text-tertiary-500={passwordStrengthClass === 'good'}
-				class:text-success-500={passwordStrengthClass === 'strong'}
-			>
-				{passwordStrength}
-			</span>
-		</div>
-		<div class="bg-surface-300-600 h-2.5 w-full rounded-full">
-			<div
-				class="h-2.5 rounded-full transition-all duration-300 ease-in-out"
-				class:bg-error-500={passwordStrengthClass === 'weak'}
-				class:bg-warning-500={passwordStrengthClass === 'fair'}
-				class:bg-tertiary-500={passwordStrengthClass === 'good'}
-				class:bg-success-500={passwordStrengthClass === 'strong'}
-				style="width: {passwordStrength === 'Weak'
-					? 25
-					: passwordStrength === 'Fair'
-						? 50
-						: passwordStrength === 'Good'
-							? 75
-							: passwordStrength === 'Strong'
-								? 100
-								: 0}%"
-			></div>
-		</div>
-	</div>
+	<PasswordStrengthMeter {password} />
 
 	<div class="relative">
 		<input
@@ -179,7 +84,7 @@
 			class="input"
 			type={showAgain ? 'text' : 'password'}
 			placeholder="Password Again"
-			autocomplete="current-password"
+			autocomplete="new-password"
 			{required}
 			bind:value={passwordConfirmation}
 		/>
@@ -198,12 +103,24 @@
 		</button>
 	</div>
 
-	<div class="mt-6 flex items-center justify-center gap-2">
-		<span>Have an account?</span>
-		<a href={resolve('/auth/signin')} class="btn preset-filled"> Sign In </a>
-	</div>
+	{#if email && !emailValid}
+		<p class="text-error-500 mt-1 text-sm">Please enter a valid email address</p>
+	{/if}
+
+	{#if password && problems.length > 0}
+		<ul class="text-error-500 mt-1 space-y-0.5 text-sm">
+			{#each problems as problem (problem)}
+				<li>{problem}</li>
+			{/each}
+		</ul>
+	{/if}
 
 	{#if password && passwordConfirmation && !passwordsMatch}
 		<p class="text-error-500 mt-1 text-sm">Passwords do not match</p>
 	{/if}
+
+	<div class="mt-6 flex items-center justify-center gap-2">
+		<span>Have an account?</span>
+		<a href={resolve('/auth/signin')} class="btn preset-filled">Sign In</a>
+	</div>
 </div>

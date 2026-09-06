@@ -7,6 +7,7 @@ import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/publi
 import type { Database } from '$lib/db.types';
 import type { TypedSupabaseClient } from '$lib/supabase-client';
 import { isSiteAdmin } from '$lib/server/authorization';
+import { guardRedirect } from '$lib/server/guard';
 
 /**
  * The cron endpoint authenticates with its own shared secret and talks to
@@ -14,31 +15,6 @@ import { isSiteAdmin } from '$lib/server/authorization';
  * client nor a session.
  */
 const CRON_PATH = '/api/cron';
-
-/** Paths reachable without a session. Everything else requires one. */
-function isPublicPath(pathname: string): boolean {
-	return pathname === '/' || pathname === '/auth' || pathname.startsWith('/auth/');
-}
-
-/**
- * Paths under `/auth` that stay reachable while signed in: the sign-out flow,
- * the two provider callbacks, the OAuth hand-off, and the error page. The rest
- * of `/auth` is redirected away so a signed-in user does not land on a sign-in
- * form.
- *
- * `/auth/callback` in particular must stay reachable. A stale session cookie
- * can still be present when GitHub returns, and bouncing that request to
- * /organisations would discard the code before it is exchanged.
- */
-function isSignedInAuthPath(pathname: string): boolean {
-	return (
-		pathname.startsWith('/auth/signout') ||
-		pathname.startsWith('/auth/confirm') ||
-		pathname.startsWith('/auth/callback') ||
-		pathname.startsWith('/auth/github') ||
-		pathname.startsWith('/auth/error')
-	);
-}
 
 const supabase: Handle = async ({ event, resolve }) => {
 	if (event.url.pathname === CRON_PATH) {
@@ -83,7 +59,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 			data: { session }
 		} = await event.locals.supabase.auth.getSession();
 		if (!session) {
-			return { session: null, user: null };
+			return { session: null, user: null, aal: null, isAnonymous: false };
 		}
 
 		const {
@@ -92,8 +68,14 @@ const supabase: Handle = async ({ event, resolve }) => {
 		} = await event.locals.supabase.auth.getUser();
 		if (getUserError) {
 			// JWT validation has failed
-			return { session: null, user: null };
+			return { session: null, user: null, aal: null, isAnonymous: false };
 		}
+
+		/**
+		 * Reads the `aal` and factor claims out of the access token that
+		 * `getUser()` just validated. No network round-trip of its own.
+		 */
+		const { data: aalData } = await event.locals.supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
 		/**
 		 * `session.user` here still comes from cookie storage and is wrapped in a
@@ -102,7 +84,12 @@ const supabase: Handle = async ({ event, resolve }) => {
 		 * for hydration. Overwrite it with the copy `getUser()` just validated
 		 * against the Auth server before it goes anywhere.
 		 */
-		return { session: { ...session, user: user! }, user };
+		return {
+			session: { ...session, user: user! },
+			user,
+			aal: aalData ? { currentLevel: aalData.currentLevel, nextLevel: aalData.nextLevel } : null,
+			isAnonymous: user?.is_anonymous === true
+		};
 	};
 
 	return resolve(event, {
@@ -130,19 +117,28 @@ const authGuard: Handle = async ({ event, resolve }) => {
 		return await resolve(event);
 	}
 
-	const { session, user } = await event.locals.safeGetSession();
+	const { session, user, aal, isAnonymous } = await event.locals.safeGetSession();
 	event.locals.session = session;
 	event.locals.user = user;
+	event.locals.aal = aal;
+	event.locals.isAnonymous = isAnonymous;
 
 	const { pathname, search } = event.url;
 
-	if (!session && !isPublicPath(pathname)) {
-		const redirectTo = encodeURIComponent(pathname + search);
-		redirect(303, `/auth/signin?redirectTo=${redirectTo}`);
-	}
+	/**
+	 * All the path-based routing lives in `$lib/server/guard`, which is a pure
+	 * function and can be reasoned about without a request in hand.
+	 */
+	const target = guardRedirect({
+		pathname,
+		search,
+		hasSession: session !== null,
+		isAnonymous,
+		aal
+	});
 
-	if (session && isPublicPath(pathname) && pathname !== '/' && !isSignedInAuthPath(pathname)) {
-		redirect(303, '/organisations');
+	if (target) {
+		redirect(303, target);
 	}
 
 	/**

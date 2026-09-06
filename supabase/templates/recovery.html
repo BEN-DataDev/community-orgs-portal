@@ -1,0 +1,21 @@
+<!--
+  Auth email template: recovery
+
+  The link must use the token_hash form. Supabase's default templates use
+  {{ .ConfirmationURL }}, which points straight at the Auth server and skips
+  /auth/confirm, so the application never gets to set its own cookies or honour
+  the "next" destination.
+-->
+<h2>Reset your password</h2>
+
+<p>Use the link below to choose a new password. It works once and expires in 30 minutes.</p>
+
+<p>
+	<a
+		href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset-password"
+	>
+		Set a new password
+	</a>
+</p>
+
+<p>If you did not request this, you can ignore this email — nothing will change.</p>

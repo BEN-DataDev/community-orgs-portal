@@ -14,8 +14,9 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 	return {
 		session: locals.session,
 		user: locals.user,
+		aal: locals.aal,
+		isAnonymous: locals.isAnonymous,
 		isSiteAdmin: await isSiteAdmin(locals.supabase, locals.user?.id),
-		roles: '',
 		cookies: cookies.getAll()
 	};
 };

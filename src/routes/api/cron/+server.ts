@@ -48,5 +48,23 @@ export const GET: RequestHandler = async ({ request }) => {
 		return json({ success: false, error }, { status: 500 });
 	}
 
-	return json({ success: true, data });
+	/**
+	 * Guest sessions leave rows in auth.users that nobody can ever sign back in
+	 * as, and they only accumulate. The function is SECURITY DEFINER and granted
+	 * to service_role alone, so this endpoint does not need direct access to the
+	 * auth schema.
+	 *
+	 * A failure here is reported but does not fail the request: the health check
+	 * above is the part a monitor is watching, and housekeeping that misses a run
+	 * catches up on the next one.
+	 */
+	const { data: purged, error: purgeError } = await supabase
+		.schema('community_orgs')
+		.rpc('purge_stale_anonymous_users');
+
+	if (purgeError) {
+		console.error('Purging stale anonymous users failed:', purgeError);
+	}
+
+	return json({ success: true, data, purgedAnonymousUsers: purged ?? null });
 };

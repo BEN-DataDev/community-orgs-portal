@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import GuestBrowseButton from '$components/ui/auth/GuestBrowseButton.svelte';
+
 	const features = [
 		{
 			title: 'Relationship Management',
@@ -24,9 +26,19 @@
 		<p class="text-surface-700-300 mx-auto mb-8 max-w-2xl text-base sm:text-lg lg:text-xl">
 			Track relationships, manage contacts, and monitor financial data for your organisation network
 		</p>
-		<a class="btn preset-filled-primary-500 sm:btn-lg" href={resolve('/organisations')}
-			>Get Started</a
-		>
+		<div class="flex flex-col items-center gap-3">
+			<a class="btn preset-filled-primary-500 sm:btn-lg" href={resolve('/organisations')}
+				>Get Started</a
+			>
+
+			<!--
+				A guest session shows the public organisations without a sign-up.
+				Renders nothing at all when PUBLIC_TURNSTILE_SITE_KEY is unset, which
+				is the intended behaviour: anonymous sign-in should not be reachable
+				without the abuse protection in front of it.
+			-->
+			<GuestBrowseButton />
+		</div>
 	</header>
 
 	<div class="mt-16 grid grid-cols-1 gap-6 sm:mt-20 md:grid-cols-3 md:gap-8 lg:gap-12">

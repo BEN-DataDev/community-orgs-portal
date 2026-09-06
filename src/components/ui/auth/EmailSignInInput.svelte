@@ -1,36 +1,35 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { Eye, EyeOff } from 'lucide-svelte';
+	import { isValidEmail } from '$lib/auth/schemas';
 
 	interface Props {
 		email: string;
 		password: string;
 		required?: boolean;
 		onValidationChange: (isValid: boolean) => void;
-		onPasswordChange: (password: string) => void;
 	}
 
 	let {
 		email = $bindable(''),
 		password = $bindable(''),
 		required = false,
-		onValidationChange = () => {},
-		onPasswordChange = () => {}
+		onValidationChange = () => {}
 	}: Props = $props();
 
 	let show = $state(false);
 
-	function validateEmail(email: string) {
-		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		return emailRegex.test(email);
-	}
+	let emailValid = $derived(isValidEmail(email));
 
-	let emailValid = $derived(validateEmail(email));
-	let formValid = $derived(emailValid && password.length >= 6);
+	/**
+	 * Sign-in only checks that a password was typed. Applying the sign-up
+	 * strength rules here would reject valid older passwords and advertise the
+	 * policy at the sign-in prompt, where it helps nobody get in.
+	 */
+	let formValid = $derived(emailValid && password.length > 0);
 
 	$effect(() => {
 		onValidationChange(formValid);
-		onPasswordChange(password);
 	});
 </script>
 
@@ -52,9 +51,9 @@
 			id="show-password"
 			class="input"
 			type={show ? 'text' : 'password'}
+			name="password"
 			placeholder="Password"
 			autocomplete="current-password"
-			{required}
 			bind:value={password}
 		/>
 		<button
@@ -72,9 +71,8 @@
 		</button>
 	</div>
 
-	<div class="mt-6 flex flex-wrap items-center justify-center gap-2">
-		<span class="text-surface-700-300">Not registered?</span>
-		<a href={resolve('/auth/signup')} class="btn btn-sm preset-tonal">Create an Account</a>
+	<div class="flex justify-end">
+		<a href={resolve('/auth/forgot-password')} class="anchor text-sm">Forgot your password?</a>
 	</div>
 
 	{#if email && !emailValid}

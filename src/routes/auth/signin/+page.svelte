@@ -1,138 +1,90 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Github } from 'lucide-svelte';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import EmailSignInInput from '$components/ui/auth/EmailSignInInput.svelte';
-	import type { ActionData } from './$types';
-	import type { SubmitFunction } from '@sveltejs/kit';
+	import OAuthButtons from '$components/ui/auth/OAuthButtons.svelte';
+	import TurnstileWidget from '$components/ui/auth/TurnstileWidget.svelte';
+	import { captchaRequired } from '$lib/auth/captcha';
+	import { createAuthForm } from '$lib/auth/form.svelte';
+	import { isValidEmail } from '$lib/auth/schemas';
 
-	interface FormData {
-		email: string;
-		password: string;
-		provider?: 'email' | 'github' | 'discord';
-		errors: {
-			email?: string;
-			password?: string;
-			general?: string;
-		};
-	}
+	let email = $state('');
+	let password = $state('');
+	let fieldsValid = $state(false);
 
-	interface FormErrors {
-		email?: string;
-		password?: string;
-		general?: string;
-		[key: string]: string | undefined;
-	}
+	const form = createAuthForm();
 
-	let { form }: { form: ActionData | null } = $props();
+	const redirectTo = $derived(page.url.searchParams.get('redirectTo') ?? '');
 
-	const formDefault: FormData = {
-		email: '',
-		password: '',
-		provider: 'email',
-		errors: {}
-	};
+	/**
+	 * The magic-link button submits the same form to a different action, so it
+	 * only needs the email field — the password box is irrelevant to it.
+	 */
+	const emailValid = $derived(isValidEmail(email));
 
-	let formData = $state<FormData>(formDefault);
-	let loading = $state(false);
-
-	$effect(() => {
-		if (form) {
-			const actionData = form as unknown as {
-				errors?: FormErrors;
-				data?: Partial<FormData>;
-				error?: string;
-			};
-
-			if (actionData.errors) {
-				formData = {
-					...formDefault,
-					errors: actionData.errors
-				};
-			} else if (actionData.data) {
-				formData = {
-					...formDefault,
-					...actionData.data,
-					errors: {}
-				};
-			} else if (actionData.error) {
-				formData = {
-					...formDefault,
-					errors: { general: actionData.error }
-				};
-			}
-		}
-	});
-
-	let emailPasswordValid = $state(false);
-
-	function handleValidationChange(validated: boolean) {
-		emailPasswordValid = validated;
-	}
-
-	type FormErrorKey = keyof FormErrors;
-	let formErrors = $state<Partial<Record<FormErrorKey, string>>>({});
-
-	const handleEnhance: SubmitFunction = () => {
-		return async ({ result }) => {
-			loading = true;
-			formErrors = {};
-			try {
-				if (result.type === 'error') {
-					formErrors = { general: 'A network error occurred. Please try again.' };
-				} else if (result.type === 'failure') {
-					const failureData = result.data as { errors?: FormErrors; error?: string };
-					formErrors = failureData.errors || { general: failureData.error || 'Sign in failed' };
-				} else if (result.type === 'success') {
-					return;
-				}
-			} catch (error) {
-				console.error('Error during form submission:', error);
-				formErrors = { general: 'An unexpected error occurred. Please try again.' };
-			} finally {
-				loading = false;
-			}
-		};
-	};
-
-	const submissionValid = $derived(emailPasswordValid || formData.provider !== 'email');
+	/**
+	 * Supabase applies its CAPTCHA setting to every auth endpoint, not just the
+	 * anonymous one, so both buttons below need a token before they can submit.
+	 */
+	let captchaToken = $state('');
+	const captchaOk = $derived(!captchaRequired() || captchaToken !== '');
 </script>
 
 <div class="card preset-tonal mx-auto my-4 w-full max-w-100 space-y-3 p-5 shadow-md">
-	{#if formErrors.general}
-		<p class="text-error-500 mb-4">{formErrors.general}</p>
+	{#if form.errors.general}
+		<p class="text-error-500 mb-4">{form.errors.general}</p>
 	{/if}
+
 	<form
 		id="signInForm"
 		action="?/signin"
 		method="post"
 		class="space-y-3"
-		enctype="multipart/form-data"
-		use:enhance={handleEnhance}
+		use:enhance={form.enhance}
 	>
 		<EmailSignInInput
-			email={formData.email}
-			password={formData.password}
-			onValidationChange={handleValidationChange}
-			onPasswordChange={(newPassword) => (formData.password = newPassword)}
+			bind:email
+			bind:password
+			onValidationChange={(valid) => (fieldsValid = valid)}
 			required={true}
 		/>
-		<input type="hidden" name="password" bind:value={formData.password} />
-		<input type="hidden" name="redirectTo" value={page.url.searchParams.get('redirectTo') ?? ''} />
-		{#if formErrors.email}
-			<p class="text-error-500 text-sm">{formErrors.email}</p>
+		<input type="hidden" name="redirectTo" value={redirectTo} />
+		<input type="hidden" name="captchaToken" value={captchaToken} />
+
+		{#if form.errors.email}
+			<p class="text-error-500 text-sm">{form.errors.email}</p>
 		{/if}
-		{#if formErrors.password}
-			<p class="text-error-500 text-sm">{formErrors.password}</p>
+		{#if form.errors.password}
+			<p class="text-error-500 text-sm">{form.errors.password}</p>
 		{/if}
-		<input type="hidden" name="provider" bind:value={formData.provider} />
+
+		<TurnstileWidget onToken={(received) => (captchaToken = received)} />
+
 		<button
 			type="submit"
 			class="btn preset-filled-primary-500 min-w-full"
-			disabled={!submissionValid || loading}
+			disabled={!fieldsValid || !captchaOk || form.loading}
 		>
-			{loading ? 'Signing in...' : 'Sign In'}
+			{form.loading ? 'Signing in...' : 'Sign In'}
 		</button>
+
+		<!--
+			Same form, different action. `formaction` lets the magic-link path
+			reuse the email field already filled in above rather than asking for
+			it a second time in a form of its own.
+		-->
+		<button
+			type="submit"
+			formaction="?/magiclink"
+			class="btn preset-tonal min-w-full"
+			disabled={!emailValid || !captchaOk || form.loading}
+		>
+			Email me a sign-in link
+		</button>
+		<p class="text-surface-600-400 text-center text-xs">
+			No password needed — we send a one-time link to your inbox.
+		</p>
 	</form>
 
 	<div class="my-4 flex items-center gap-3">
@@ -141,16 +93,10 @@
 		<hr class="border-surface-300-700 flex-1" />
 	</div>
 
-	<!--
-		Deliberately outside the form above and without `use:enhance`. The
-		response is a redirect to github.com, and enhance would hand that to
-		`goto()`, which cannot navigate off-site.
-	-->
-	<form method="POST" action="/auth/github">
-		<input type="hidden" name="redirectTo" value={page.url.searchParams.get('redirectTo') ?? ''} />
-		<button type="submit" class="btn preset-tonal min-w-full" disabled={loading}>
-			<Github size={18} />
-			<span>Sign in with GitHub</span>
-		</button>
-	</form>
+	<OAuthButtons verb="Sign in" {redirectTo} disabled={form.loading} />
+
+	<div class="mt-6 flex flex-wrap items-center justify-center gap-2">
+		<span class="text-surface-700-300">Not registered?</span>
+		<a href={resolve('/auth/signup')} class="btn btn-sm preset-tonal">Create an Account</a>
+	</div>
 </div>

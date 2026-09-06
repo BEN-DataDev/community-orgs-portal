@@ -7,12 +7,20 @@
 
 	import '../app.css';
 	import AppNavigation from '$components/layout/AppNavigation.svelte';
+	import GuestBanner from '$components/ui/auth/GuestBanner.svelte';
 	import ThemeToggle from '$components/ui/ThemeToggle.svelte';
 	import { minWidth } from '$lib/media.svelte';
 	import { theme } from '$lib/theme.svelte';
 
 	let { data, children } = $props();
-	let { session, supabase, user, isSiteAdmin } = $derived(data);
+	let { session, supabase, user, isSiteAdmin, isAnonymous } = $derived(data);
+
+	/**
+	 * A guest holds a session but has no account, so the navigation and the
+	 * account controls have nothing to offer them — they see the public
+	 * organisations and the banner inviting them to sign up.
+	 */
+	const signedIn = $derived(!!user && !isAnonymous);
 
 	/**
 	 * Navigation takes a different *prop* per breakpoint rather than different
@@ -57,8 +65,12 @@
 			</AppBar.Lead>
 
 			<AppBar.Trail class="flex flex-wrap items-center justify-end gap-2">
-				{#if user}
+				{#if signedIn}
+					<a class="btn btn-sm preset-tonal" href={resolve('/account/security')}>Account</a>
 					<a class="btn btn-sm preset-tonal" href={resolve('/auth/signout')}>Sign out</a>
+				{:else if isAnonymous}
+					<a class="btn btn-sm preset-filled" href={resolve('/auth/signup')}>Create an account</a>
+					<a class="btn btn-sm preset-tonal" href={resolve('/auth/signout')}>Leave guest mode</a>
 				{:else}
 					<a class="btn btn-sm preset-filled" href={resolve('/auth/signin')}>Sign in</a>
 				{/if}
@@ -67,8 +79,10 @@
 		</AppBar.Toolbar>
 	</AppBar>
 
+	<GuestBanner />
+
 	<div class="flex flex-1 flex-col md:flex-row">
-		{#if user}
+		{#if signedIn}
 			<AppNavigation layout={navLayout} {isSiteAdmin} />
 		{/if}
 
@@ -77,14 +91,14 @@
 			inside the flex row instead of forcing the page to scroll sideways.
 			The bottom padding clears the fixed mobile bar.
 		-->
-		<main class="flex min-w-0 flex-1 flex-col {user ? 'pb-20 md:pb-0' : ''}">
+		<main class="flex min-w-0 flex-1 flex-col {signedIn ? 'pb-20 md:pb-0' : ''}">
 			<div class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
 				{@render children?.()}
 			</div>
 		</main>
 	</div>
 
-	<footer class="border-surface-200-800 border-t p-4 text-sm {user ? 'pb-20 md:pb-4' : ''}">
+	<footer class="border-surface-200-800 border-t p-4 text-sm {signedIn ? 'pb-20 md:pb-4' : ''}">
 		<div class="mx-auto flex max-w-7xl flex-wrap justify-between gap-2 px-4 sm:px-6 lg:px-8">
 			<span>Community Information Infrastructure</span>
 			<a class="hover:underline" href="https://resiliencehub.org.au/">resiliencehub.org.au</a>

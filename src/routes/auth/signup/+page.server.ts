@@ -1,11 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { z } from 'zod';
+import { captchaOption } from '$lib/auth/captcha';
+import { signUpSchema } from '$lib/auth/schemas';
 import type { Actions } from './$types';
-
-const signUpSchema = z.object({
-	email: z.string().trim().email('Enter a valid email address'),
-	password: z.string().min(8, 'Use at least 8 characters')
-});
 
 export const actions: Actions = {
 	signup: async ({ request, url, locals: { supabase } }) => {
@@ -26,7 +22,10 @@ export const actions: Actions = {
 		const { error } = await supabase.auth.signUp({
 			email: parsed.data.email,
 			password: parsed.data.password,
-			options: { emailRedirectTo: `${url.origin}/auth/confirm` }
+			options: {
+				emailRedirectTo: `${url.origin}/auth/confirm`,
+				captchaToken: captchaOption(formData.get('captchaToken'))
+			}
 		});
 
 		if (error) {
@@ -35,6 +34,6 @@ export const actions: Actions = {
 		}
 
 		// Outside any try/catch — see the note in the sign-in action.
-		redirect(303, '/auth/check-email');
+		redirect(303, '/auth/check-email?reason=signup');
 	}
 };
