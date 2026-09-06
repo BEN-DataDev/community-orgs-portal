@@ -8,9 +8,6 @@
 @import '@skeletonlabs/skeleton/themes/pine';
 
 @plugin '@tailwindcss/typography';
-@plugin '@tailwindcss/forms';
-@plugin '@tailwindcss/container-queries';
-@plugin '@tailwindcss/aspect-ratio';
 
 /*
  * Relative to this file. Skeleton's own packages ship their `@source` rules

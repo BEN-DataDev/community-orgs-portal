@@ -56,12 +56,13 @@
 	}}
 	class="space-y-6"
 >
-	<input type="hidden" name="operating_hours" value={hoursPayload} />
+	<input class="input" type="hidden" name="operating_hours" value={hoursPayload} />
 
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 		<div>
-			<label for="staff_count_paid">Paid Staff</label>
+			<label class="label label-text" for="staff_count_paid">Paid Staff</label>
 			<input
+				class="input"
 				type="number"
 				min="0"
 				id="staff_count_paid"
@@ -69,13 +70,14 @@
 				value={operationalInfo?.staff_count_paid ?? ''}
 			/>
 			{#if errors?.staff_count_paid}
-				<p class="text-sm text-red-600">{errors.staff_count_paid[0]}</p>
+				<p class="text-error-500 text-sm">{errors.staff_count_paid[0]}</p>
 			{/if}
 		</div>
 
 		<div>
-			<label for="staff_count_volunteer">Volunteers</label>
+			<label class="label label-text" for="staff_count_volunteer">Volunteers</label>
 			<input
+				class="input"
 				type="number"
 				min="0"
 				id="staff_count_volunteer"
@@ -85,8 +87,9 @@
 		</div>
 
 		<div>
-			<label for="service_area">Service Area</label>
+			<label class="label label-text" for="service_area">Service Area</label>
 			<input
+				class="input"
 				type="text"
 				id="service_area"
 				name="service_area"
@@ -95,8 +98,9 @@
 		</div>
 
 		<div>
-			<label for="target_demographics">Target Demographics</label>
+			<label class="label label-text" for="target_demographics">Target Demographics</label>
 			<input
+				class="input"
 				type="text"
 				id="target_demographics"
 				name="target_demographics"
@@ -105,8 +109,9 @@
 		</div>
 
 		<div>
-			<label for="languages_supported">Languages Supported</label>
+			<label class="label label-text" for="languages_supported">Languages Supported</label>
 			<input
+				class="input"
 				type="text"
 				id="languages_supported"
 				name="languages_supported"
@@ -116,8 +121,9 @@
 		</div>
 
 		<div>
-			<label for="accessibility_features">Accessibility Features</label>
+			<label class="label label-text" for="accessibility_features">Accessibility Features</label>
 			<input
+				class="input"
 				type="text"
 				id="accessibility_features"
 				name="accessibility_features"
@@ -130,10 +136,20 @@
 	<fieldset>
 		<legend class="mb-2 font-medium">Operating Hours</legend>
 		{#each hours as entry (entry.day)}
-			<div class="mb-2 flex items-center gap-4">
-				<span class="w-28">{entry.day}</span>
-				<input type="time" bind:value={entry.open} aria-label="{entry.day} opening time" />
-				<input type="time" bind:value={entry.close} aria-label="{entry.day} closing time" />
+			<div class="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+				<span class="font-medium sm:w-28 sm:font-normal">{entry.day}</span>
+				<input
+					class="input"
+					type="time"
+					bind:value={entry.open}
+					aria-label="{entry.day} opening time"
+				/>
+				<input
+					class="input"
+					type="time"
+					bind:value={entry.close}
+					aria-label="{entry.day} closing time"
+				/>
 			</div>
 		{/each}
 	</fieldset>

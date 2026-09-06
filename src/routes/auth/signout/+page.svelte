@@ -2,7 +2,7 @@
 	<title>Sign out</title>
 </svelte:head>
 
-<div class="mx-auto my-10 w-[400px] space-y-3 rounded-lg p-5 shadow-md">
+<div class="card preset-tonal mx-auto my-4 w-full max-w-100 space-y-3 p-5 shadow-md">
 	<h1 class="text-xl font-bold">Sign out</h1>
 	<p>You are about to sign out of the portal.</p>
 	<form method="POST">

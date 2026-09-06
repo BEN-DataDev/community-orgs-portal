@@ -32,49 +32,50 @@
 >
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 		<div>
-			<label for="entity_name">Entity Name</label>
+			<label class="label label-text" for="entity_name">Entity Name</label>
 			<input
 				type="text"
 				id="entity_name"
 				name="entity_name"
 				value={organisation?.entity_name ?? ''}
 				required
-				class="w-full"
+				class="input w-full"
 			/>
 			{#if errors?.entity_name}
-				<p class="text-sm text-red-600">{errors.entity_name[0]}</p>
+				<p class="text-error-500 text-sm">{errors.entity_name[0]}</p>
 			{/if}
 			{#if !organisation}
-				<p class="text-sm text-gray-500">The URL slug is generated from this name.</p>
+				<p class="text-surface-600-400 text-sm">The URL slug is generated from this name.</p>
 			{/if}
 		</div>
 
 		<div>
-			<label for="date_established">Date Established</label>
+			<label class="label label-text" for="date_established">Date Established</label>
 			<input
 				type="date"
 				id="date_established"
 				name="date_established"
 				value={organisation?.date_established ?? ''}
-				class="w-full"
+				class="input w-full"
 			/>
 		</div>
 
 		<div class="md:col-span-2">
-			<label for="description">Description</label>
-			<textarea id="description" name="description" rows="3" class="w-full"
+			<label class="label label-text" for="description">Description</label>
+			<textarea id="description" name="description" rows="3" class="textarea w-full"
 				>{organisation?.description ?? ''}</textarea
 			>
 		</div>
 
 		<div class="flex items-center gap-2">
 			<input
+				class="checkbox"
 				id="is_public"
 				type="checkbox"
 				name="is_public"
 				checked={organisation?.is_public ?? true}
 			/>
-			<label for="is_public">Publicly visible</label>
+			<label class="label-text" for="is_public">Publicly visible</label>
 		</div>
 	</div>
 

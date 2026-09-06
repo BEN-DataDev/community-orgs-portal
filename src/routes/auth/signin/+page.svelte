@@ -98,9 +98,9 @@
 	const submissionValid = $derived(emailPasswordValid || formData.provider !== 'email');
 </script>
 
-<div class="mx-auto my-2.5 w-[400px] rounded-lg bg-gray-300 p-5 shadow-md dark:bg-gray-400">
+<div class="card preset-tonal mx-auto my-4 w-full max-w-100 space-y-3 p-5 shadow-md">
 	{#if formErrors.general}
-		<p class="mb-4 text-red-500">{formErrors.general}</p>
+		<p class="text-error-500 mb-4">{formErrors.general}</p>
 	{/if}
 	<form
 		id="signInForm"
@@ -120,10 +120,10 @@
 		<input type="hidden" name="password" bind:value={formData.password} />
 		<input type="hidden" name="redirectTo" value={page.url.searchParams.get('redirectTo') ?? ''} />
 		{#if formErrors.email}
-			<p class="text-sm text-red-500">{formErrors.email}</p>
+			<p class="text-error-500 text-sm">{formErrors.email}</p>
 		{/if}
 		{#if formErrors.password}
-			<p class="text-sm text-red-500">{formErrors.password}</p>
+			<p class="text-error-500 text-sm">{formErrors.password}</p>
 		{/if}
 		<input type="hidden" name="provider" bind:value={formData.provider} />
 		<button
@@ -136,9 +136,9 @@
 	</form>
 
 	<div class="my-4 flex items-center gap-3">
-		<hr class="flex-1 border-gray-400" />
-		<span class="text-sm text-gray-600 dark:text-gray-700">or</span>
-		<hr class="flex-1 border-gray-400" />
+		<hr class="border-surface-300-700 flex-1" />
+		<span class="text-surface-600-400 dark:text-surface-700-300 text-sm">or</span>
+		<hr class="border-surface-300-700 flex-1" />
 	</div>
 
 	<!--

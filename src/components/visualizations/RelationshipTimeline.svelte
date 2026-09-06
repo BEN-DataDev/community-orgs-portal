@@ -37,9 +37,18 @@
 	$effect(() => {
 		if (!container || width <= 0) return;
 
-		const margin = { top: 20, right: 20, bottom: 30, left: 200 };
+		/**
+		 * A fixed 200px label gutter left roughly 100px of plot area on a phone,
+		 * collapsing every bar to an unreadable strip. Below `sm` the labels move
+		 * above their bars instead, which needs taller rows but no gutter.
+		 */
+		const compact = width < 640;
+		const labelGutter = compact ? 0 : Math.min(200, Math.round(width * 0.35));
+		const margin = { top: 20, right: 20, bottom: 30, left: labelGutter };
+		const rowHeight = compact ? 56 : 40;
+
 		const innerWidth = Math.max(1, width - margin.left - margin.right);
-		const innerHeight = Math.max(1, plottable.length * 40);
+		const innerHeight = Math.max(1, plottable.length * rowHeight);
 
 		d3.select(container).selectAll('svg').remove();
 		if (plottable.length === 0) return;
@@ -64,18 +73,37 @@
 			.range([0, innerHeight])
 			.padding(0.1);
 
-		svg.append('g').attr('transform', `translate(0,${innerHeight})`).call(d3.axisBottom(xScale));
-		svg.append('g').call(d3.axisLeft(yScale));
+		svg
+			.append('g')
+			.attr('transform', `translate(0,${innerHeight})`)
+			.call(d3.axisBottom(xScale).ticks(compact ? 3 : 6));
+
+		if (compact) {
+			// Labels sit above their bar rather than in a left-hand axis.
+			svg
+				.append('g')
+				.selectAll('text')
+				.data(plottable)
+				.enter()
+				.append('text')
+				.attr('x', 0)
+				.attr('y', (d) => (yScale(d.partner_org as string) ?? 0) + 12)
+				.attr('font-size', 12)
+				.attr('fill', 'currentColor')
+				.text((d) => d.partner_org as string);
+		} else {
+			svg.append('g').call(d3.axisLeft(yScale));
+		}
 
 		svg
 			.selectAll('rect')
 			.data(plottable)
 			.enter()
 			.append('rect')
-			.attr('y', (d) => yScale(d.partner_org as string) ?? 0)
+			.attr('y', (d) => (yScale(d.partner_org as string) ?? 0) + (compact ? 20 : 0))
 			.attr('x', (d) => xScale(start(d)))
 			.attr('width', (d) => Math.max(1, xScale(end(d)) - xScale(start(d))))
-			.attr('height', yScale.bandwidth())
+			.attr('height', compact ? Math.max(8, yScale.bandwidth() - 20) : yScale.bandwidth())
 			.attr('fill', (d) => getRelationshipColor(d.relationship_type))
 			.append('title')
 			.text((d) => `${d.relationship_type ?? 'Relationship'}\n${d.partner_org}`);
@@ -94,15 +122,34 @@
 	}
 </script>
 
-<div bind:this={container} class="h-full min-h-[400px] w-full">
+<div bind:this={container} class="h-full min-h-64 w-full sm:min-h-80 lg:min-h-96">
 	{#if plottable.length === 0}
-		<p class="text-gray-600">No dated relationships to plot yet.</p>
+		<p class="text-surface-600-400">No dated relationships to plot yet.</p>
 	{/if}
 </div>
 
 <style>
+	/*
+	 * The SVG is drawn at the measured container width, so it should not need
+	 * to scale. `max-width` is a guard only; `height: auto` is deliberately
+	 * absent, since scaling the element distorts the axis type.
+	 */
 	:global(svg) {
+		display: block;
 		max-width: 100%;
-		height: auto;
+	}
+
+	/*
+	 * d3 axes default to black, which disappears in dark mode. Inheriting the
+	 * theme's text colour keeps them legible in both.
+	 */
+	:global(svg .tick text) {
+		fill: currentColor;
+	}
+
+	:global(svg .domain),
+	:global(svg .tick line) {
+		stroke: currentColor;
+		opacity: 0.3;
 	}
 </style>

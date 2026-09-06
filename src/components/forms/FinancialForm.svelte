@@ -26,8 +26,9 @@
 >
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 		<div>
-			<label for="annual_budget">Annual Budget (AUD)</label>
+			<label class="label label-text" for="annual_budget">Annual Budget (AUD)</label>
 			<input
+				class="input"
 				type="number"
 				step="0.01"
 				min="0"
@@ -36,13 +37,14 @@
 				value={financialInfo?.annual_budget ?? ''}
 			/>
 			{#if errors?.annual_budget}
-				<p class="text-sm text-red-600">{errors.annual_budget[0]}</p>
+				<p class="text-error-500 text-sm">{errors.annual_budget[0]}</p>
 			{/if}
 		</div>
 
 		<div>
-			<label for="financial_year_end">Financial Year End</label>
+			<label class="label label-text" for="financial_year_end">Financial Year End</label>
 			<input
+				class="input"
 				type="date"
 				id="financial_year_end"
 				name="financial_year_end"
@@ -51,8 +53,9 @@
 		</div>
 
 		<div>
-			<label for="last_audit_date">Last Audit Date</label>
+			<label class="label label-text" for="last_audit_date">Last Audit Date</label>
 			<input
+				class="input"
 				type="date"
 				id="last_audit_date"
 				name="last_audit_date"
@@ -61,8 +64,9 @@
 		</div>
 
 		<div class="md:col-span-2">
-			<label for="funding_sources">Funding Sources</label>
+			<label class="label label-text" for="funding_sources">Funding Sources</label>
 			<input
+				class="input"
 				type="text"
 				id="funding_sources"
 				name="funding_sources"

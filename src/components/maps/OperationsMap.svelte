@@ -60,20 +60,26 @@
 			map.fitBounds(bounds, { padding: 50, maxZoom: 14 });
 		}
 
-		return () => map?.remove();
+		const observer = new ResizeObserver(() => map?.resize());
+		observer.observe(mapContainer);
+
+		return () => {
+			observer.disconnect();
+			map?.remove();
+		};
 	});
 
 	function createMarkerElement(location: Props['locations'][0]): HTMLElement {
 		const colors: { [key: string]: string } = {
-			'Head Office': 'bg-blue-500',
-			Branch: 'bg-green-500',
-			'Service Centre': 'bg-purple-500'
+			'Head Office': 'bg-primary-500',
+			Branch: 'bg-success-500',
+			'Service Centre': 'bg-secondary-500'
 		};
 
 		const element = document.createElement('div');
 		element.className = `w-8 h-8 rounded-full ${
-			(location.location_type && colors[location.location_type]) || 'bg-gray-500'
-		} border-2 border-white shadow-lg cursor-pointer`;
+			(location.location_type && colors[location.location_type]) || 'bg-surface-500'
+		} border-2 border-surface-50-950 shadow-lg cursor-pointer`;
 		return element;
 	}
 
@@ -94,7 +100,7 @@
 		type.textContent = location.location_type ?? '';
 
 		const address = document.createElement('p');
-		address.className = 'text-sm text-gray-600';
+		address.className = 'text-sm text-surface-600-400';
 		address.textContent = location.address ?? '';
 
 		wrapper.append(name, type, address);
@@ -103,20 +109,27 @@
 </script>
 
 {#if !mapTilerKey}
-	<div class="flex h-[400px] w-full items-center justify-center rounded-lg bg-gray-100">
-		<p class="text-gray-500">Set PUBLIC_MAPTILER_KEY to display the map.</p>
+	<div
+		class="rounded-container bg-surface-100-900 flex h-64 w-full items-center justify-center sm:h-80 md:h-96 lg:h-[32rem]"
+	>
+		<p class="text-surface-600-400">Set PUBLIC_MAPTILER_KEY to display the map.</p>
 	</div>
 {:else if located.length === 0}
-	<div class="flex h-[400px] w-full items-center justify-center rounded-lg bg-gray-100">
-		<p class="text-gray-500">No locations have coordinates yet.</p>
+	<div
+		class="rounded-container bg-surface-100-900 flex h-64 w-full items-center justify-center sm:h-80 md:h-96 lg:h-[32rem]"
+	>
+		<p class="text-surface-600-400">No locations have coordinates yet.</p>
 	</div>
 {:else}
-	<div bind:this={mapContainer} class="h-[400px] w-full overflow-hidden rounded-lg shadow-md"></div>
+	<div
+		bind:this={mapContainer}
+		class="rounded-container h-64 w-full overflow-hidden shadow-md sm:h-80 md:h-96 lg:h-[32rem]"
+	></div>
 {/if}
 
 <style>
 	:global(.maplibregl-popup) {
-		max-width: 300px !important;
+		max-width: min(300px, calc(100vw - 3rem)) !important;
 	}
 
 	:global(.maplibregl-popup-content) {

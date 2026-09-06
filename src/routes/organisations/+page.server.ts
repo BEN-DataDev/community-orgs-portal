@@ -56,6 +56,7 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 		organisations,
 		totalCount,
 		currentPage: page,
+		pageSize: PAGE_SIZE,
 		totalPages: Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 	};
 };

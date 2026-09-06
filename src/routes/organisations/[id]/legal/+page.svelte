@@ -13,10 +13,10 @@
 </script>
 
 <div>
-	<div class="mb-6 flex items-center justify-between">
+	<div class="mb-6 flex flex-wrap items-start justify-between gap-3">
 		<div>
 			<h1 class="text-2xl font-bold">Legal Information</h1>
-			<p class="text-gray-600">{organisation.entity_name}</p>
+			<p class="text-surface-600-400">{organisation.entity_name}</p>
 		</div>
 		{#if canEdit}
 			<button class="btn preset-filled" onclick={() => (isEditing = !isEditing)}>
@@ -26,14 +26,14 @@
 	</div>
 
 	{#if form?.message}
-		<p class="mb-4 text-red-600">{form.message}</p>
+		<p class="text-error-500 mb-4">{form.message}</p>
 	{/if}
 
 	{#if isEditing && canEdit}
 		<LegalForm {legalInfo} errors={form?.errors} onSave={() => (isEditing = false)} />
 	{:else}
-		<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-			<div class="space-y-2 rounded-lg border p-4">
+		<div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+			<div class="card preset-outlined-surface-200-800 space-y-2 p-4">
 				<h2 class="font-medium">Entity Details</h2>
 				<p><strong>Entity Type:</strong> {legalInfo?.entity_type ?? '—'}</p>
 				<p><strong>Charity Type:</strong> {legalInfo?.charity_type ?? '—'}</p>
@@ -45,7 +45,7 @@
 				<p><strong>ACN:</strong> {legalInfo?.acn ?? '—'}</p>
 			</div>
 
-			<div class="space-y-2 rounded-lg border p-4">
+			<div class="card preset-outlined-surface-200-800 space-y-2 p-4">
 				<h2 class="font-medium">Incorporation</h2>
 				<p><strong>Number:</strong> {legalInfo?.incorporation_number ?? '—'}</p>
 				<p><strong>Incorporated:</strong> {yesNo(legalInfo?.incorporation_status ?? null)}</p>
@@ -55,7 +55,7 @@
 				</p>
 			</div>
 
-			<div class="space-y-2 rounded-lg border p-4">
+			<div class="card preset-outlined-surface-200-800 space-y-2 p-4">
 				<h2 class="font-medium">ACNC &amp; Concessions</h2>
 				<p><strong>ACNC Registered:</strong> {yesNo(legalInfo?.acnc_registered ?? null)}</p>
 				<p><strong>ACNC Date:</strong> {orDash(legalInfo?.acnc_registered_date ?? null)}</p>
@@ -75,40 +75,46 @@
 				</p>
 			</div>
 
-			<div class="space-y-3 rounded-lg border p-4">
+			<div class="card preset-outlined-surface-200-800 space-y-3 p-4">
 				<h2 class="font-medium">Documents</h2>
 				{#each documents as document (document.document_id)}
-					<div class="flex items-center justify-between gap-3 border-b pb-2 last:border-0">
-						<a
-							href={document.url}
-							rel="noopener noreferrer"
-							target="_blank"
-							class="text-indigo-600 hover:text-indigo-900"
-						>
+					<div
+						class="border-surface-200-800 flex flex-wrap items-center justify-between gap-3 border-b pb-2 last:border-0"
+					>
+						<a href={document.url} rel="noopener noreferrer" target="_blank" class="anchor">
 							{document.name}
 						</a>
 						{#if canEdit}
 							<form method="POST" action="?/deleteDocument">
-								<input type="hidden" name="document_id" value={document.document_id} />
-								<button type="submit" class="text-sm text-red-600 hover:underline">Remove</button>
+								<input
+									class="input"
+									type="hidden"
+									name="document_id"
+									value={document.document_id}
+								/>
+								<button type="submit" class="text-error-500 text-sm hover:underline">Remove</button>
 							</form>
 						{/if}
 					</div>
 				{:else}
-					<p class="text-gray-600">No documents recorded.</p>
+					<p class="text-surface-600-400">No documents recorded.</p>
 				{/each}
 
 				{#if canEdit}
-					<form method="POST" action="?/addDocument" class="space-y-2 border-t pt-3">
+					<form
+						method="POST"
+						action="?/addDocument"
+						class="border-surface-200-800 space-y-2 border-t pt-3"
+					>
 						<div>
-							<label for="document_name">Document name</label>
-							<input id="document_name" name="name" type="text" required />
+							<label class="label label-text" for="document_name">Document name</label>
+							<input class="input" id="document_name" name="name" type="text" required />
 						</div>
 						<div>
-							<label for="document_url">Document URL</label>
-							<input id="document_url" name="url" type="url" required />
+							<label class="label label-text" for="document_url">Document URL</label>
+							<input class="input" id="document_url" name="url" type="url" required />
 							{#if form?.errors?.url}
-								<p class="text-sm text-red-600">{form.errors.url[0]}</p>
+								<p class="text-error-500 text-sm">{form.errors.url[0]}</p>
 							{/if}
 						</div>
 						<button type="submit" class="btn preset-filled">Add Document</button>

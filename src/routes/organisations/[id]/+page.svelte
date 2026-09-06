@@ -15,14 +15,14 @@
 </script>
 
 <div>
-	<div class="mb-6 flex items-center justify-between">
+	<div class="mb-6 flex flex-wrap items-start justify-between gap-3">
 		<div>
 			<h1 class="text-2xl font-bold">{organisation.entity_name}</h1>
 			{#each tradingNames as alias}
-				<p class="text-gray-600">Trading as: {alias.alias}</p>
+				<p class="text-surface-600-400">Trading as: {alias.alias}</p>
 			{/each}
 			{#if !organisation.is_public}
-				<p class="text-sm text-gray-500">Private — visible to members only</p>
+				<p class="text-surface-600-400 text-sm">Private — visible to members only</p>
 			{/if}
 		</div>
 		{#if canEdit}
@@ -33,7 +33,7 @@
 	</div>
 
 	{#if form?.message}
-		<p class="mb-4 text-red-600">{form.message}</p>
+		<p class="text-error-500 mb-4">{form.message}</p>
 	{/if}
 
 	<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -46,7 +46,7 @@
 					onSave={() => (isEditing = false)}
 				/>
 			{:else}
-				<div class="space-y-2 rounded-lg border p-4">
+				<div class="card preset-outlined-surface-200-800 space-y-2 p-4">
 					<div><span class="font-medium">Entity name:</span> {organisation.entity_name}</div>
 					<div><span class="font-medium">Slug:</span> {organisation.slug}</div>
 					<div>
@@ -61,15 +61,15 @@
 				<form
 					method="POST"
 					action="?/addAlias"
-					class="mt-4 flex flex-wrap items-end gap-3 rounded-lg border p-4"
+					class="card preset-outlined-surface-200-800 mt-4 flex flex-wrap items-end gap-3 p-4"
 				>
 					<div>
-						<label for="alias">Add a business or trading name</label>
-						<input id="alias" name="alias" type="text" required />
+						<label class="label label-text" for="alias">Add a business or trading name</label>
+						<input class="input" id="alias" name="alias" type="text" required />
 					</div>
 					<div>
-						<label for="alias_type">Type</label>
-						<select id="alias_type" name="alias_type">
+						<label class="label label-text" for="alias_type">Type</label>
+						<select class="select" id="alias_type" name="alias_type">
 							<option value="Trading Name">Trading Name</option>
 							<option value="Business Name">Business Name</option>
 						</select>
@@ -79,7 +79,7 @@
 			{/if}
 		</div>
 
-		<div class="rounded-lg border p-4">
+		<div class="card preset-outlined-surface-200-800 p-4">
 			<h2 class="mb-2 font-medium">Relationships</h2>
 			<RelationshipsTable relationships={relationships ?? []} />
 			<div class="mt-4">

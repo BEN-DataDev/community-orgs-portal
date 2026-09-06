@@ -36,32 +36,38 @@
 >
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 		<div>
-			<label for="email">Email</label>
-			<input id="email" type="email" name="email" value={contactInfo?.email ?? ''} />
-			{#if errors?.email}<p class="text-sm text-red-600">{errors.email[0]}</p>{/if}
+			<label class="label label-text" for="email">Email</label>
+			<input class="input" id="email" type="email" name="email" value={contactInfo?.email ?? ''} />
+			{#if errors?.email}<p class="text-error-500 text-sm">{errors.email[0]}</p>{/if}
 		</div>
 
 		<div>
-			<label for="phone">Phone</label>
-			<input id="phone" type="tel" name="phone" value={phone} />
+			<label class="label label-text" for="phone">Phone</label>
+			<input class="input" id="phone" type="tel" name="phone" value={phone} />
 		</div>
 
 		<div>
-			<label for="website">Website</label>
-			<input id="website" type="url" name="website" value={contactInfo?.website ?? ''} />
-			{#if errors?.website}<p class="text-sm text-red-600">{errors.website[0]}</p>{/if}
+			<label class="label label-text" for="website">Website</label>
+			<input
+				class="input"
+				id="website"
+				type="url"
+				name="website"
+				value={contactInfo?.website ?? ''}
+			/>
+			{#if errors?.website}<p class="text-error-500 text-sm">{errors.website[0]}</p>{/if}
 		</div>
 
 		<div>
-			<label for="physical_address">Physical Address</label>
-			<textarea id="physical_address" name="physical_address" rows="3"
+			<label class="label label-text" for="physical_address">Physical Address</label>
+			<textarea class="textarea" id="physical_address" name="physical_address" rows="3"
 				>{contactInfo?.physical_address ?? ''}</textarea
 			>
 		</div>
 
 		<div>
-			<label for="postal_address">Postal Address</label>
-			<textarea id="postal_address" name="postal_address" rows="3"
+			<label class="label label-text" for="postal_address">Postal Address</label>
+			<textarea class="textarea" id="postal_address" name="postal_address" rows="3"
 				>{contactInfo?.postal_address ?? ''}</textarea
 			>
 		</div>

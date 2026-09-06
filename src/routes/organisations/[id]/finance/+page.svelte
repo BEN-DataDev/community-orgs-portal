@@ -10,10 +10,10 @@
 </script>
 
 <div>
-	<div class="mb-6 flex items-center justify-between">
+	<div class="mb-6 flex flex-wrap items-start justify-between gap-3">
 		<div>
 			<h1 class="text-2xl font-bold">Financial Information</h1>
-			<p class="text-gray-600">{organisation.entity_name}</p>
+			<p class="text-surface-600-400">{organisation.entity_name}</p>
 		</div>
 		{#if canEdit}
 			<button class="btn preset-filled" onclick={() => (isEditing = !isEditing)}>
@@ -23,40 +23,40 @@
 	</div>
 
 	{#if form?.message}
-		<p class="mb-4 text-red-600">{form.message}</p>
+		<p class="text-error-500 mb-4">{form.message}</p>
 	{/if}
 
 	{#if isEditing && canEdit}
 		<FinancialForm {financialInfo} errors={form?.errors} onSave={() => (isEditing = false)} />
 	{:else if financialInfo}
-		<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-			<div class="space-y-2 rounded-lg border p-4">
+		<div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:gap-8">
+			<div class="card preset-outlined-surface-200-800 space-y-2 p-4">
 				<h2 class="font-medium">Annual Budget</h2>
 				<div class="text-2xl font-bold">
 					{financialInfo.annual_budget === null ? '—' : formatCurrency(financialInfo.annual_budget)}
 				</div>
-				<p class="text-sm text-gray-600">
+				<p class="text-surface-600-400 text-sm">
 					Financial year end: {financialInfo.financial_year_end
 						? formatDate(financialInfo.financial_year_end)
 						: '—'}
 				</p>
-				<p class="text-sm text-gray-600">
+				<p class="text-surface-600-400 text-sm">
 					Last audit: {financialInfo.last_audit_date
 						? formatDate(financialInfo.last_audit_date)
 						: '—'}
 				</p>
 			</div>
 
-			<div class="space-y-2 rounded-lg border p-4">
+			<div class="card preset-outlined-surface-200-800 space-y-2 p-4">
 				<h2 class="font-medium">Funding Sources</h2>
 				{#each financialInfo.funding_sources ?? [] as source}
 					<div>{source}</div>
 				{:else}
-					<p class="text-gray-600">None recorded.</p>
+					<p class="text-surface-600-400">None recorded.</p>
 				{/each}
 			</div>
 		</div>
 	{:else}
-		<p class="text-gray-600">No financial details recorded yet.</p>
+		<p class="text-surface-600-400">No financial details recorded yet.</p>
 	{/if}
 </div>

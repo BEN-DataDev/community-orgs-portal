@@ -29,59 +29,79 @@
 	}
 </script>
 
-<div class="overflow-x-auto">
-	<table class="min-w-full divide-y divide-gray-200">
-		<thead class="bg-gray-50">
+<!--
+	Below `md` each row becomes a card. The previous markup was
+	`overflow-x-auto` + `min-w-full`, which compresses four columns of
+	two-line cells to unreadable widths instead of ever engaging the scroll.
+-->
+<div class="space-y-3 md:hidden">
+	{#each organisations as org (org.org_id)}
+		{@const legal = org.legal_details?.[0]}
+		{@const contact = org.contact_info?.[0]}
+		{@const trading = org.aliases?.find((a) => a.alias_type === 'Trading Name')}
+		<div class="card preset-outlined-surface-200-800 space-y-3 p-4">
+			<div>
+				<a class="anchor font-medium" href="/organisations/{org.org_id}">{org.entity_name}</a>
+				{#if trading?.alias}
+					<div class="text-surface-600-400 text-sm">Trading as: {trading.alias}</div>
+				{/if}
+			</div>
+
+			<dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+				<dt class="text-surface-600-400">Entity type</dt>
+				<dd>{legal?.entity_type ?? '—'}</dd>
+				<dt class="text-surface-600-400">ABN</dt>
+				<dd>{legal?.abn ?? '—'}</dd>
+				<dt class="text-surface-600-400">Email</dt>
+				<dd class="break-words">{contact?.email ?? '—'}</dd>
+				<dt class="text-surface-600-400">Phone</dt>
+				<dd>{phoneOf(contact?.phone)}</dd>
+			</dl>
+		</div>
+	{:else}
+		<p class="card preset-outlined-surface-200-800 text-surface-600-400 p-6 text-center">
+			No organisations recorded yet.
+		</p>
+	{/each}
+</div>
+
+<div class="table-wrap hidden md:block">
+	<table class="table">
+		<thead>
 			<tr>
-				<th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-					Organisation
-				</th>
-				<th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-					Entity Type
-				</th>
-				<th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-					Contact
-				</th>
-				<th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-					Actions
-				</th>
+				<th>Organisation</th>
+				<th>Entity Type</th>
+				<th>Contact</th>
+				<th>Actions</th>
 			</tr>
 		</thead>
-		<tbody class="divide-y divide-gray-200 bg-white">
+		<tbody class="[&>tr]:hover:preset-tonal">
 			{#each organisations as org (org.org_id)}
 				{@const legal = org.legal_details?.[0]}
 				{@const contact = org.contact_info?.[0]}
 				{@const trading = org.aliases?.find((a) => a.alias_type === 'Trading Name')}
 				<tr>
-					<td class="px-6 py-4">
-						<div>
-							<div class="font-medium">{org.entity_name}</div>
-							{#if trading?.alias}
-								<div class="text-sm text-gray-500">Trading as: {trading.alias}</div>
-							{/if}
-						</div>
+					<td>
+						<div class="font-medium">{org.entity_name}</div>
+						{#if trading?.alias}
+							<div class="text-surface-600-400 text-sm">Trading as: {trading.alias}</div>
+						{/if}
 					</td>
-					<td class="px-6 py-4">
-						<div>
-							<div>{legal?.entity_type ?? '—'}</div>
-							<div class="text-sm text-gray-500">ABN: {legal?.abn ?? '—'}</div>
-						</div>
+					<td>
+						<div>{legal?.entity_type ?? '—'}</div>
+						<div class="text-surface-600-400 text-sm">ABN: {legal?.abn ?? '—'}</div>
 					</td>
-					<td class="px-6 py-4">
-						<div>
-							<div>{contact?.email ?? '—'}</div>
-							<div class="text-sm text-gray-500">{phoneOf(contact?.phone)}</div>
-						</div>
+					<td>
+						<div class="break-words">{contact?.email ?? '—'}</div>
+						<div class="text-surface-600-400 text-sm">{phoneOf(contact?.phone)}</div>
 					</td>
-					<td class="px-6 py-4">
-						<a href="/organisations/{org.org_id}" class="text-indigo-600 hover:text-indigo-900">
-							View Details
-						</a>
+					<td>
+						<a class="anchor" href="/organisations/{org.org_id}">View Details</a>
 					</td>
 				</tr>
 			{:else}
 				<tr>
-					<td class="px-6 py-8 text-center text-gray-500" colspan="4">
+					<td class="text-surface-600-400 text-center" colspan="4">
 						No organisations recorded yet.
 					</td>
 				</tr>

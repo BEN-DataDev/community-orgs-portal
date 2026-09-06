@@ -45,10 +45,10 @@
 	}}
 	class="space-y-6"
 >
-	<input type="hidden" name="partner_org" value={partnerName} />
+	<input class="input" type="hidden" name="partner_org" value={partnerName} />
 
 	<div>
-		<label for="partner-organisation">Partner Organisation</label>
+		<label class="label label-text" for="partner-organisation">Partner Organisation</label>
 		<OrganisationSearch
 			bind:selected={selectedPartner}
 			id="partner-organisation"
@@ -56,13 +56,13 @@
 			{supabase}
 		/>
 		{#if errors?.partner_org}
-			<p class="text-sm text-red-600">{errors.partner_org[0]}</p>
+			<p class="text-error-500 text-sm">{errors.partner_org[0]}</p>
 		{/if}
 	</div>
 
 	<div>
-		<label for="relationship-type">Relationship Type</label>
-		<select name="relationship_type" required class="w-full" id="relationship-type">
+		<label class="label label-text" for="relationship-type">Relationship Type</label>
+		<select name="relationship_type" required class="select w-full" id="relationship-type">
 			<option value="">Select type...</option>
 			{#each relationshipTypes as type}
 				<option value={type}>{type}</option>
@@ -72,12 +72,12 @@
 
 	<div class="grid grid-cols-2 gap-4">
 		<div>
-			<label for="start-date">Start Date</label>
-			<input type="date" name="start_date" required id="start-date" />
+			<label class="label label-text" for="start-date">Start Date</label>
+			<input class="input" type="date" name="start_date" required id="start-date" />
 		</div>
 		<div>
-			<label for="end-date">End Date</label>
-			<input type="date" name="end_date" id="end-date" />
+			<label class="label label-text" for="end-date">End Date</label>
+			<input class="input" type="date" name="end_date" id="end-date" />
 		</div>
 	</div>
 

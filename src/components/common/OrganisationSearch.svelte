@@ -96,30 +96,30 @@
 		onfocus={handleFocus}
 		onblur={handleBlur}
 		{placeholder}
-		class="w-full rounded-md border px-4 py-2"
+		class="input"
 	/>
 
 	{#if isLoading}
 		<div class="absolute top-2.5 right-3">
 			<div
-				class="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"
+				class="border-primary-500 h-5 w-5 animate-spin rounded-full border-2 border-t-transparent"
 			></div>
 		</div>
 	{/if}
 
 	{#if showResults && results.length > 0}
 		<div
-			class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white shadow-lg"
+			class="rounded-base border-surface-200-800 bg-surface-50-950 absolute z-50 mt-1 max-h-60 w-full overflow-auto border shadow-lg"
 		>
 			{#each results as org}
 				<button
 					type="button"
-					class="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+					class="hover:preset-tonal focus:preset-tonal w-full px-4 py-2 text-left focus:outline-none"
 					onclick={() => handleSelect(org)}
 				>
 					<div>{org.entity_name}</div>
 					{#if org.description}
-						<div class="text-sm text-gray-600">{org.description}</div>
+						<div class="text-surface-600-400 text-sm">{org.description}</div>
 					{/if}
 				</button>
 			{/each}
