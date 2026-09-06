@@ -12,18 +12,9 @@
 	let tradingNames = $derived(
 		(organisation.aliases ?? []).filter((alias) => alias.alias_type === 'Trading Name')
 	);
-
-	const sections = [
-		{ href: 'contact', label: 'Contact' },
-		{ href: 'legal', label: 'Legal' },
-		{ href: 'finance', label: 'Finance' },
-		{ href: 'operations', label: 'Operations' },
-		{ href: 'relationships', label: 'Relationships' },
-		{ href: 'history', label: 'History' }
-	];
 </script>
 
-<div class="container mx-auto px-4 py-8">
+<div>
 	<div class="mb-6 flex items-center justify-between">
 		<div>
 			<h1 class="text-2xl font-bold">{organisation.entity_name}</h1>
@@ -40,17 +31,6 @@
 			</button>
 		{/if}
 	</div>
-
-	<nav class="mb-6 flex flex-wrap gap-3">
-		{#each sections as section}
-			<a
-				class="text-indigo-600 hover:text-indigo-900"
-				href="/organisations/{organisation.org_id}/{section.href}"
-			>
-				{section.label}
-			</a>
-		{/each}
-	</nav>
 
 	{#if form?.message}
 		<p class="mb-4 text-red-600">{form.message}</p>

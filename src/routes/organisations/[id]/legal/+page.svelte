@@ -12,7 +12,7 @@
 	const orDash = (value: string | null) => (value ? formatDate(value) : '—');
 </script>
 
-<div class="container mx-auto px-4 py-8">
+<div>
 	<div class="mb-6 flex items-center justify-between">
 		<div>
 			<h1 class="text-2xl font-bold">Legal Information</h1>

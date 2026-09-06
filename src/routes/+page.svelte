@@ -1,49 +1,42 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	const features = [
+		{
+			title: 'Relationship Management',
+			body: 'Track partnerships, collaborations, and network connections with detailed timelines and insights'
+		},
+		{
+			title: 'Contact Information',
+			body: "Keep your organisation's contact details up-to-date and easily accessible"
+		},
+		{
+			title: 'Financial Tracking',
+			body: 'Monitor revenue, funding sources, and maintain crucial financial documentation'
+		}
+	];
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-	<div class="container mx-auto px-4 py-16">
-		<header class="text-center">
-			<h1 class="mb-6 text-5xl font-bold text-blue-900">Organisation Management Platform</h1>
-			<p class="mx-auto mb-8 max-w-2xl text-xl text-gray-600">
-				Track relationships, manage contacts, and monitor financial data for your organisation
-				network
-			</p>
-			<button class="btn preset-filled-primary-500 text-lg" onclick={() => goto('/organisations')}>
-				Get Started
-			</button>
-		</header>
+<div class="py-8 sm:py-12 lg:py-16">
+	<header class="text-center">
+		<h1 class="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl">
+			Organisation Management Platform
+		</h1>
+		<p class="text-surface-700-300 mx-auto mb-8 max-w-2xl text-base sm:text-lg lg:text-xl">
+			Track relationships, manage contacts, and monitor financial data for your organisation network
+		</p>
+		<a class="btn preset-filled-primary-500 sm:btn-lg" href="/organisations">Get Started</a>
+	</header>
 
-		<div class="mt-24 grid grid-cols-1 gap-12 md:grid-cols-3">
-			<div class="rounded-lg bg-white p-8 shadow-lg">
-				<h2 class="mb-4 text-2xl font-bold text-blue-900">Relationship Management</h2>
-				<p class="text-gray-600">
-					Track partnerships, collaborations, and network connections with detailed timelines and
-					insights
-				</p>
+	<div class="mt-16 grid grid-cols-1 gap-6 sm:mt-20 md:grid-cols-3 md:gap-8 lg:gap-12">
+		{#each features as feature (feature.title)}
+			<div class="card preset-tonal p-6 lg:p-8">
+				<h2 class="mb-3 text-xl font-bold lg:text-2xl">{feature.title}</h2>
+				<p class="text-surface-700-300">{feature.body}</p>
 			</div>
+		{/each}
+	</div>
 
-			<div class="rounded-lg bg-white p-8 shadow-lg">
-				<h2 class="mb-4 text-2xl font-bold text-blue-900">Contact Information</h2>
-				<p class="text-gray-600">
-					Keep your organisation's contact details up-to-date and easily accessible
-				</p>
-			</div>
-
-			<div class="rounded-lg bg-white p-8 shadow-lg">
-				<h2 class="mb-4 text-2xl font-bold text-blue-900">Financial Tracking</h2>
-				<p class="text-gray-600">
-					Monitor revenue, funding sources, and maintain crucial financial documentation
-				</p>
-			</div>
-		</div>
-
-		<div class="mt-24 text-center">
-			<h2 class="mb-8 text-3xl font-bold text-blue-900">Ready to streamline your organisation?</h2>
-			<button class="btn preset-filled-primary-500 text-lg" onclick={() => goto('/organisations')}>
-				Start Now
-			</button>
-		</div>
+	<div class="mt-16 text-center sm:mt-20">
+		<h2 class="mb-6 text-2xl font-bold sm:text-3xl">Ready to streamline your organisation?</h2>
+		<a class="btn preset-filled-primary-500 sm:btn-lg" href="/organisations">Start Now</a>
 	</div>
 </div>
