@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import OrganisationForm from '$components/forms/OrganisationForm.svelte';
 	import RelationshipsTable from '$components/tables/RelationshipsTable.svelte';
 	import { EDITOR_LEVEL } from '$lib/role-levels';
@@ -84,7 +85,7 @@
 			<RelationshipsTable relationships={relationships ?? []} />
 			<div class="mt-4">
 				<a
-					href="/organisations/{organisation.org_id}/relationships"
+					href={resolve('/organisations/[id]/relationships', { id: organisation.org_id })}
 					class="btn preset-filled-secondary w-full"
 				>
 					Manage Relationships

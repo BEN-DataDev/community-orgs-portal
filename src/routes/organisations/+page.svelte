@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import OrganisationTable from '$components/tables/OrganisationTable.svelte';
 	import Pagination from '$components/common/Pagination.svelte';
 	import OrganisationForm from '$components/forms/OrganisationForm.svelte';
@@ -36,6 +37,12 @@
 	<OrganisationTable organisations={organisations ?? []} />
 
 	<div class="mt-4">
-		<Pagination {currentPage} {totalPages} {totalCount} {pageSize} baseUrl="/organisations" />
+		<Pagination
+			{currentPage}
+			{totalPages}
+			{totalCount}
+			{pageSize}
+			baseUrl={resolve('/organisations')}
+		/>
 	</div>
 </div>

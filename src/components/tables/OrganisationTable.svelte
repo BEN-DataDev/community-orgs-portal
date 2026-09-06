@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	/**
 	 * `legal_details`, `contact_info` and `aliases` are child tables joined on
 	 * `org_id`, so PostgREST returns an array for each embed — not an object.
@@ -41,7 +42,9 @@
 		{@const trading = org.aliases?.find((a) => a.alias_type === 'Trading Name')}
 		<div class="card preset-outlined-surface-200-800 space-y-3 p-4">
 			<div>
-				<a class="anchor font-medium" href="/organisations/{org.org_id}">{org.entity_name}</a>
+				<a class="anchor font-medium" href={resolve('/organisations/[id]', { id: org.org_id })}
+					>{org.entity_name}</a
+				>
 				{#if trading?.alias}
 					<div class="text-surface-600-400 text-sm">Trading as: {trading.alias}</div>
 				{/if}
@@ -96,7 +99,9 @@
 						<div class="text-surface-600-400 text-sm">{phoneOf(contact?.phone)}</div>
 					</td>
 					<td>
-						<a class="anchor" href="/organisations/{org.org_id}">View Details</a>
+						<a class="anchor" href={resolve('/organisations/[id]', { id: org.org_id })}
+							>View Details</a
+						>
 					</td>
 				</tr>
 			{:else}

@@ -1,3 +1,7 @@
+<script lang="ts">
+	import { resolve } from '$app/paths';
+</script>
+
 <svelte:head>
 	<title>Confirm your email</title>
 </svelte:head>
@@ -7,5 +11,5 @@
 	<p>
 		We have sent you a confirmation link. Open it to finish setting up your account, then sign in.
 	</p>
-	<a class="btn preset-filled-primary-500" href="/auth/signin">Back to sign in</a>
+	<a class="btn preset-filled-primary-500" href={resolve('/auth/signin')}>Back to sign in</a>
 </div>

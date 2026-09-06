@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { invalidate } from '$app/navigation';
 	import { onMount } from 'svelte';
 
@@ -47,7 +48,7 @@
 	<AppBar>
 		<AppBar.Toolbar class="gap-2 px-4 sm:px-6 lg:px-8">
 			<AppBar.Lead>
-				<a class="flex items-center gap-2" aria-label="CII home" href="/">
+				<a class="flex items-center gap-2" aria-label="CII home" href={resolve('/')}>
 					<img width="48" height="48" src="/images/Logo.png" alt="" />
 					<span class="hidden text-lg leading-tight sm:block">
 						Community Information<br />Infrastructure
@@ -57,9 +58,9 @@
 
 			<AppBar.Trail class="flex flex-wrap items-center justify-end gap-2">
 				{#if user}
-					<a class="btn btn-sm preset-tonal" href="/auth/signout">Sign out</a>
+					<a class="btn btn-sm preset-tonal" href={resolve('/auth/signout')}>Sign out</a>
 				{:else}
-					<a class="btn btn-sm preset-filled" href="/auth/signin">Sign in</a>
+					<a class="btn btn-sm preset-filled" href={resolve('/auth/signin')}>Sign in</a>
 				{/if}
 				<ThemeToggle />
 			</AppBar.Trail>

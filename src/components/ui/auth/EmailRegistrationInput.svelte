@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { Eye, EyeOff } from 'lucide-svelte';
 
 	interface Props {
@@ -199,7 +200,7 @@
 
 	<div class="mt-6 flex items-center justify-center gap-2">
 		<span>Have an account?</span>
-		<a href="/auth/signin" class="btn preset-filled"> Sign In </a>
+		<a href={resolve('/auth/signin')} class="btn preset-filled"> Sign In </a>
 	</div>
 
 	{#if password && passwordConfirmation && !passwordsMatch}

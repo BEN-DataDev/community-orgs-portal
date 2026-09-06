@@ -8,6 +8,7 @@
 		/** Total number of records, which is what Skeleton's Pagination counts in. */
 		totalCount: number;
 		pageSize: number;
+		/** An already-resolved path; callers pass `resolve('/some/route')`. */
 		baseUrl: string;
 	}
 
@@ -29,6 +30,11 @@
 
 	Prev/Next are plain anchors rather than Skeleton's PrevTrigger/NextTrigger,
 	which render <button> and cannot carry an href.
+
+	The Svelte autofixer flags these two hrefs as "without resolve()". That is a
+	false positive: `baseUrl` is already resolved by the caller, because this
+	component is generic over any paginated list route and so cannot name a
+	route ID itself. Resolving again here would double-apply the base path.
 -->
 {#if totalPages > 1}
 	<SkeletonPagination

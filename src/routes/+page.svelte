@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	const features = [
 		{
 			title: 'Relationship Management',
@@ -23,7 +24,9 @@
 		<p class="text-surface-700-300 mx-auto mb-8 max-w-2xl text-base sm:text-lg lg:text-xl">
 			Track relationships, manage contacts, and monitor financial data for your organisation network
 		</p>
-		<a class="btn preset-filled-primary-500 sm:btn-lg" href="/organisations">Get Started</a>
+		<a class="btn preset-filled-primary-500 sm:btn-lg" href={resolve('/organisations')}
+			>Get Started</a
+		>
 	</header>
 
 	<div class="mt-16 grid grid-cols-1 gap-6 sm:mt-20 md:grid-cols-3 md:gap-8 lg:gap-12">
@@ -37,6 +40,7 @@
 
 	<div class="mt-16 text-center sm:mt-20">
 		<h2 class="mb-6 text-2xl font-bold sm:text-3xl">Ready to streamline your organisation?</h2>
-		<a class="btn preset-filled-primary-500 sm:btn-lg" href="/organisations">Start Now</a>
+		<a class="btn preset-filled-primary-500 sm:btn-lg" href={resolve('/organisations')}>Start Now</a
+		>
 	</div>
 </div>

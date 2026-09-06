@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { Eye, EyeOff } from 'lucide-svelte';
 
 	interface Props {
@@ -73,7 +74,7 @@
 
 	<div class="mt-6 flex flex-wrap items-center justify-center gap-2">
 		<span class="text-surface-700-300">Not registered?</span>
-		<a href="/auth/signup" class="btn btn-sm preset-tonal">Create an Account</a>
+		<a href={resolve('/auth/signup')} class="btn btn-sm preset-tonal">Create an Account</a>
 	</div>
 
 	{#if email && !emailValid}

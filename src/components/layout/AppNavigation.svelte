@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { Navigation } from '@skeletonlabs/skeleton-svelte';
 	import { Building2, FileBarChart, Home, Icon, Shield } from 'lucide-svelte';
 
@@ -21,10 +22,10 @@
 	let { layout }: Props = $props();
 
 	const destinations: Destination[] = [
-		{ href: '/', label: 'Home', icon: Home },
-		{ href: '/organisations', label: 'Organisations', icon: Building2 },
-		{ href: '/reports', label: 'Reports', icon: FileBarChart },
-		{ href: '/admin', label: 'Admin', icon: Shield }
+		{ href: resolve('/'), label: 'Home', icon: Home },
+		{ href: resolve('/organisations'), label: 'Organisations', icon: Building2 },
+		{ href: resolve('/reports'), label: 'Reports', icon: FileBarChart },
+		{ href: resolve('/admin'), label: 'Admin', icon: Shield }
 	];
 
 	/**
