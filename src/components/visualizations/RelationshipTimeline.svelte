@@ -21,15 +21,6 @@
 		relationships.filter((r) => r.start_date !== null && r.partner_org !== null)
 	);
 
-	$effect(() => {
-		if (!container) return;
-		const observer = new ResizeObserver((entries) => {
-			width = entries[0]?.contentRect.width ?? 0;
-		});
-		observer.observe(container);
-		return () => observer.disconnect();
-	});
-
 	/**
 	 * Redraws whenever the data or the measured width changes. The previous
 	 * chart is removed first, so this does not accumulate SVG elements.
@@ -122,7 +113,11 @@
 	}
 </script>
 
-<div bind:this={container} class="h-full min-h-64 w-full sm:min-h-80 lg:min-h-96">
+<div
+	bind:this={container}
+	bind:clientWidth={width}
+	class="h-full min-h-64 w-full sm:min-h-80 lg:min-h-96"
+>
 	{#if plottable.length === 0}
 		<p class="text-surface-600-400">No dated relationships to plot yet.</p>
 	{/if}
