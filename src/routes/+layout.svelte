@@ -12,7 +12,7 @@
 	import { theme } from '$lib/theme.svelte';
 
 	let { data, children } = $props();
-	let { session, supabase, user } = $derived(data);
+	let { session, supabase, user, isSiteAdmin } = $derived(data);
 
 	/**
 	 * Navigation takes a different *prop* per breakpoint rather than different
@@ -69,7 +69,7 @@
 
 	<div class="flex flex-1 flex-col md:flex-row">
 		{#if user}
-			<AppNavigation layout={navLayout} />
+			<AppNavigation layout={navLayout} {isSiteAdmin} />
 		{/if}
 
 		<!--

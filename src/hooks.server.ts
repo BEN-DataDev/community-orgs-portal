@@ -95,7 +95,14 @@ const supabase: Handle = async ({ event, resolve }) => {
 			return { session: null, user: null };
 		}
 
-		return { session, user };
+		/**
+		 * `session.user` here still comes from cookie storage and is wrapped in a
+		 * warning proxy that fires the moment any of its properties are read —
+		 * which happens the instant this session is serialized into the page data
+		 * for hydration. Overwrite it with the copy `getUser()` just validated
+		 * against the Auth server before it goes anywhere.
+		 */
+		return { session: { ...session, user: user! }, user };
 	};
 
 	return resolve(event, {

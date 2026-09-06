@@ -55,5 +55,5 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 	 * `depends('supabase:auth')` above is what re-runs this load — and the
 	 * server load with it — when the session changes.
 	 */
-	return { session, supabase, user: data.user };
+	return { session, supabase, user: data.user, isSiteAdmin: data.isSiteAdmin };
 };

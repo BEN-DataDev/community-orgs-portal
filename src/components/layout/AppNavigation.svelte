@@ -17,16 +17,18 @@
 		 * and no styling at all — so every class below is ours to supply.
 		 */
 		layout: 'bar' | 'rail' | 'sidebar';
+		/** Whether the signed-in user is an admin or owner of at least one organisation. */
+		isSiteAdmin: boolean;
 	}
 
-	let { layout }: Props = $props();
+	let { layout, isSiteAdmin }: Props = $props();
 
-	const destinations: Destination[] = [
+	const destinations: Destination[] = $derived([
 		{ href: resolve('/'), label: 'Home', icon: Home },
 		{ href: resolve('/organisations'), label: 'Organisations', icon: Building2 },
 		{ href: resolve('/reports'), label: 'Reports', icon: FileBarChart },
-		{ href: resolve('/admin'), label: 'Admin', icon: Shield }
-	];
+		...(isSiteAdmin ? [{ href: resolve('/admin'), label: 'Admin', icon: Shield }] : [])
+	]);
 
 	/**
 	 * `/` would otherwise prefix-match every route, so it has to match exactly.

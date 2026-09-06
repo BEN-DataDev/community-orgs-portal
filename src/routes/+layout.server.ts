@@ -1,4 +1,5 @@
 import type { LayoutServerLoad } from './$types';
+import { isSiteAdmin } from '$lib/server/authorization';
 
 export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 	/**
@@ -13,6 +14,7 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 	return {
 		session: locals.session,
 		user: locals.user,
+		isSiteAdmin: await isSiteAdmin(locals.supabase, locals.user?.id),
 		roles: '',
 		cookies: cookies.getAll()
 	};
