@@ -1,40 +1,33 @@
 /**
- * The single source of truth for theming.
+ * The single source of truth for light/dark mode.
  *
- * This replaces three uncoordinated mechanisms: `ThemeToggle` wrote a `darkMode`
- * key and toggled `.dark` on <html>, `ThemeSelector` wrote a `theme` key and set
- * `data-theme` on <body>, and `stores/app.ts` listened for storage events on a
- * `THEME_PREFERENCE_KEY` that nothing ever wrote.
+ * The app ships one Skeleton theme (`pine`), applied as a static `data-theme`
+ * attribute in app.html. The only runtime axis is the colour mode, which has
+ * three states:
  *
- * Two independent axes:
- *   - `name` selects a Skeleton palette, applied as `data-theme` on <html>.
- *   - `dark` toggles the `.dark` class, which `app.css` binds the dark variant to.
+ *   - `system` (default) — follows the OS, live, via a media-query listener.
+ *   - `light` / `dark`   — an explicit override that pins the mode.
  *
- * The storage keys are the ones the old components already used, so existing
- * preferences carry over. `app.html` reads the same keys in an inline script so
- * the choice is applied before first paint rather than flashing on mount.
+ * `app.html` resolves the same key in an inline script before first paint, so
+ * the mode is applied rather than flashing on mount. Keep the two in sync.
  */
 
-export const THEME_STORAGE_KEY = 'theme';
-export const DARK_MODE_STORAGE_KEY = 'darkMode';
+export const MODE_STORAGE_KEY = 'colorMode';
 
-export const DEFAULT_THEME = 'seafoam';
+/** The key written by the previous two-state toggle, read once for migration. */
+const LEGACY_DARK_KEY = 'darkMode';
 
-export const THEMES = [
-	{ value: 'concord', name: 'Concord' },
-	{ value: 'legacy', name: 'Legacy' },
-	{ value: 'mona', name: 'Mona' },
-	{ value: 'rocket', name: 'Rocket' },
-	{ value: 'seafoam', name: 'Seafoam' },
-	{ value: 'vox', name: 'Vox' },
-	{ value: 'wintry', name: 'Wintry' },
-	{ value: 'cii', name: 'CII' }
-] as const;
+const DARK_QUERY = '(prefers-color-scheme: dark)';
 
-const THEME_VALUES = THEMES.map((theme) => theme.value) as readonly string[];
+export type ColorMode = 'light' | 'dark' | 'system';
 
-function isKnownTheme(value: string | null): value is string {
-	return value !== null && THEME_VALUES.includes(value);
+export const DEFAULT_MODE: ColorMode = 'system';
+
+/** The order the toggle cycles through. */
+const MODE_CYCLE: readonly ColorMode[] = ['system', 'light', 'dark'];
+
+function isColorMode(value: string | null): value is ColorMode {
+	return value === 'light' || value === 'dark' || value === 'system';
 }
 
 /**
@@ -57,47 +50,78 @@ function writeStored(key: string, value: string): void {
 	}
 }
 
+function removeStored(key: string): void {
+	try {
+		localStorage.removeItem(key);
+	} catch {
+		// As above.
+	}
+}
+
 class ThemeState {
-	name = $state(DEFAULT_THEME);
-	dark = $state(false);
+	mode = $state<ColorMode>(DEFAULT_MODE);
 
-	/** Reads stored preferences, falling back to the OS setting for dark mode. */
-	init() {
-		const storedTheme = readStored(THEME_STORAGE_KEY);
-		this.name = isKnownTheme(storedTheme) ? storedTheme : DEFAULT_THEME;
+	/** Tracks the OS preference so `system` can resolve without re-querying. */
+	private systemDark = $state(false);
 
-		const storedDark = readStored(DARK_MODE_STORAGE_KEY);
+	/** The mode actually rendered, once `system` is resolved against the OS. */
+	readonly dark = $derived(this.mode === 'system' ? this.systemDark : this.mode === 'dark');
+
+	/**
+	 * Reads the stored mode and starts following the OS preference.
+	 * Returns a teardown that removes the media-query listener; call it from
+	 * the `onMount` cleanup in the root layout.
+	 */
+	init(): () => void {
+		const stored = readStored(MODE_STORAGE_KEY);
+
+		if (isColorMode(stored)) {
+			this.mode = stored;
+		} else {
+			// Carry over a preference set by the previous boolean toggle, so
+			// anyone who had chosen a mode keeps it.
+			const legacy = readStored(LEGACY_DARK_KEY);
+			if (legacy === 'true' || legacy === 'false') {
+				this.mode = legacy === 'true' ? 'dark' : 'light';
+				writeStored(MODE_STORAGE_KEY, this.mode);
+			} else {
+				this.mode = DEFAULT_MODE;
+			}
+			removeStored(LEGACY_DARK_KEY);
+		}
+
+		const query = window.matchMedia(DARK_QUERY);
+		this.systemDark = query.matches;
+		this.apply();
+
 		/**
-		 * Checked for null before comparing. The old code wrote
-		 * `getItem(...) === 'true' ?? matchMedia(...)`, where the left side is
-		 * always a boolean, so `??` never fell through and the OS preference was
-		 * dead code.
+		 * The old implementation read the media query once and never again, so
+		 * `system` silently stopped tracking the OS after first paint. This
+		 * listener is what makes the `system` state mean anything.
 		 */
-		this.dark =
-			storedDark === null
-				? window.matchMedia('(prefers-color-scheme: dark)').matches
-				: storedDark === 'true';
+		const onChange = (event: MediaQueryListEvent) => {
+			this.systemDark = event.matches;
+			this.apply();
+		};
+		query.addEventListener('change', onChange);
 
+		return () => query.removeEventListener('change', onChange);
+	}
+
+	setMode(value: ColorMode) {
+		this.mode = value;
+		writeStored(MODE_STORAGE_KEY, value);
 		this.apply();
 	}
 
-	setName(value: string) {
-		if (!isKnownTheme(value)) return;
-		this.name = value;
-		writeStored(THEME_STORAGE_KEY, value);
-		this.apply();
-	}
-
-	toggleDark() {
-		this.dark = !this.dark;
-		writeStored(DARK_MODE_STORAGE_KEY, String(this.dark));
-		this.apply();
+	/** Steps `system → light → dark → system`. */
+	cycle() {
+		const next = MODE_CYCLE[(MODE_CYCLE.indexOf(this.mode) + 1) % MODE_CYCLE.length];
+		this.setMode(next);
 	}
 
 	private apply() {
-		const root = document.documentElement;
-		root.setAttribute('data-theme', this.name);
-		root.classList.toggle('dark', this.dark);
+		document.documentElement.classList.toggle('dark', this.dark);
 	}
 }
 

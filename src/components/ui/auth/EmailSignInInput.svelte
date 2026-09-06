@@ -34,7 +34,7 @@
 </script>
 
 <div class="space-y-4">
-	<h1 class="h1 type-scale-4">Sign In with Email and Password:</h1>
+	<h1 class="h1">Sign In with Email and Password:</h1>
 
 	<input
 		type="email"

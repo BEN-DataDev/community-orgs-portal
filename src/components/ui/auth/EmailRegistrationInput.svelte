@@ -101,7 +101,7 @@
 </script>
 
 <div class="space-y-4">
-	<h1 class="h1 type-scale-4">Register with Email and Password:</h1>
+	<h1 class="h1">Register with Email and Password:</h1>
 
 	<input
 		type="email"
@@ -152,7 +152,7 @@
 				{passwordStrength}
 			</span>
 		</div>
-		<div class="bg-surface-300-600-token h-2.5 w-full rounded-full">
+		<div class="bg-surface-300-600 h-2.5 w-full rounded-full">
 			<div
 				class="h-2.5 rounded-full transition-all duration-300 ease-in-out"
 				class:bg-error-500={passwordStrengthClass === 'weak'}

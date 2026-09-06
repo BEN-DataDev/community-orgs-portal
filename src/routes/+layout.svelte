@@ -6,14 +6,13 @@
 
 	import '../app.css';
 	import ThemeToggle from '$components/ui/ThemeToggle.svelte';
-	import ThemeSelector from '$components/ui/ThemeSelector.svelte';
 	import { theme } from '$lib/theme.svelte';
 
 	let { data, children } = $props();
 	let { session, supabase, user } = $derived(data);
 
 	onMount(() => {
-		theme.init();
+		const disposeTheme = theme.init();
 
 		const { data: authListener } = supabase.auth.onAuthStateChange((_, newSession) => {
 			if (newSession?.expires_at !== session?.expires_at) {
@@ -21,32 +20,34 @@
 			}
 		});
 
-		return () => authListener.subscription.unsubscribe();
+		return () => {
+			disposeTheme();
+			authListener.subscription.unsubscribe();
+		};
 	});
 </script>
 
 <AppBar>
-	{#snippet lead()}
-		<a class="flex items-center gap-2" aria-label="CII home" href="/">
-			<img width="48" height="48" src="/images/Logo.png" alt="" />
-			<span class="hidden text-lg leading-tight sm:block">
-				Community Information<br />Infrastructure
-			</span>
-		</a>
-	{/snippet}
+	<AppBar.Toolbar>
+		<AppBar.Lead>
+			<a class="flex items-center gap-2" aria-label="CII home" href="/">
+				<img width="48" height="48" src="/images/Logo.png" alt="" />
+				<span class="hidden text-lg leading-tight sm:block">
+					Community Information<br />Infrastructure
+				</span>
+			</a>
+		</AppBar.Lead>
 
-	{#snippet trail()}
-		<nav class="flex items-center gap-2">
+		<AppBar.Trail>
 			{#if user}
 				<a class="btn btn-sm preset-filled" href="/organisations">Organisations</a>
 				<a class="btn btn-sm preset-tonal" href="/auth/signout">Sign out</a>
 			{:else}
 				<a class="btn btn-sm preset-filled" href="/auth/signin">Sign in</a>
 			{/if}
-			<ThemeSelector />
 			<ThemeToggle />
-		</nav>
-	{/snippet}
+		</AppBar.Trail>
+	</AppBar.Toolbar>
 </AppBar>
 
 <main class="flex min-h-screen w-full flex-1 flex-col overflow-auto">

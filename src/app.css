@@ -1,22 +1,11 @@
 /*
- * Skeleton 3 on Tailwind 4 is CSS-first. Themes, presets and the core styles
- * are imported here; there is no Tailwind plugin and no `tailwind.config.ts`.
- * (The old config used the Skeleton v2 plugin API, which this version does not
- * have, and Tailwind 4 never loaded that file in the first place.)
+ * Skeleton 5 on Tailwind 4 is CSS-first: no Tailwind plugin, no
+ * `tailwind.config.ts`. Theming is a single stock theme (`pine`) plus a
+ * light/dark class variant; there is no theme picker.
  */
 @import 'tailwindcss';
 @import '@skeletonlabs/skeleton';
-@import '@skeletonlabs/skeleton/optional/presets';
-
-/* Only the themes the theme picker offers — see src/lib/theme.svelte.ts. */
-@import '@skeletonlabs/skeleton/themes/concord';
-@import '@skeletonlabs/skeleton/themes/legacy';
-@import '@skeletonlabs/skeleton/themes/mona';
-@import '@skeletonlabs/skeleton/themes/rocket';
-@import '@skeletonlabs/skeleton/themes/seafoam';
-@import '@skeletonlabs/skeleton/themes/vox';
-@import '@skeletonlabs/skeleton/themes/wintry';
-@import './lib/themes-cii.css';
+@import '@skeletonlabs/skeleton/themes/pine';
 
 @plugin '@tailwindcss/typography';
 @plugin '@tailwindcss/forms';
@@ -24,25 +13,29 @@
 @plugin '@tailwindcss/aspect-ratio';
 
 /*
- * Relative to this file. The previous `../../src` resolved to a directory
- * above the repository root, and two further sources pointed at flowbite-svelte,
- * which is not a dependency of this project.
+ * Relative to this file. Skeleton's own packages ship their `@source` rules
+ * from v4 onward, so only our own sources need registering here.
  */
 @source '../src';
-@source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
 
 /* Dark mode is a `.dark` class on <html>, set by src/lib/theme.svelte.ts. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Pine ships a serif stack (Superclarendon/Bookman/Georgia) for base and
+ * headings. We keep Poppins, which app.html preloads. These must be scoped to
+ * the same `[data-theme]` selector the theme uses, or they lose on specificity.
+ */
+[data-theme='pine'] {
+	--typo-base--font-family: 'Poppins', sans-serif;
+	--typo-heading--font-family: 'Poppins', sans-serif;
+}
+
 @theme {
 	--z-index-100: 100;
 
-	/*
-	 * Poppins is loaded in app.html. The colour scales that used to live here
-	 * are provided by the Skeleton themes above; redeclaring them shadowed the
-	 * active theme.
-	 */
-	--font-family-sans: 'Poppins', sans-serif;
+	/* `--font-sans` is the Tailwind 4 namespace; `--font-family-sans` generated nothing. */
+	--font-sans: 'Poppins', sans-serif;
 }
 
 @layer base {

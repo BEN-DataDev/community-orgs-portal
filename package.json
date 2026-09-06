@@ -13,8 +13,8 @@
 		"update-db-types": "npx supabase gen types typescript --project-id \"gqltsfijginclwszrcfj\" --schema community_orgs > src/lib/db.types.ts"
 	},
 	"dependencies": {
-		"@skeletonlabs/skeleton": "^3.0.0-next.7",
-		"@skeletonlabs/skeleton-svelte": "^1.0.0-next.12",
+		"@skeletonlabs/skeleton": "5.0.1",
+		"@skeletonlabs/skeleton-svelte": "5.0.1",
 		"@supabase/ssr": "^0.5.2",
 		"@supabase/supabase-js": "^2.46.1",
 		"@sveltejs/kit": "^2.8.0",
