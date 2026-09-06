@@ -45,7 +45,7 @@
 
 <div class="flex min-h-dvh flex-col">
 	<AppBar>
-		<AppBar.Toolbar class="gap-2">
+		<AppBar.Toolbar class="gap-2 px-4 sm:px-6 lg:px-8">
 			<AppBar.Lead>
 				<a class="flex items-center gap-2" aria-label="CII home" href="/">
 					<img width="48" height="48" src="/images/Logo.png" alt="" />

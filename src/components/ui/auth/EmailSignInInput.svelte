@@ -34,7 +34,7 @@
 </script>
 
 <div class="space-y-4">
-	<h1 class="h1">Sign In with Email and Password:</h1>
+	<h1 class="h3">Sign in</h1>
 
 	<input
 		type="email"
@@ -71,9 +71,9 @@
 		</button>
 	</div>
 
-	<div class="mt-6 flex items-center justify-center gap-2">
-		<span>Not registered?</span>
-		<a href="/auth/signup" class="btn preset-filled-secondary-500"> Create an Account </a>
+	<div class="mt-6 flex flex-wrap items-center justify-center gap-2">
+		<span class="text-surface-700-300">Not registered?</span>
+		<a href="/auth/signup" class="btn btn-sm preset-tonal">Create an Account</a>
 	</div>
 
 	{#if email && !emailValid}

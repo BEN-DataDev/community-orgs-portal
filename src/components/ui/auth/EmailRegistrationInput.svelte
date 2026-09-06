@@ -101,7 +101,7 @@
 </script>
 
 <div class="space-y-4">
-	<h1 class="h1">Register with Email and Password:</h1>
+	<h1 class="h3">Create an account</h1>
 
 	<input
 		type="email"
