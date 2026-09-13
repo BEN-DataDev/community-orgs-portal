@@ -1,0 +1,18 @@
+-- Enables pg_graphql, which the local stack stopped creating on its own.
+--
+-- The extension arrived from Supabase's old default project template rather
+-- than from any migration in this repo, so it survived on the remote and on the
+-- Postgres 15 local image but vanished the moment the local data directory was
+-- rebuilt for Postgres 17. The newer image's init leaves the `graphql` and
+-- `graphql_public` schemas in place without installing the extension into them,
+-- and `/graphql/v1` then answers every request with "pg_graphql extension is
+-- not enabled."
+--
+-- Recording it as a migration is what keeps it: enabling it by hand does not
+-- survive `supabase db reset`, and `graphql_public` is an exposed PostgREST
+-- schema in config.toml, so a reset otherwise leaves a configured endpoint
+-- broken until someone remembers this.
+--
+-- IF NOT EXISTS makes this a no-op on the remote, which already carries
+-- pg_graphql 1.6.1.
+create extension if not exists pg_graphql with schema graphql;
