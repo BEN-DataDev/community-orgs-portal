@@ -12,3 +12,6 @@ build
 
 # Generated from the database by `npm run update-db-types`
 src/lib/db.types.ts
+
+# Mirrored upstream documentation; preserve source content and hashes.
+docs/vendor/skeleton/
