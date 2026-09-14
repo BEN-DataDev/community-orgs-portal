@@ -1,0 +1,9 @@
+# MCP servers adapted from .mcp.json and .vscode/mcp.json.
+[mcp_servers.svelte]
+command = "npx"
+args = ["-y", "@sveltejs/mcp"]
+startup_timeout_sec = 60
+
+[mcp_servers.supabase]
+url = "https://mcp.supabase.com/mcp?project_ref=gqltsfijginclwszrcfj"
+bearer_token_env_var = "SUPABASE_ACCESS_TOKEN"
