@@ -6,13 +6,16 @@
   /auth/confirm, so the application never gets to set its own cookies or honour
   the "next" destination.
 -->
-<h2>Confirm your new email address</h2>
+<h2>Confirm your email change</h2>
 
-<p>Confirm this address to finish changing the email on your account.</p>
+<p>
+	You requested a change to the email on your account. Confirm this request below. You may also need
+	to confirm the link sent to your other inbox.
+</p>
 
 <p>
 	<a
-		href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change&next=/organisations"
+		href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change&next=/auth/email-change"
 	>
 		Confirm this address
 	</a>

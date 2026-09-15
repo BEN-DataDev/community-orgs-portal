@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals: { session } }) => {
@@ -14,9 +14,9 @@ export const actions: Actions = {
 	 * endpoint here could be triggered by any third-party page embedding it.
 	 */
 	default: async ({ locals: { supabase } }) => {
-		const { error } = await supabase.auth.signOut();
+		const { error } = await supabase.auth.signOut({ scope: 'local' });
 		if (error) {
-			console.error('Sign out failed:', error.message);
+			return fail(400, { error: 'Could not sign out. Please try again.' });
 		}
 		redirect(303, '/');
 	}

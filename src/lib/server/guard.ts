@@ -40,6 +40,8 @@ export function isSignedInAuthPath(pathname: string): boolean {
 		pathname.startsWith('/auth/callback') ||
 		pathname.startsWith('/auth/oauth') ||
 		pathname.startsWith('/auth/reset-password') ||
+		pathname === '/auth/forgot-password' ||
+		pathname === '/auth/email-change' ||
 		pathname.startsWith('/auth/mfa') ||
 		pathname.startsWith('/auth/error')
 	);

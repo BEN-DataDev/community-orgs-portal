@@ -3,8 +3,9 @@ import type { Database } from './db.types';
 
 /**
  * The Supabase client type this project uses: typed against the generated
- * `Database` and pinned to the `community_orgs` schema, where every table
- * lives. The `public` schema — the client default — holds none of them.
+ * `Database` and pinned to `community_orgs` for organisation data. Account
+ * avatars use the existing `public.users` profile through an explicit
+ * `.schema('public')` call.
  *
  * Note for the factory call sites in `hooks.server.ts` and `routes/+layout.ts`:
  * the installed @supabase/ssr (0.5.2) declares its return type with three

@@ -6,6 +6,462 @@ export type Database = {
 	__InternalSupabase: {
 		PostgrestVersion: '14.5';
 	};
+	public: {
+		Tables: {
+			address_users: {
+				Row: {
+					address_id: string;
+					created_at: string;
+					id: string;
+					role: string;
+					user_id: string;
+				};
+				Insert: {
+					address_id: string;
+					created_at?: string;
+					id?: string;
+					role: string;
+					user_id: string;
+				};
+				Update: {
+					address_id?: string;
+					created_at?: string;
+					id?: string;
+					role?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'address_users_address_id_fkey';
+						columns: ['address_id'];
+						isOneToOne: false;
+						referencedRelation: 'addresses';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			addresses: {
+				Row: {
+					address: string | null;
+					city: string | null;
+					created_at: string;
+					id: string;
+					postcode: string;
+					state: string;
+					updated_at: string;
+				};
+				Insert: {
+					address?: string | null;
+					city?: string | null;
+					created_at?: string;
+					id?: string;
+					postcode: string;
+					state: string;
+					updated_at?: string;
+				};
+				Update: {
+					address?: string | null;
+					city?: string | null;
+					created_at?: string;
+					id?: string;
+					postcode?: string;
+					state?: string;
+					updated_at?: string;
+				};
+				Relationships: [];
+			};
+			conversation_messages: {
+				Row: {
+					conversation_id: string;
+					message_id: string;
+					message_order: number;
+				};
+				Insert: {
+					conversation_id: string;
+					message_id: string;
+					message_order: number;
+				};
+				Update: {
+					conversation_id?: string;
+					message_id?: string;
+					message_order?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'fk_conversation_messages_conversation';
+						columns: ['conversation_id'];
+						isOneToOne: false;
+						referencedRelation: 'conversations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'fk_conversation_messages_message';
+						columns: ['message_id'];
+						isOneToOne: false;
+						referencedRelation: 'messages';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			conversation_participants: {
+				Row: {
+					conversation_id: string;
+					joined_at: string;
+					last_read_at: string | null;
+					left_at: string | null;
+					role: Database['public']['Enums']['participant_role'];
+					user_id: string;
+				};
+				Insert: {
+					conversation_id: string;
+					joined_at?: string;
+					last_read_at?: string | null;
+					left_at?: string | null;
+					role?: Database['public']['Enums']['participant_role'];
+					user_id: string;
+				};
+				Update: {
+					conversation_id?: string;
+					joined_at?: string;
+					last_read_at?: string | null;
+					left_at?: string | null;
+					role?: Database['public']['Enums']['participant_role'];
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'conversation_participants_conversation_id_fkey';
+						columns: ['conversation_id'];
+						isOneToOne: false;
+						referencedRelation: 'conversations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			conversations: {
+				Row: {
+					created_at: string;
+					created_by: string;
+					id: string;
+					name: string | null;
+					organisation_id: string | null;
+					project_id: string | null;
+					type: Database['public']['Enums']['conversation_type'];
+					updated_at: string;
+				};
+				Insert: {
+					created_at?: string;
+					created_by: string;
+					id?: string;
+					name?: string | null;
+					organisation_id?: string | null;
+					project_id?: string | null;
+					type: Database['public']['Enums']['conversation_type'];
+					updated_at?: string;
+				};
+				Update: {
+					created_at?: string;
+					created_by?: string;
+					id?: string;
+					name?: string | null;
+					organisation_id?: string | null;
+					project_id?: string | null;
+					type?: Database['public']['Enums']['conversation_type'];
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'conversations_project_id_fkey';
+						columns: ['project_id'];
+						isOneToOne: false;
+						referencedRelation: 'projects';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			health_status: {
+				Row: {
+					id: number;
+					last_check: string | null;
+				};
+				Insert: {
+					id?: number;
+					last_check?: string | null;
+				};
+				Update: {
+					id?: number;
+					last_check?: string | null;
+				};
+				Relationships: [];
+			};
+			message_attachments: {
+				Row: {
+					file_name: string;
+					file_size: number;
+					file_type: string;
+					file_url: string;
+					id: string;
+					message_id: string;
+					uploaded_at: string | null;
+				};
+				Insert: {
+					file_name: string;
+					file_size: number;
+					file_type: string;
+					file_url: string;
+					id?: string;
+					message_id: string;
+					uploaded_at?: string | null;
+				};
+				Update: {
+					file_name?: string;
+					file_size?: number;
+					file_type?: string;
+					file_url?: string;
+					id?: string;
+					message_id?: string;
+					uploaded_at?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'message_attachments_message_id_fkey';
+						columns: ['message_id'];
+						isOneToOne: false;
+						referencedRelation: 'messages';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			message_reactions: {
+				Row: {
+					created_at: string;
+					id: string;
+					message_id: string;
+					reaction: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					id?: string;
+					message_id: string;
+					reaction: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					id?: string;
+					message_id?: string;
+					reaction?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'message_reactions_message_id_fkey';
+						columns: ['message_id'];
+						isOneToOne: false;
+						referencedRelation: 'messages';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			messages: {
+				Row: {
+					content: string;
+					created_at: string;
+					edited_at: string;
+					id: string;
+					metadata: Json | null;
+					sender_id: string;
+					updated_at: string;
+				};
+				Insert: {
+					content: string;
+					created_at?: string;
+					edited_at?: string;
+					id?: string;
+					metadata?: Json | null;
+					sender_id: string;
+					updated_at?: string;
+				};
+				Update: {
+					content?: string;
+					created_at?: string;
+					edited_at?: string;
+					id?: string;
+					metadata?: Json | null;
+					sender_id?: string;
+					updated_at?: string;
+				};
+				Relationships: [];
+			};
+			projects: {
+				Row: {
+					created_at: string;
+					id: string;
+					projectinfo: Json | null;
+					projectname: string;
+					public: boolean;
+					updated_at: string;
+				};
+				Insert: {
+					created_at?: string;
+					id?: string;
+					projectinfo?: Json | null;
+					projectname: string;
+					public?: boolean;
+					updated_at?: string;
+				};
+				Update: {
+					created_at?: string;
+					id?: string;
+					projectinfo?: Json | null;
+					projectname?: string;
+					public?: boolean;
+					updated_at?: string;
+				};
+				Relationships: [];
+			};
+			sessions: {
+				Row: {
+					expires_at: string;
+					id: string;
+					user_id: string;
+				};
+				Insert: {
+					expires_at: string;
+					id: string;
+					user_id: string;
+				};
+				Update: {
+					expires_at?: string;
+					id?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'sessions_user_id_fkey';
+						columns: ['user_id'];
+						isOneToOne: false;
+						referencedRelation: 'users';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			users: {
+				Row: {
+					address_id: string | null;
+					avatar_path: string | null;
+					avatar_revision: number;
+					avatar_source: string;
+					avatar_url: string | null;
+					created_at: string;
+					default_avatar: string | null;
+					full_name: string | null;
+					id: string;
+					last_name: string | null;
+					mobile: string | null;
+					mobile_verified: string | null;
+					phone: string | null;
+					phone_verified: boolean | null;
+					updated_at: string;
+					user_name: string | null;
+				};
+				Insert: {
+					address_id?: string | null;
+					avatar_path?: string | null;
+					avatar_revision?: number;
+					avatar_source?: string;
+					avatar_url?: string | null;
+					created_at?: string;
+					default_avatar?: string | null;
+					full_name?: string | null;
+					id: string;
+					last_name?: string | null;
+					mobile?: string | null;
+					mobile_verified?: string | null;
+					phone?: string | null;
+					phone_verified?: boolean | null;
+					updated_at?: string;
+					user_name?: string | null;
+				};
+				Update: {
+					address_id?: string | null;
+					avatar_path?: string | null;
+					avatar_revision?: number;
+					avatar_source?: string;
+					avatar_url?: string | null;
+					created_at?: string;
+					default_avatar?: string | null;
+					full_name?: string | null;
+					id?: string;
+					last_name?: string | null;
+					mobile?: string | null;
+					mobile_verified?: string | null;
+					phone?: string | null;
+					phone_verified?: boolean | null;
+					updated_at?: string;
+					user_name?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'users_address_id_fkey';
+						columns: ['address_id'];
+						isOneToOne: false;
+						referencedRelation: 'addresses';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+		};
+		Views: {
+			[_ in never]: never;
+		};
+		Functions: {
+			get_address_details: {
+				Args: { p_address_id: string };
+				Returns: {
+					address_id: string;
+					city: string;
+					country: string;
+					is_primary: boolean;
+					postal_code: string;
+					state: string;
+					street: string;
+					users: Json;
+				}[];
+			};
+			get_initials_with_colour: { Args: { p_email: string }; Returns: string };
+			get_user_profile_data: {
+				Args: { user_id: string };
+				Returns: {
+					address_id: string;
+					avatar_url: string;
+					city: string;
+					created_at: string;
+					default_avatar: string;
+					email: string;
+					email_verified: boolean;
+					full_name: string;
+					last_sign_in_at: string;
+					phone: string;
+					phone_verified: boolean;
+					postcode: string;
+					state: string;
+					street_address: string;
+					updated_at: string;
+					user_name: string;
+				}[];
+			};
+			health_check: { Args: never; Returns: Json };
+		};
+		Enums: {
+			conversation_type: 'direct' | 'group' | 'organisation' | 'project' | 'admin';
+			participant_role: 'member' | 'admin' | 'moderator' | 'guest';
+		};
+		CompositeTypes: {
+			[_ in never]: never;
+		};
+	};
 	community_orgs: {
 		Tables: {
 			accreditation: {
@@ -1094,6 +1550,22 @@ export type Database = {
 			[_ in never]: never;
 		};
 		Functions: {
+			get_account_sessions: {
+				Args: Record<PropertyKey, never>;
+				Returns: {
+					session_id: string;
+					is_current: boolean;
+					signed_in_at: string;
+					last_refreshed_at: string;
+					expires_at: string;
+					user_agent: string;
+					total_count: number;
+				}[];
+			};
+			revoke_account_session: { Args: { p_session_id: string }; Returns: boolean };
+			require_account_management_session: { Args: Record<PropertyKey, never>; Returns: string };
+
+			abandoned_account_avatars: { Args: Record<PropertyKey, never>; Returns: { path: string }[] };
 			expire_roles: { Args: never; Returns: number };
 			generate_unique_slug: { Args: { base_slug: string }; Returns: string };
 			get_user_all_roles: {
@@ -1196,12 +1668,12 @@ export type Tables<
 	DefaultSchemaTableNameOrOptions extends
 		| keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
 		| { schema: keyof DatabaseWithoutInternals },
-	TableName extends DefaultSchemaTableNameOrOptions extends {
+	TableName extends (DefaultSchemaTableNameOrOptions extends {
 		schema: keyof DatabaseWithoutInternals;
 	}
 		? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
 				DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
-		: never = never
+		: never) = never
 > = DefaultSchemaTableNameOrOptions extends {
 	schema: keyof DatabaseWithoutInternals;
 }
@@ -1221,13 +1693,12 @@ export type Tables<
 
 export type TablesInsert<
 	DefaultSchemaTableNameOrOptions extends
-		| keyof DefaultSchema['Tables']
-		| { schema: keyof DatabaseWithoutInternals },
-	TableName extends DefaultSchemaTableNameOrOptions extends {
+		keyof DefaultSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
+	TableName extends (DefaultSchemaTableNameOrOptions extends {
 		schema: keyof DatabaseWithoutInternals;
 	}
 		? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-		: never = never
+		: never) = never
 > = DefaultSchemaTableNameOrOptions extends {
 	schema: keyof DatabaseWithoutInternals;
 }
@@ -1246,13 +1717,12 @@ export type TablesInsert<
 
 export type TablesUpdate<
 	DefaultSchemaTableNameOrOptions extends
-		| keyof DefaultSchema['Tables']
-		| { schema: keyof DatabaseWithoutInternals },
-	TableName extends DefaultSchemaTableNameOrOptions extends {
+		keyof DefaultSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
+	TableName extends (DefaultSchemaTableNameOrOptions extends {
 		schema: keyof DatabaseWithoutInternals;
 	}
 		? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-		: never = never
+		: never) = never
 > = DefaultSchemaTableNameOrOptions extends {
 	schema: keyof DatabaseWithoutInternals;
 }
@@ -1271,13 +1741,12 @@ export type TablesUpdate<
 
 export type Enums<
 	DefaultSchemaEnumNameOrOptions extends
-		| keyof DefaultSchema['Enums']
-		| { schema: keyof DatabaseWithoutInternals },
-	EnumName extends DefaultSchemaEnumNameOrOptions extends {
+		keyof DefaultSchema['Enums'] | { schema: keyof DatabaseWithoutInternals },
+	EnumName extends (DefaultSchemaEnumNameOrOptions extends {
 		schema: keyof DatabaseWithoutInternals;
 	}
 		? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
-		: never = never
+		: never) = never
 > = DefaultSchemaEnumNameOrOptions extends {
 	schema: keyof DatabaseWithoutInternals;
 }
@@ -1288,13 +1757,12 @@ export type Enums<
 
 export type CompositeTypes<
 	PublicCompositeTypeNameOrOptions extends
-		| keyof DefaultSchema['CompositeTypes']
-		| { schema: keyof DatabaseWithoutInternals },
-	CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+		keyof DefaultSchema['CompositeTypes'] | { schema: keyof DatabaseWithoutInternals },
+	CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
 		schema: keyof DatabaseWithoutInternals;
 	}
 		? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
-		: never = never
+		: never) = never
 > = PublicCompositeTypeNameOrOptions extends {
 	schema: keyof DatabaseWithoutInternals;
 }
@@ -1304,6 +1772,12 @@ export type CompositeTypes<
 		: never;
 
 export const Constants = {
+	public: {
+		Enums: {
+			conversation_type: ['direct', 'group', 'organisation', 'project', 'admin'],
+			participant_role: ['member', 'admin', 'moderator', 'guest']
+		}
+	},
 	community_orgs: {
 		Enums: {
 			alias_type_enum: ['Business Name', 'Trading Name']

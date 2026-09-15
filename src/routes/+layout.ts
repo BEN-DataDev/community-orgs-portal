@@ -13,9 +13,8 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 	depends('app:root');
 
 	/**
-	 * Every table in this project lives in the `community_orgs` schema, so the
-	 * schema is pinned on both clients — the default is `public`, which holds
-	 * none of them.
+	 * Organisation tables live in `community_orgs`, so both clients default to
+	 * that schema. Avatar profiles explicitly select the `public` schema.
 	 */
 	const supabase = (isBrowser()
 		? createBrowserClient<Database, 'community_orgs'>(
@@ -61,6 +60,8 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 		user: data.user,
 		aal: data.aal,
 		isAnonymous: data.isAnonymous,
+		avatar: data.avatar,
+		memberships: data.memberships,
 		isSiteAdmin: data.isSiteAdmin
 	};
 };

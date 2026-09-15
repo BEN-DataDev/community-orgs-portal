@@ -59,6 +59,17 @@ export const GET: RequestHandler = async ({ request }) => {
 			return json({ success: false, stage: 'guest_cleanup' }, { status: 500 });
 		}
 
+		const { data: abandoned, error: abandonedError } = await supabase
+			.schema('community_orgs')
+			.rpc('abandoned_account_avatars');
+		if (abandonedError) return json({ success: false, stage: 'avatar_cleanup' }, { status: 500 });
+		if (abandoned?.length) {
+			const { error: cleanupError } = await supabase.storage
+				.from('avatars')
+				.remove(abandoned.map((row: { path: string }) => row.path));
+			if (cleanupError) return json({ success: false, stage: 'avatar_cleanup' }, { status: 500 });
+		}
+
 		console.info('Cron completed:', {
 			completedAt: new Date().toISOString(),
 			purgedAnonymousUsers: purged

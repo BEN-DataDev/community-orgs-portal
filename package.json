@@ -12,7 +12,10 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
-		"update-db-types": "npx supabase gen types typescript --project-id \"gqltsfijginclwszrcfj\" --schema community_orgs > src/lib/db.types.ts"
+		"update-db-types": "npx supabase gen types typescript --project-id \"gqltsfijginclwszrcfj\" --schema community_orgs,public > src/lib/db.types.ts",
+		"test:avatars": "node scripts/test-avatars.mjs",
+		"test:email-changes": "node scripts/test-email-changes.mjs",
+		"test:sessions": "node scripts/test-sessions.mjs"
 	},
 	"dependencies": {
 		"@skeletonlabs/skeleton": "5.0.1",
@@ -26,6 +29,7 @@
 		"d3": "^7.9.0",
 		"lucide-svelte": "^0.456.0",
 		"maplibre-gl": "^4.7.1",
+		"sharp": "^0.35.4",
 		"svelte": "^5.1.15",
 		"zod": "^3.23.8"
 	},

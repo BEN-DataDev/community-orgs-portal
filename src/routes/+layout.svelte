@@ -8,7 +8,7 @@
 	import '../app.css';
 	import AppNavigation from '$components/layout/AppNavigation.svelte';
 	import GuestBanner from '$components/ui/auth/GuestBanner.svelte';
-	import ThemeToggle from '$components/ui/ThemeToggle.svelte';
+	import AccountMenu from '$components/ui/AccountMenu.svelte';
 	import { minWidth } from '$lib/media.svelte';
 	import { theme } from '$lib/theme.svelte';
 
@@ -32,13 +32,31 @@
 
 	const navLayout = $derived(isDesktop.matches ? 'sidebar' : isTablet.matches ? 'rail' : 'bar');
 
+	$effect(() => {
+		if (!data.avatar?.expiresAt) return;
+		const refresh = () => {
+			if (data.avatar?.expiresAt && Date.now() >= data.avatar.expiresAt - 60000)
+				void invalidate('app:root');
+		};
+		const timer = setTimeout(refresh, Math.max(1000, data.avatar.expiresAt - Date.now() - 60000));
+		window.addEventListener('focus', refresh);
+		return () => {
+			clearTimeout(timer);
+			window.removeEventListener('focus', refresh);
+		};
+	});
+
 	onMount(() => {
 		const disposeTheme = theme.init();
 		const disposeTablet = isTablet.subscribe();
 		const disposeDesktop = isDesktop.subscribe();
 
-		const { data: authListener } = supabase.auth.onAuthStateChange((_, newSession) => {
-			if (newSession?.expires_at !== session?.expires_at) {
+		const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
+			if (
+				event === 'USER_UPDATED' ||
+				newSession?.user.id !== session?.user.id ||
+				newSession?.expires_at !== session?.expires_at
+			) {
 				invalidate('supabase:auth');
 			}
 		});
@@ -54,7 +72,7 @@
 
 <div class="flex min-h-dvh flex-col">
 	<AppBar>
-		<AppBar.Toolbar class="gap-2 px-4 sm:px-6 lg:px-8">
+		<AppBar.Toolbar class="flex items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
 			<AppBar.Lead>
 				<a class="flex items-center gap-2" aria-label="CII home" href={resolve('/')}>
 					<img width="48" height="48" src="/images/Logo.png" alt="" />
@@ -65,16 +83,17 @@
 			</AppBar.Lead>
 
 			<AppBar.Trail class="flex flex-wrap items-center justify-end gap-2">
-				{#if signedIn}
-					<a class="btn btn-sm preset-tonal" href={resolve('/account/security')}>Account</a>
-					<a class="btn btn-sm preset-tonal" href={resolve('/auth/signout')}>Sign out</a>
-				{:else if isAnonymous}
-					<a class="btn btn-sm preset-filled" href={resolve('/auth/signup')}>Create an account</a>
-					<a class="btn btn-sm preset-tonal" href={resolve('/auth/signout')}>Leave guest mode</a>
-				{:else}
+				{#if !user}
 					<a class="btn btn-sm preset-filled" href={resolve('/auth/signin')}>Sign in</a>
 				{/if}
-				<ThemeToggle />
+				<AccountMenu
+					{user}
+					{isAnonymous}
+					{isSiteAdmin}
+					aal={data.aal}
+					memberships={data.memberships}
+					avatar={data.avatar}
+				/>
 			</AppBar.Trail>
 		</AppBar.Toolbar>
 	</AppBar>

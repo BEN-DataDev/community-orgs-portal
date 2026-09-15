@@ -1,50 +1,38 @@
 import type { EmailOtpType } from '@supabase/supabase-js';
 import { redirect } from '@sveltejs/kit';
-
 import { safeRedirect } from '$lib/server/redirects';
+import { EMAIL_CHANGE_RESULT } from '$lib/server/email-change';
 import type { RequestHandler } from './$types';
 
-/**
- * `next` decides where a just-confirmed user lands. Only `pathname` is ever
- * replaced below, so the origin is preserved and this was never an open
- * redirect — but an unvalidated `next` still lets a crafted confirmation link
- * drop the user on any page in the application, which is a useful primitive for
- * phishing inside a trusted domain.
- *
- * This used to be a second, subtly different regex living in this file.
- * `safeRedirect` is the same check the sign-in action and the OAuth hand-off
- * already use.
- */
-export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
+const types = new Set(['signup', 'invite', 'magiclink', 'recovery', 'email_change', 'email']);
+
+export const GET: RequestHandler = async ({ url, cookies, locals: { supabase } }) => {
 	const token_hash = url.searchParams.get('token_hash');
-	const type = url.searchParams.get('type') as EmailOtpType | null;
+	const type = url.searchParams.get('type');
 	const next = safeRedirect(url.searchParams.get('next'), '/');
-
-	/**
-	 * Clean up the redirect URL by deleting the Auth flow parameters.
-	 *
-	 * `next` is preserved for now, because it's needed in the error case.
-	 */
-	const redirectTo = new URL(url);
-	redirectTo.pathname = next;
-	redirectTo.searchParams.delete('token_hash');
-	redirectTo.searchParams.delete('type');
-
-	if (token_hash && type) {
-		const { error } = await supabase.auth.verifyOtp({ type, token_hash });
+	let result = 'error';
+	if (token_hash && type && types.has(type)) {
+		const { data, error } = await supabase.auth.verifyOtp({
+			type: type as EmailOtpType,
+			token_hash
+		});
 		if (!error) {
-			redirectTo.searchParams.delete('next');
-			redirect(303, redirectTo);
+			if (type !== 'email_change') redirect(303, new URL(next, url.origin));
+			// Secure email change's FIRST confirmation returns no session/user.
+			// Do not mistake that successful verification for a completed change.
+			result = data.session && data.user && !data.user.new_email ? 'complete' : 'pending';
 		}
-		console.error(`Could not verify ${type} link:`, error.message);
 	}
-
-	/**
-	 * By far the most common cause is a link that has expired or been opened
-	 * twice, so `/auth/error` says so rather than offering a generic failure.
-	 */
-	redirectTo.pathname = '/auth/error';
-	redirectTo.searchParams.delete('next');
-	redirectTo.searchParams.set('reason', 'expired');
-	redirect(303, redirectTo);
+	if (type === 'email_change') {
+		cookies.set(EMAIL_CHANGE_RESULT, result, {
+			path: '/auth/email-change',
+			httpOnly: true,
+			sameSite: 'lax',
+			secure: url.protocol === 'https:',
+			maxAge: 300
+		});
+		redirect(303, '/auth/email-change');
+	}
+	// Construct a clean destination: never carry token hashes into another page.
+	redirect(303, '/auth/error?reason=expired');
 };

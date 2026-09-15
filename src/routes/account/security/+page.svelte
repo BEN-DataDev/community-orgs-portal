@@ -1,10 +1,12 @@
 <script lang="ts">
+	import SessionSettings from '$components/ui/SessionSettings.svelte';
+	import { resolve } from '$app/paths';
 	import { invalidateAll } from '$app/navigation';
 	import { ShieldCheck, ShieldOff } from 'lucide-svelte';
 	import { totpCodeSchema } from '$lib/auth/schemas';
-	import type { PageData } from './$types';
+	import type { PageProps } from './$types';
 
-	let { data }: { data: PageData } = $props();
+	let { data, form }: PageProps = $props();
 
 	/**
 	 * Enrolment has to happen in the browser: `mfa.enroll()` returns the QR code
@@ -13,6 +15,9 @@
 	 * `verify` hands the client library a fresh aal2 session that it writes to the
 	 * auth cookies itself.
 	 */
+	const providers = $derived([
+		...new Set(data.user?.identities?.map((identity) => identity.provider) ?? [])
+	]);
 	const verified = $derived(data.factors.filter((factor) => factor.status === 'verified'));
 	const enrolled = $derived(verified.length > 0);
 
@@ -138,11 +143,32 @@
 </script>
 
 <svelte:head>
-	<title>Security</title>
+	<title>Security &amp; sign-in</title>
 </svelte:head>
 
 <div class="mx-auto my-4 w-full max-w-2xl space-y-4 p-4">
-	<h1 class="h2">Security</h1>
+	<h1 class="h2">Security &amp; sign-in</h1>
+	<section class="card preset-tonal space-y-3 p-5 shadow-md">
+		<h2 class="h4">Sign-in methods</h2>
+		<p class="text-surface-600-400 text-sm">
+			Connected methods: {providers
+				.map((provider) =>
+					provider === 'email' ? 'Email' : provider.charAt(0).toUpperCase() + provider.slice(1)
+				)
+				.join(', ') || 'Unavailable'}
+		</p>
+		{#if providers.includes('email')}
+			<a class="btn preset-tonal" href={resolve('/auth/forgot-password')}>Reset password</a>
+			<p class="text-surface-600-400 text-sm">Request an email link to choose a new password.</p>
+		{/if}
+		<a class="block text-sm underline" href={resolve('/account/settings')}>Account settings</a>
+	</section>
+
+	<SessionSettings
+		sessions={data.accountSessions}
+		error={form?.sessionError}
+		message={form?.sessionMessage}
+	/>
 
 	{#if notice}
 		<p class="text-success-500">{notice}</p>
@@ -161,7 +187,9 @@
 			<div>
 				<h2 class="h4">Two-factor authentication</h2>
 				<p class="text-surface-700-300 text-sm">
-					{#if enrolled}
+					{#if data.factorsUnavailable}
+						Two-factor status is unavailable. Reload the page to try again.
+					{:else if enrolled}
 						On. You will be asked for a code from your authenticator app each time you sign in.
 					{:else}
 						Off. Adding an authenticator app means a stolen password is not enough to get into your
@@ -251,7 +279,7 @@
 				type="button"
 				class="btn preset-filled-primary-500"
 				onclick={startEnrolment}
-				disabled={busy}
+				disabled={busy || data.factorsUnavailable}
 			>
 				{busy ? 'Setting up...' : 'Set up authenticator app'}
 			</button>
