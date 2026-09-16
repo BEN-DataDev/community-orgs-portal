@@ -1,0 +1,33 @@
+{
+  "repository": "https://github.com/BEN-DataDev/orgs-sveltekit-etl",
+  "commit": "2676fdcc620e9a1c8beeacf587a8bcf688aa35c9",
+  "reuse_basis": "User explicitly requested adaptation of these repositories in this workspace. No upstream licence file found; this is not a claim of a general redistribution licence. Confirm ownership/licensing before external redistribution.",
+  "files": [
+    {
+      "source_path": "app/extractors/acnc_extractor.py",
+      "sha256": "c8f06fbbf8e9fed9ed3b3a7ebd9a43f36df23f19c39742c010aa332d0d8b1b54",
+      "local_path": "ingestion/adapters/acnc.py",
+      "use": "Adapted CKAN offset/filter algorithm"
+    },
+    {
+      "source_path": "app/transformers/data_transformer.py",
+      "sha256": "a50971d6e9c2a8a951ae0e957fcfa9d487891274c7b912da93dfdebea02d4632",
+      "local_path": "ingestion/adapters/acnc.py",
+      "use": "Field mapping reference; replacement fixes repeated street keys"
+    }
+  ],
+  "changes": [
+    "Removed requests, Flask, Redis, environment and database startup dependencies",
+    "Injected page reader; offline fixture CLI only",
+    "One explicit scope, deterministic _id sort and bounded pages",
+    "Explicit complete/partial/failed results and quarantine",
+    "Preserved individual raw address lines and normalised line array",
+    "Retained missing-ABN records for review; no ABN-based entity deduplication",
+    "Versioned JSON envelope with raw hashes and provenance; publication disabled"
+  ],
+  "pending": [
+    "Live resource and schema qualification",
+    "Code redistribution rights confirmation",
+    "ABN and NSW adapters; scope of this package is ACNC only"
+  ]
+}

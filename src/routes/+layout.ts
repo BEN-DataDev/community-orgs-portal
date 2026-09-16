@@ -62,6 +62,7 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 		isAnonymous: data.isAnonymous,
 		avatar: data.avatar,
 		memberships: data.memberships,
+		isIngestionOperator: data.isIngestionOperator,
 		isSiteAdmin: data.isSiteAdmin
 	};
 };

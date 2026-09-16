@@ -19,14 +19,18 @@
 		layout: 'bar' | 'rail' | 'sidebar';
 		/** Whether the signed-in user is an admin or owner of at least one organisation. */
 		isSiteAdmin: boolean;
+		isIngestionOperator: boolean;
 	}
 
-	let { layout, isSiteAdmin }: Props = $props();
+	let { layout, isSiteAdmin, isIngestionOperator }: Props = $props();
 
 	const destinations: Destination[] = $derived([
 		{ href: resolve('/'), label: 'Home', icon: Home },
 		{ href: resolve('/organisations'), label: 'Organisations', icon: Building2 },
 		{ href: resolve('/reports'), label: 'Reports', icon: FileBarChart },
+		...(isIngestionOperator
+			? [{ href: resolve('/admin/ingestion'), label: 'Import review', icon: FileBarChart }]
+			: []),
 		...(isSiteAdmin ? [{ href: resolve('/admin'), label: 'Admin', icon: Shield }] : [])
 	]);
 

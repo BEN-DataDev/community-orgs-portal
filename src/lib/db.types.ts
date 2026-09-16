@@ -1550,6 +1550,23 @@ export type Database = {
 			[_ in never]: never;
 		};
 		Functions: {
+			is_ingestion_operator: { Args: Record<PropertyKey, never>; Returns: boolean };
+			ingestion_review_queue: {
+				Args: { p_run?: string; p_version?: string; p_offset?: number; p_search?: string };
+				Returns: Json;
+			};
+			save_ingestion_review: {
+				Args: {
+					p_run: string;
+					p_version: string;
+					p_revision: number;
+					p_decision: string;
+					p_organisation?: string;
+					p_note: string;
+				};
+				Returns: undefined;
+			};
+
 			get_account_sessions: {
 				Args: Record<PropertyKey, never>;
 				Returns: {

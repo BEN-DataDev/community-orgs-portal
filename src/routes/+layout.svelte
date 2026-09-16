@@ -13,7 +13,7 @@
 	import { theme } from '$lib/theme.svelte';
 
 	let { data, children } = $props();
-	let { session, supabase, user, isSiteAdmin, isAnonymous } = $derived(data);
+	let { session, supabase, user, isSiteAdmin, isIngestionOperator, isAnonymous } = $derived(data);
 
 	/**
 	 * A guest holds a session but has no account, so the navigation and the
@@ -102,7 +102,7 @@
 
 	<div class="flex flex-1 flex-col md:flex-row">
 		{#if signedIn}
-			<AppNavigation layout={navLayout} {isSiteAdmin} />
+			<AppNavigation {isIngestionOperator} layout={navLayout} {isSiteAdmin} />
 		{/if}
 
 		<!--

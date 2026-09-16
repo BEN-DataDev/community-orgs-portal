@@ -1,5 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 import { loadAccountAvatar } from '$lib/server/account-avatar';
+import { isIngestionOperator } from '$lib/server/ingestion-review';
 import { EDITOR_LEVEL } from '$lib/role-levels';
 
 export const load: LayoutServerLoad = async ({ locals, cookies }) => {
@@ -35,6 +36,8 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 			? await loadAccountAvatar(locals.supabase, locals.user)
 			: null;
 	return {
+		isIngestionOperator:
+			locals.user && !locals.isAnonymous ? await isIngestionOperator(locals.supabase) : false,
 		avatar,
 		session: locals.session,
 		user: locals.user,
