@@ -8,8 +8,9 @@ Status: pilot source approval and publication workflow browser-verified by the u
 Implement [the complete public register field coverage plan](import-field-coverage-plan.md)
 (F01–F05) before acquisition job controls or scheduling. It uses the reviewed
 transformation, mapping and parsing modules from both referenced repositories.
-Start with the versioned ACNC field inventory and source-to-public mapping contract;
-then extend schema, transformations, review/publication, public pages and pilot replay.
+F01 is complete: see [the generated ACNC field inventory](acnc-field-coverage.md).
+F02 schema/transformations, F03 review/publication and F04 public pages are
+implemented and locally tested. Next implement F05 retained-pilot replay.
 
 ## Recommendation
 
@@ -528,3 +529,78 @@ job controls before scheduled acquisition.
 - Next (revised after field-coverage review): complete F01–F05 in the
   [import field coverage plan](import-field-coverage-plan.md). Acquisition job
   controls, refresh scheduling and changed-record detection follow this work.
+
+### F01 complete — ACNC field inventory and mapping contract
+
+- Accounted for all 70 columns in the observed ACNC schema: 69 public organisation
+  facts and one private technical row ID. See [coverage table](acnc-field-coverage.md)
+  and [machine-readable manifest](../tools/ingestion/python/ingestion/mappings/acnc-register-v1.json).
+- Entries specify meaning, types, transformation/null rules, cardinality, proposed
+  database/public destinations, review groups, attribution, suppression, fixture
+  references and current implementation support. Proposed destinations are not
+  described as deployed. Existing scalar columns were checked against portal types.
+- Reconciled both pinned upstream mapping references with the observed schema.
+  Preserved ambiguous other names and countries as text; F02 must qualify richer
+  parsing rather than lose facts. Pilot raw values informed date, year-end and flag
+  examples; the committed fixture contains invented values only.
+- Added a reproducible report generator and explicit schema-drift validation.
+  All 31 Python tests pass, including five new inventory/coverage checks. This is
+  contract coverage, not expanded runtime transformation or public field support.
+- Next: F02 schema/transformation implementation, followed by F03/F04 publication
+  and public UI. Source jobs and scheduling remain deferred through F05.
+
+### F02 complete — schema and transformations
+
+- Parser v2 transforms all 69 ACNC organisation columns and retains per-assertion
+  source values and mapping version. Invalid/unknown inputs quarantine the record.
+- Added default-private register-details storage with scalar, address, calendar and
+  flag constraints; browser reads exclude private source identity and require both
+  projection and organisation visibility. No browser or acquisition-worker writes.
+- Validation: 35 Python tests and PostgreSQL 17 migration/constraint/access checks
+  using the staging migration and a minimal organisation-table test harness.
+- No live migration, publication expansion or pilot replay performed. F03 remains
+  responsible for approval, per-fact provenance, protected edits and suppression.
+
+### F03 complete — review and publication for complete ACNC fields
+
+- Added the private 62-unit publication allowlist for all 69 organisation columns,
+  typed validation, full snapshots and selected transactional writes. Dates stay
+  dates, false flags stay false, long text/URLs are not truncated, and source
+  projections stay separate. Missing assertions never clear existing values.
+- The address is one atomic merge with a full displayed diff; individual flags
+  update only their own keys. Manual edits and hidden projections are protected.
+- Mapping/source/target changes stale approvals. Old approvals cannot authorise
+  new fields. Replays do not duplicate writes or create automatic identity links.
+- Extended attribution and suppression to every review unit. Target suppression
+  clears the fact across source projections and blocks restoration. Suppressing
+  a required name withdraws the organisation from public view.
+- Grouped review UI includes Overview, Legal, Contact, Operations, Finance and
+  Governance, with eligible selection and excluded/conflicting/invalid counts.
+- Validation: complete PostgreSQL 17 migration and six rollback-only SQL suites,
+  36 Python tests (including manifest/allowlist agreement), route action tests,
+  browser tests for group selection and atomic diffs, and clean Svelte checking.
+  The isolated DB harness uses the real portal table definitions and ingestion
+  migrations, with emulated auth/JWT helpers; it is not a hosted Supabase test.
+- F04 public rendering and F05 retained-pilot replay remain. No live migrations,
+  pilot changes or deployment were performed.
+
+### F04 complete — public register facts and anonymous access
+
+- Added a narrow public RPC returning the latest approved observation per source
+  identity and field, with source links, licences and observation/publication dates.
+  Disagreements remain separate. Superseded observations, private evidence, actor
+  and internal identity fields, unpublished approvals, hidden projections and
+  suppressed/withdrawn content are excluded.
+- All 62 review units appear on existing organisation sections. Governance counts
+  appear on Overview; Contact preserves all address lines and source role;
+  Operations separates purposes, beneficiaries and operating jurisdictions;
+  Finance labels year-end as a reporting calendar. False and zero remain visible.
+- Source observations changed in the portal are clearly labelled. Date fields
+  retain their source-reported dates; omitted address components retained from
+  previous approvals are explained. Public links accept only safe HTTP(S) URLs.
+- Validation includes seven PostgreSQL suites, explicit anonymous table/RPC reads,
+  actual page loaders and Svelte SSR using anonymous database exports, and browser
+  checks for five rendered section pages. These are local tests with emulated auth
+  helpers, not a hosted deployment. No live migration or pilot replay performed.
+- F05 remains: reprocess retained pilot evidence with fresh approvals and finish
+  the full release gate against the deployed application.

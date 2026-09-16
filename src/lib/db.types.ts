@@ -464,6 +464,65 @@ export type Database = {
 	};
 	community_orgs: {
 		Tables: {
+			acnc_register_details: {
+				Row: {
+					administrative_address: Json | null;
+					beneficiaries: Json | null;
+					charity_size: string | null;
+					financial_year_end: Json | null;
+					hpc: boolean | null;
+					is_public: boolean;
+					operating_countries_text: string | null;
+					operating_jurisdictions: Json | null;
+					org_id: string;
+					other_names_text: string | null;
+					pbi: boolean | null;
+					purposes: Json | null;
+					responsible_person_count: number | null;
+					source_record_id: number;
+				};
+				Insert: {
+					administrative_address?: Json | null;
+					beneficiaries?: Json | null;
+					charity_size?: string | null;
+					financial_year_end?: Json | null;
+					hpc?: boolean | null;
+					is_public?: boolean;
+					operating_countries_text?: string | null;
+					operating_jurisdictions?: Json | null;
+					org_id: string;
+					other_names_text?: string | null;
+					pbi?: boolean | null;
+					purposes?: Json | null;
+					responsible_person_count?: number | null;
+					source_record_id: number;
+				};
+				Update: {
+					administrative_address?: Json | null;
+					beneficiaries?: Json | null;
+					charity_size?: string | null;
+					financial_year_end?: Json | null;
+					hpc?: boolean | null;
+					is_public?: boolean;
+					operating_countries_text?: string | null;
+					operating_jurisdictions?: Json | null;
+					org_id?: string;
+					other_names_text?: string | null;
+					pbi?: boolean | null;
+					purposes?: Json | null;
+					responsible_person_count?: number | null;
+					source_record_id?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'acnc_register_details_org_id_fkey';
+						columns: ['org_id'];
+						isOneToOne: false;
+						referencedRelation: 'organisations';
+						referencedColumns: ['org_id'];
+					}
+				];
+			};
 			accreditation: {
 				Row: {
 					accreditation_id: string;
@@ -1569,6 +1628,7 @@ export type Database = {
 				Args: { p_run: string; p_version: string; p_organisation?: string };
 				Returns: Json;
 			};
+			organisation_register_facts: { Args: { p_organisation: string }; Returns: Json };
 			organisation_source_attribution: { Args: { p_organisation: string }; Returns: Json };
 			ingestion_withdrawal_status: { Args: { p_version: string }; Returns: Json };
 			suppress_ingestion_content: {

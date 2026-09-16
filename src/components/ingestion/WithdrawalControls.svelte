@@ -44,9 +44,14 @@
 		/>
 		<label class="label"
 			>Scope<select class="select" name="field" bind:value={scope}
-				><option value="*">Entire record — withdraw organisation from public view</option><option
-					value="abn">ABN — remove value and block restoration</option
-				><option value="website">Website — remove value and block restoration</option></select
+				><option value="*">Entire record — withdraw organisation from public view</option
+				>{#each fields.filter((field) => field.table) as field (field.field)}
+					<option value={field.field}
+						>{field.label}{field.field === 'entity_name'
+							? ' — withdraw organisation from public view'
+							: ' — remove value and block restoration'}</option
+					>
+				{/each}</select
 			></label
 		>
 		<p class="text-sm">
@@ -55,7 +60,9 @@
 			This also blocks later imports. There is no restore action here.
 		</p>
 		{#if scope !== '*' && status.organisation_id}<p class="text-sm break-all">
-				Current value: {String(fields.find((f) => f.field === scope)?.current_value ?? 'None')}
+				Current value: {JSON.stringify(
+					fields.find((f) => f.field === scope)?.current_value ?? null
+				)}
 			</p>{/if}
 		<label class="label"
 			>Reason (private)<textarea class="textarea" name="reason" required maxlength="2000" rows="3"

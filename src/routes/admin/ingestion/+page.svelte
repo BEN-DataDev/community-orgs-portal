@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FieldGroups from '../../../components/ingestion/FieldGroups.svelte';
 	import WithdrawalControls from '$components/ingestion/WithdrawalControls.svelte';
 	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
@@ -18,17 +19,7 @@
 	function display(value: unknown) {
 		return value == null ? '—' : typeof value === 'string' ? value : JSON.stringify(value);
 	}
-	const explanations = {
-		suppressed: 'Suppressed content cannot be published or restored.',
-		conflict: 'Protected existing or manually edited value; requires conflict resolution.',
-		unchanged: 'Source and current value agree.',
-		new: 'Proposed new value; not approved for publication.',
-		changed: 'Source differs from current value.',
-		missing: 'Source omitted this field; preserve the current value.',
-		unmapped: 'Mapping not approved; evidence only.',
-		invalid: 'Source value has an unsupported type or is empty.',
-		ambiguous: 'Multiple target rows; resolve the target before applying changes.'
-	};
+
 	function href(run: string, version?: string, offset = 0) {
 		const params = new URLSearchParams({ run, offset: String(offset) });
 		if (version) params.set('version', version);
@@ -162,33 +153,11 @@
 								</p>
 								<p class="text-sm">
 									This comparison does not select a match or approve changes. Existing values and
-									manual corrections are protected. Only name, ABN and website currently have
-									approved comparison mappings; ABNs remain unverified.
+									manual corrections are protected. Flags are reviewed individually and the address
+									is reviewed as a complete group. ABNs remain unverified.
 								</p>
 								<a class="anchor" href={previewHref('')}>Preview as a new organisation</a>
-								<div class="table-wrap">
-									<table class="table text-sm">
-										<thead
-											><tr><th>Field</th><th>Current</th><th>Source</th><th>Assessment</th></tr
-											></thead
-										><tbody>
-											{#each data.preview.fields as field}<tr
-													><th scope="row">{field.field}</th><td
-														class="max-w-64 break-words whitespace-normal"
-														>{display(field.current_value)}</td
-													><td class="max-w-64 break-words whitespace-normal"
-														>{display(field.source_value)}</td
-													><td class="min-w-48 whitespace-normal"
-														><strong>{field.status}</strong>
-														<p>{explanations[field.status]}</p>
-														{#if field.protected}<p>
-																Protected · revision {field.revision}
-															</p>{/if}</td
-													></tr
-												>{/each}
-										</tbody>
-									</table>
-								</div>
+								<FieldGroups fields={data.preview.fields} />
 							</section>
 						{/if}
 						{#if data.preview && queue.detail.review && ['link', 'create'].includes(queue.detail.review.decision) && data.preview.organisation_id === queue.detail.review.organisation_id}
@@ -211,18 +180,9 @@
 									Only selected values will be applied. A new organisation requires its name and
 									will be public. Existing visibility is preserved.
 								</p>
-								{#each data.preview.fields.filter((f) => ['new', 'changed'].includes(f.status) && !f.protected) as field}
-									<label class="flex items-start gap-2"
-										><input
-											type="checkbox"
-											class="checkbox"
-											name="field"
-											value={JSON.stringify(field)}
-										/><span>{field.field}: {display(field.source_value)}</span></label
-									>
-								{:else}<p>
-										No eligible changes. Protected conflicts require separate resolution.
-									</p>{/each}
+								{#key JSON.stringify(data.preview)}
+									<FieldGroups fields={data.preview.fields} selectable />
+								{/key}
 								{#if form && 'intent' in form && form.intent === 'approve'}
 									<p role="status" class="text-sm font-medium">{form.message}</p>
 									{#if 'sourceBlocked' in form && form.sourceBlocked && data.isSiteAdmin}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import RegisterFacts from '$components/organisations/RegisterFacts.svelte';
 	import ContactForm from '$components/forms/ContactForm.svelte';
 	import { EDITOR_LEVEL } from '$lib/role-levels';
 
@@ -55,4 +56,6 @@
 	{:else}
 		<p class="text-surface-600-400">No contact details recorded yet.</p>
 	{/if}
+
+	<RegisterFacts facts={data.registerFacts} section="Contact" />
 </div>

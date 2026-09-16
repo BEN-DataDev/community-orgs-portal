@@ -1,4 +1,5 @@
 <script lang="ts">
+	import RegisterFacts from '$components/organisations/RegisterFacts.svelte';
 	import LegalForm from '$components/forms/LegalForm.svelte';
 	import { EDITOR_LEVEL } from '$lib/role-levels';
 	import { formatDate } from '$lib/utils/formatters';
@@ -123,4 +124,6 @@
 			</div>
 		</div>
 	{/if}
+
+	<RegisterFacts facts={data.registerFacts} section="Legal" />
 </div>

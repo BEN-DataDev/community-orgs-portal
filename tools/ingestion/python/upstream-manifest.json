@@ -23,11 +23,44 @@
     "Explicit complete/partial/failed results and quarantine",
     "Preserved individual raw address lines and normalised line array",
     "Retained missing-ABN records for review; no ABN-based entity deduplication",
-    "Versioned JSON envelope with raw hashes and provenance; publication disabled"
+    "Versioned JSON envelope with raw hashes and provenance; publication disabled",
+    "F02 acnc_transform.py adapts the recorded transformer/mappings inventories: all 69 organisation columns, corrected canonical keys, explicit Y/N, strict dates/calendar/count/URL, no truncation or ambiguous splitting; parser v2 quarantines invalid or unknown fields."
   ],
   "pending": [
     "Live resource and schema qualification",
     "Code redistribution rights confirmation",
     "ABN and NSW adapters; scope of this package is ACNC only"
+  ],
+  "mapping_contract_references": [
+    {
+      "repository": "https://github.com/BEN-DataDev/orgs-sveltekit-etl",
+      "commit": "2676fdcc620e9a1c8beeacf587a8bcf688aa35c9",
+      "source_path": "app/transformers/data_transformer.py",
+      "local_path": "ingestion/mappings/acnc-register-v1.json",
+      "use": "F01 inventory reference only; corrected address overwrite and outdated source names, separated classification/purpose/beneficiary groups."
+    },
+    {
+      "repository": "https://github.com/BEN-DataDev/orgs-data-manager",
+      "commit": "dea271215b267097bc4364f562f62e784b2e1294",
+      "source_path": "database/production/mappings.py",
+      "local_path": "ingestion/mappings/acnc-register-v1.json",
+      "use": "F01 domain destination reference only; no execution of legacy mappings, truthiness or truncation."
+    }
+  ],
+  "transformation_references": [
+    {
+      "repository": "https://github.com/BEN-DataDev/orgs-sveltekit-etl",
+      "commit": "2676fdcc620e9a1c8beeacf587a8bcf688aa35c9",
+      "source_path": "app/transformers/data_transformer.py",
+      "local_path": "ingestion/acnc_transform.py",
+      "use": "F02 strict transformations replacing legacy coercion and lossy mappings."
+    },
+    {
+      "repository": "https://github.com/BEN-DataDev/orgs-data-manager",
+      "commit": "dea271215b267097bc4364f562f62e784b2e1294",
+      "source_path": "database/production/mappings.py",
+      "local_path": "ingestion/acnc_transform.py",
+      "use": "F02 strict transformations replacing legacy coercion and lossy mappings."
+    }
   ]
 }

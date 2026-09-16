@@ -1,4 +1,5 @@
 <script lang="ts">
+	import RegisterFacts from '$components/organisations/RegisterFacts.svelte';
 	import FinancialForm from '$components/forms/FinancialForm.svelte';
 	import { formatCurrency, formatDate } from '$lib/utils/formatters';
 	import { EDITOR_LEVEL } from '$lib/role-levels';
@@ -59,4 +60,6 @@
 	{:else}
 		<p class="text-surface-600-400">No financial details recorded yet.</p>
 	{/if}
+
+	<RegisterFacts facts={data.registerFacts} section="Finance" />
 </div>

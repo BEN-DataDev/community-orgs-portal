@@ -1,4 +1,5 @@
 <script lang="ts">
+	import RegisterFacts from '$components/organisations/RegisterFacts.svelte';
 	import OperationsForm from '$components/forms/OperationsForm.svelte';
 	import OperationsMap from '$components/maps/OperationsMap.svelte';
 	import { EDITOR_LEVEL } from '$lib/role-levels';
@@ -168,4 +169,6 @@
 			</div>
 		</div>
 	{/if}
+
+	<RegisterFacts facts={data.registerFacts} section="Operations" />
 </div>

@@ -1,3 +1,4 @@
+import { loadRegisterFacts } from '$lib/server/register-facts';
 import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireOrgAccess, requireOrgEditor } from '$lib/server/authorization';
@@ -13,7 +14,8 @@ import {
 	toColumns
 } from '$lib/server/validation';
 
-export const load: PageServerLoad = async ({ locals: { supabase, user }, params }) => {
+export const load: PageServerLoad = async ({ locals: { supabase, user }, params, setHeaders }) => {
+	setHeaders({ 'cache-control': 'private, no-store' });
 	const orgId = orgIdSchema.safeParse(params.id);
 	if (!orgId.success) {
 		error(404, 'Organisation not found.');
@@ -60,6 +62,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, user }, params 
 	}
 
 	return {
+		registerFacts: await loadRegisterFacts(supabase, orgId.data),
 		organisation,
 		roleLevel,
 		operationalInfo: operations.data,

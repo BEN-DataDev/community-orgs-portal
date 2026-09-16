@@ -117,3 +117,100 @@ staged privately in Supabase run 6. The real ACNC source is paused (`enabled=fal
 after staging, so approval/publication remain blocked pending source/mapping review.
 Source enablement and credentials remain database-administrator operations; this
 increment does not provide a source-management UI, scheduler or worker login.
+
+## ACNC field inventory (F01)
+
+From `tools/ingestion/python`:
+
+```sh
+python3 -m ingestion.field_coverage
+python3 -m ingestion.field_coverage --write
+python3 -m unittest discover -s tests
+```
+
+The versioned contract is `ingestion/mappings/acnc-register-v1.json`; the generated
+report is `docs/acnc-field-coverage.md` at the repository root. `--write` regenerates
+only the report. To check a newly observed schema, use `--schema /path/schema.json`
+with a JSON object of column names to CKAN types. Unknown, missing or changed fields
+fail the check. This offline coverage check does not enable publication. F02
+uses the contract in runtime normalisation; unknown row keys require review. The complete synthetic fixture and edge
+cases are in `tests/fixtures/acnc-field-coverage.json`.
+
+## F02 schema and transformations
+
+New acquisitions use `acnc-ckan-v2` / `acnc-register-fields-v2`. All mapped
+organisation columns become typed assertions, with source spellings/raw values
+and mapping version retained in the private version payload. Invalid values or
+unknown columns quarantine the whole record. Blank/missing values create no
+assertion and cannot clear published data. Dates accept only DD/MM/YYYY,
+calendars DD-Mon (English), flags Y/N; other tokens require qualification.
+Names and country lists remain unsplit text. Address lines retain their positions.
+
+Apply `20260916070000_acnc_register_details.sql` through the normal migration
+process. It adds default-private storage with validated JSON groups and no browser
+writes. Public column grants exclude source-record IDs. F03 implements
+per-fact provenance, approval and suppression for these projections.
+No existing pilot version or approval is rewritten. Run transformation tests with
+`python3 -m unittest discover -s tests`; database checks are in
+`supabase/tests/acnc_register_details.sql`.
+
+## F03 review and publication
+
+`20260916080000_complete_field_publication.sql` adds a private, closed allowlist
+that is checked against the mapping manifest by the Python suite. It supports 62
+review units for 69 organisation columns: address components form one atomic
+merge; each flag is independent. Preview shows missing, invalid, unmapped,
+protected and suppressed facts explicitly. Source omissions never delete values.
+Approval snapshots include source values, parser/mapping state, source identity
+and target revisions. Pending approvals made before F03 require renewed review;
+already completed publications remain idempotent. Updating a mapping or validator
+requires a new mapping/snapshot version and fresh approval.
+
+The new table preserves distinct source projections and source-scoped revisions.
+Ordinary writes protect edited facts; only the private publication RPC can clear
+protection on its selected writes. Hidden existing projections stay protected.
+Suppression clears a selected fact from all source projections of the target and
+blocks direct or imported restoration. Whole-record/name withdrawal hides the
+organisation. No field grants ownership or verification status.
+
+Local verification from the repository root:
+
+```sh
+python3 scripts/build-ingestion-test-sql.py > /tmp/ingestion-test.sql
+# Apply that file with psql -v ON_ERROR_STOP=1 ONLY to an empty disposable database.
+node scripts/test-ingestion-review.mjs
+# Requires Playwright and an installed browser; PLAYWRIGHT_MODULE can specify its module path.
+node scripts/test-ingestion-field-groups.mjs
+npm run check
+```
+
+The generated SQL uses real organisation/contact/legal definitions and ingestion
+migrations, plus emulated auth helpers. It exercises rollback, replay, stale
+approvals, per-field suppression, source scoping, manual protection and access.
+It must never run against a deployed database. F04 implements public rendering;
+reprocessing the retained pilot with new approvals remains F05.
+
+## F04 public presentation
+
+`20260916090000_public_register_facts.sql` adds a public-only RPC for latest
+approved observations per source identity/field. It returns a closed set of public
+fields and attribution metadata. It excludes raw envelopes, internal IDs, reviewer
+notes, unpublished approvals, hidden projections and suppression/withdrawal data.
+Existing organisation pages render all review units in their domain sections;
+responsible-person counts appear as a Governance summary on Overview. The display
+labels source observations explicitly and retains source disagreements.
+
+The database test builder also runs `public_register_facts.sql`. Its single
+`f04_browser_fixture` JSON result contains public/suppressed/withdrawn scenarios
+captured under `SET ROLE anon`. Save that JSON as `/tmp/f04-browser.json`, then run:
+
+```sh
+node scripts/test-public-register-pages.mjs
+# Set PLAYWRIGHT_MODULE to an installed Playwright module path to also run browser checks.
+```
+
+`REGISTER_PAGE_FIXTURE` can override the fixture file path. The test runs the real
+page loaders and Svelte server rendering against exported anonymous results,
+checking all 62 review units across five pages and withdrawn-page 404s. It uses
+no hosted credentials. The SQL harness emulates auth helpers; hosted application
+verification and retained-pilot replay remain F05 work.

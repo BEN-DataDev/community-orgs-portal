@@ -27,13 +27,13 @@ class ACNCTests(unittest.TestCase):
 
     def test_address_lines_survive_null_third_line(self):
         row = FIXTURE["pages"]["0"]["result"]["records"][0]
-        address = normalise(row)["assertions"][1]["value"]
-        self.assertEqual(address["lines"], ["PO Box 10", "Care of Example Centre"])
+        address = next(a["value"] for a in normalise(row)["assertions"] if a["field"] == "administrative_address")
+        self.assertEqual([address["line_1"], address["line_2"]], ["PO Box 10", "Care of Example Centre"])
         self.assertEqual(address["type"], "Postal")
 
     def test_all_three_address_lines_and_no_abn(self):
         record = normalise(FIXTURE["pages"]["1"]["result"]["records"][0])
-        self.assertEqual(len(record["assertions"][1]["value"]["lines"]), 3)
+        self.assertEqual(len([k for k in next(a["value"] for a in record["assertions"] if a["field"] == "administrative_address") if k.startswith("line_")]), 3)
         self.assertFalse(any(a["field"] == "abn" for a in record["assertions"]))
         self.assertIn("No ABN", record["warnings"][0])
 
@@ -44,12 +44,12 @@ class ACNCTests(unittest.TestCase):
         self.assertEqual(json.loads(self.calls[0]["filters"]), FIXTURE["filters"])
         self.assertEqual(result["records"][0]["raw_sha256"], digest(result["records"][0]["raw"]))
         self.assertFalse(result["publication_eligible"])
-        self.assertEqual(result["records"][0]["assertions"][2]["value"], "00000000000")
+        self.assertEqual(next(a["value"] for a in result["records"][0]["assertions"] if a["field"] == "abn"), "00000000000")
 
     def test_postcode_leading_zero(self):
         row = copy.deepcopy(FIXTURE["pages"]["0"]["result"]["records"][0])
         row["Postcode"] = "0800"
-        self.assertEqual(normalise(row)["assertions"][1]["value"]["postcode"], "0800")
+        self.assertEqual(next(a["value"] for a in normalise(row)["assertions"] if a["field"] == "administrative_address")["postcode"], "0800")
 
     def test_numeric_abn_quarantined_not_coerced(self):
         pages = copy.deepcopy(FIXTURE["pages"])

@@ -69,6 +69,16 @@ export const fieldPreviewSchema = z.object({
 	fields: z.array(
 		z.object({
 			field: z.string(),
+			section: z.string(),
+			label: z.string(),
+			atomic_group: z.boolean().nullable(),
+			input_value: z.unknown(),
+			record_id: z.string(),
+			source_token: z.string(),
+			mapping_token: z.string(),
+			source_version: id,
+			mapping_version: z.string().nullable(),
+			source_values: z.unknown(),
 			table: z.string().nullable(),
 			source_value: z.unknown(),
 			current_value: z.unknown(),
@@ -84,6 +94,7 @@ export const fieldPreviewSchema = z.object({
 				'changed'
 			]),
 			protected: z.boolean(),
+			projection_public: z.boolean().nullable(),
 			revision: z.string(),
 			target_rows: z.number(),
 			changed_at: z.string().nullable()
@@ -114,14 +125,14 @@ export const approvalInput = z.object({
 	version: id,
 	revision: z.coerce.number().int().min(1),
 	organisation: z.union([z.string().uuid(), z.literal('')]),
-	fields: fieldPreviewSchema.shape.fields.min(1).max(3)
+	fields: fieldPreviewSchema.shape.fields.min(1).max(100)
 });
 
 export const withdrawalSchema = z.object({
 	organisation_id: z.string().uuid().nullable(),
 	suppressions: z.array(
 		z.object({
-			field: z.enum(['*', 'abn', 'website']),
+			field: z.string().regex(/^(\*|[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)?)$/),
 			reason: z.string(),
 			suppressed_at: z.string()
 		})
@@ -130,7 +141,7 @@ export const withdrawalSchema = z.object({
 export const suppressionInput = z.object({
 	run: id,
 	version: id,
-	field: z.enum(['*', 'abn', 'website']),
+	field: z.string().regex(/^(\*|[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)?)$/),
 	reason: z.string().trim().min(1).max(2000),
 	expected: z.object({
 		organisation_id: z.string().uuid().nullable(),

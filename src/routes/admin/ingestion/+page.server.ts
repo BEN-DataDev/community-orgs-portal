@@ -76,6 +76,7 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 		const w = withdrawalSchema.safeParse(status.data);
 		if (status.error || !w.success) error(500, 'Could not load withdrawal status.');
 		withdrawal = w.data;
+		withdrawalFields = preview.fields;
 		if (withdrawal.organisation_id) {
 			if (preview.organisation_id === withdrawal.organisation_id) withdrawalFields = preview.fields;
 			else {
@@ -170,7 +171,7 @@ export const actions: Actions = {
 						result.error.message === 'Complete enabled source required'
 							? 'Approval not saved: the source is paused or the import run is incomplete. A platform administrator can review and enable paused sources on the Source approvals page. Incomplete runs require a new complete import.'
 							: result.error.message === 'New organisation requires name'
-								? 'Approval not saved: select Entity name as well as ABN when creating a new organisation.'
+								? 'Approval not saved: select Entity name when creating a new organisation.'
 								: 'Approval not saved. Reload the preview and check the review target, source availability and selected fields.'
 				});
 			return {

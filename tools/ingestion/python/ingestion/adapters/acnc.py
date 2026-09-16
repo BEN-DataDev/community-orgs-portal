@@ -9,8 +9,10 @@ import json
 from datetime import datetime
 from typing import Callable
 
+from ingestion.acnc_transform import assertions, MAPPING_VERSION
+
 SOURCE_ID = "acnc-register"
-PARSER_VERSION = "acnc-ckan-v1"
+PARSER_VERSION = "acnc-ckan-v2"
 ENDPOINT = "https://data.gov.au/data/api/3/action/datastore_search"
 
 
@@ -40,41 +42,13 @@ def normalise(row: dict) -> dict:
     name = text(row, "Charity_Legal_Name")
     if not name:
         raise ValueError("missing Charity_Legal_Name")
-    # Identifiers must arrive as strings: coercion can hide damaged source values.
-    abn = text(row, "ABN")
-    if abn and (not abn.isascii() or not abn.isdigit() or len(abn) != 11):
-        raise ValueError("ABN must contain 11 ASCII digits")
-    postcode = text(row, "Postcode")
-    if postcode and (not postcode.isascii() or not postcode.isdigit() or len(postcode) != 4):
-        raise ValueError("Postcode must contain 4 ASCII digits")
-    address = {
-        "type": text(row, "Address_Type"),
-        "lines": [value for i in range(1, 4) if (value := text(row, f"Address_Line_{i}"))],
-        "locality": text(row, "Town_City"),
-        "state": text(row, "State"),
-        "postcode": postcode,
-        "country": text(row, "Country"),
-    }
-    assertions = [
-        {"field": "entity_name", "value": name},
-        {"field": "administrative_address", "value": address},
-    ]
-    for source_key, field in [
-        ("ABN", "abn"),
-        ("Charity_Website", "website"),
-        ("Date_Organisation_Established", "date_established_source"),
-        ("Registration_Date", "charity_registration_date_source"),
-        ("Financial_Year_End", "financial_year_end_source"),
-        ("Other_Organisation_Names", "other_names_source"),
-    ]:
-        value = text(row, source_key)
-        if value is not None:
-            assertions.append({"field": field, "value": value})
+    facts = assertions(row)
     return {
         "native_id": str(native_id),
-        "assertions": assertions,
+        "mapping_version": MAPPING_VERSION,
+        "assertions": facts,
         "warnings": ["ABN is unverified; format validation is not registry verification"]
-        if abn else ["No ABN supplied; retained for review"],
+        if row.get("ABN") else ["No ABN supplied; retained for review"],
     }
 
 

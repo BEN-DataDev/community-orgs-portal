@@ -51,7 +51,7 @@ begin
  r := ingestion.stage_acnc(e)::text;
  select version_id::text into v from ingestion.run_records where run_id=r::bigint;
  perform community_orgs.save_ingestion_review(r,v,0,'create',null,'New distinct group');
- fields := community_orgs.ingestion_field_preview(r,v)->'fields';
+ select jsonb_agg(x) into fields from jsonb_array_elements(community_orgs.ingestion_field_preview(r,v)->'fields') x where x->>'status' in ('new','changed');
  approval := community_orgs.approve_ingestion_fields(r,v,1,fields);
  stale := community_orgs.approve_ingestion_fields(r,v,1,fields);
  select count(*) into before_count from community_orgs.organisations;
@@ -69,7 +69,7 @@ begin
  r := ingestion.stage_acnc(e)::text;
  select version_id::text into v from ingestion.run_records where run_id=r::bigint;
  perform community_orgs.save_ingestion_review(r,v,0,'create',null,'Initial review');
- fields := community_orgs.ingestion_field_preview(r,v)->'fields';
+ select jsonb_agg(x) into fields from jsonb_array_elements(community_orgs.ingestion_field_preview(r,v)->'fields') x where x->>'status' in ('new','changed');
  approval := community_orgs.approve_ingestion_fields(r,v,1,fields);
  perform community_orgs.save_ingestion_review(r,v,1,'reject',null,'Reconsidered');
  begin perform community_orgs.publish_ingestion_fields(approval); raise exception 'Stale review accepted'; exception when serialization_failure then null; end;
@@ -77,7 +77,7 @@ begin
  r := ingestion.stage_acnc(e)::text;
  select version_id::text into v from ingestion.run_records where run_id=r::bigint;
  perform community_orgs.save_ingestion_review(r,v,0,'create',null,'Partial run evidence');
- fields := community_orgs.ingestion_field_preview(r,v)->'fields';
+ select jsonb_agg(x) into fields from jsonb_array_elements(community_orgs.ingestion_field_preview(r,v)->'fields') x where x->>'status' in ('new','changed');
  begin perform community_orgs.approve_ingestion_fields(r,v,1,fields); raise exception 'Partial run approved'; exception when invalid_parameter_value then null; end;
  if has_table_privilege('authenticated','ingestion.change_sets','UPDATE') or has_function_privilege('anon','community_orgs.publish_ingestion_fields(uuid)','EXECUTE') then raise exception 'Unexpected grants'; end if;
  raise notice 'Publication access, protected fields, target mismatch, atomic rollback, visibility, replay, source identity and stale reviews passed';

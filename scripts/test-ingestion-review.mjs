@@ -116,6 +116,17 @@ try {
 	assert.equal((await action({ intent: 'approve', field: '{' })).status, 400);
 	const field = {
 		field: 'website',
+		section: 'Contact',
+		label: 'Website',
+		atomic_group: false,
+		input_value: 'https://example.org',
+		record_id: '0',
+		projection_public: null,
+		source_token: 'source-state',
+		mapping_token: 'mapping-state',
+		source_version: '2',
+		mapping_version: 'acnc-register-fields-v2',
+		source_values: { Charity_Website: 'https://example.org' },
 		table: 'contact_info',
 		source_value: 'https://example.org',
 		current_value: null,
@@ -135,6 +146,12 @@ try {
 	};
 	assert.match((await action(approvalForm)).message, /approval saved/);
 	assert.equal(calls.at(-1)[0], 'approve_ingestion_fields');
+	assert.deepEqual(calls.at(-1)[1].p_fields, [field]);
+	const multi = new URLSearchParams(approvalForm);
+	for (const key of ['pbi', 'hpc', 'charity_size'])
+		multi.append('field', JSON.stringify({ ...field, field: key }));
+	assert.match((await action(multi)).message, /approval saved/);
+	assert.equal(calls.at(-1)[1].p_fields.length, 4);
 	const publishForm = { intent: 'publish', approval: '00000000-0000-4000-8000-000000000003' };
 	assert.match((await action(publishForm)).message, /published/);
 	saveError = { code: '40001' };
