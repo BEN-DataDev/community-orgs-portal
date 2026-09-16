@@ -1,4 +1,4 @@
-# Offline ACNC acquisition prototype
+# ACNC acquisition tools
 
 Requires Python 3.10 or later. Uses only the standard library; no installation,
 credentials, database, Flask, Redis or network connection is needed.
@@ -13,7 +13,7 @@ python3 -m ingestion.cli --fixture tests/fixtures/acnc-pages.json --output examp
 The CLI accepts explicitly synthetic fixtures only. Exit status is 0 for complete
 extraction and 1 for partial/failed extraction. It writes the diagnostic envelope
 in all three cases. File/configuration errors may instead raise a Python error.
-There is no live transport and no publication or database writer.
+This offline command has no live transport. The separate live client is described below; neither client publishes data or connects to a database.
 
 The separate `ingestion.staging_sql` command now validates an envelope and emits
 SQL for private staging (it opens no database connection). See
@@ -70,3 +70,50 @@ current source sample and private staging migration have now been validated; see
 [staging implementation](../../../docs/private-staging.md). SvelteKit integration
 and consumer-side validation remain pending. A future live transport needs finite HTTP timeouts,
 bounded retries and response-size limits. No such transport is enabled here.
+
+## Bounded live acquisition
+
+The standard-library `ingestion.live_acnc` client qualifies the configured CKAN
+resource and produces the same private staging envelope. Configuration is in
+`config/acnc-pilot.json`, disabled by default. The supplied pilot uses postcode
+2730, five records per page and at most two pages (ten fetched records).
+
+```bash
+python3 -m ingestion.live_acnc --config config/acnc-pilot.json --enable --output-dir /tmp/acnc-pilot-new-run
+python3 -m ingestion.staging_sql --input /tmp/acnc-pilot-new-run/envelope.json --output /tmp/acnc-pilot-stage.sql
+chmod 600 /tmp/acnc-pilot-stage.sql
+```
+
+`--enable` enables this acquisition invocation only. It does not enable publication
+or change the database source registry. The output directory must be new; the
+client writes it with mode 0700 and the envelope with mode 0600. Store outputs
+outside the repository. Exit code 0 means a complete scoped extraction; partial
+or failed acquisition writes its evidence envelope and exits 1. Configuration
+errors fail before acquisition. Do not treat an incomplete run as disappearance
+of records or a complete register snapshot.
+
+Controls:
+
+- HTTPS endpoint fixed to data.gov.au, two allowlisted CKAN actions, redirects refused.
+- One exact four-digit postcode, explicit resource UUID, licence-title agreement and
+  active resource membership in the `acnc-register` package required.
+- Source schema checked on every page; records outside the postcode rejected.
+- Page size/page count caps, hard ceiling of 500 records per configured run.
+- Byte cap per HTTP response, socket timeouts and a shared request/time budget.
+  Deadline checks occur between reads; an in-flight read can last one socket timeout.
+- Three attempts maximum per request, bounded exponential backoff for network errors,
+  HTTP 429/500/502/503/504, and respect for Retry-After within the remaining budget.
+  Other HTTP errors, schema changes and invalid JSON fail immediately.
+- Metadata hash rechecked after pagination; drift or a failed recheck prevents
+  completion. This is evidence of stability, not an atomic CKAN snapshot guarantee.
+
+The envelope includes metadata qualification, resource modification time, licence,
+schema, page hashes, configured limits and request count. Source dates remain raw
+assertions; matching/publication and deletion reconciliation are separate.
+
+The live qualification report in `docs/acnc-live-pilot-validation.json` records the
+first six-row pilot without retaining raw contacts in the repository. Records are
+staged privately in Supabase run 6. The real ACNC source is paused (`enabled=false`)
+after staging, so approval/publication remain blocked pending source/mapping review.
+Source enablement and credentials remain database-administrator operations; this
+increment does not provide a source-management UI, scheduler or worker login.

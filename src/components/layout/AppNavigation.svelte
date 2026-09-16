@@ -17,7 +17,7 @@
 		 * and no styling at all — so every class below is ours to supply.
 		 */
 		layout: 'bar' | 'rail' | 'sidebar';
-		/** Whether the signed-in user is an admin or owner of at least one organisation. */
+		/** Whether the signed-in user is a platform administrator. */
 		isSiteAdmin: boolean;
 		isIngestionOperator: boolean;
 	}
@@ -28,20 +28,24 @@
 		{ href: resolve('/'), label: 'Home', icon: Home },
 		{ href: resolve('/organisations'), label: 'Organisations', icon: Building2 },
 		{ href: resolve('/reports'), label: 'Reports', icon: FileBarChart },
-		...(isIngestionOperator
-			? [{ href: resolve('/admin/ingestion'), label: 'Import review', icon: FileBarChart }]
-			: []),
-		...(isSiteAdmin ? [{ href: resolve('/admin'), label: 'Admin', icon: Shield }] : [])
+		...(isSiteAdmin || isIngestionOperator
+			? [{ href: resolve('/admin'), label: 'Admin', icon: Shield }]
+			: [])
 	]);
 
 	/**
-	 * `/` would otherwise prefix-match every route, so it has to match exactly.
-	 * Everything else marks its whole subtree active, keeping the parent
-	 * highlighted on e.g. `/organisations/{id}/contact`.
+	 * Select the most specific visible destination. Admin tasks keep Admin selected,
+	 * while organisation detail pages select Organisations.
 	 */
-	function isActive(href: string, pathname: string): boolean {
-		return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
-	}
+	const activeHref = $derived(
+		destinations
+			.filter(({ href }) => {
+				const path = page.url.pathname.replace(/\/$/, '');
+				const target = href.replace(/\/$/, '');
+				return path === target || (target !== '' && path.startsWith(`${target}/`));
+			})
+			.sort((a, b) => b.href.length - a.href.length)[0]?.href
+	);
 
 	const rootClass = $derived(
 		{
@@ -69,7 +73,7 @@
 	<Navigation.Content class={layout === 'bar' ? '' : 'flex h-full flex-col'}>
 		<Navigation.Menu class={menuClass}>
 			{#each destinations as destination (destination.href)}
-				{@const active = isActive(destination.href, page.url.pathname)}
+				{@const active = destination.href === activeHref}
 				<Navigation.TriggerAnchor
 					href={destination.href}
 					class="{anchorClass} {active

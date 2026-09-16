@@ -1550,6 +1550,38 @@ export type Database = {
 			[_ in never]: never;
 		};
 		Functions: {
+            ingestion_source_approvals: { Args: Record<PropertyKey, never>; Returns: Json };
+            set_ingestion_source_enabled: { Args: { p_source: string; p_resource: string; p_enabled: boolean; p_token: string; p_reason: string }; Returns: undefined };
+
+			approve_ingestion_fields: {
+				Args: {
+					p_run: string;
+					p_version: string;
+					p_revision: number;
+					p_fields: Json;
+					p_organisation?: string;
+				};
+				Returns: string;
+			};
+			publish_ingestion_fields: { Args: { p_change_set: string }; Returns: string };
+			ingestion_field_approvals: { Args: { p_version: string }; Returns: Json };
+			ingestion_field_preview: {
+				Args: { p_run: string; p_version: string; p_organisation?: string };
+				Returns: Json;
+			};
+			organisation_source_attribution: { Args: { p_organisation: string }; Returns: Json };
+			ingestion_withdrawal_status: { Args: { p_version: string }; Returns: Json };
+			suppress_ingestion_content: {
+				Args: {
+					p_run: string;
+					p_version: string;
+					p_field: string;
+					p_reason: string;
+					p_expected: Json;
+				};
+				Returns: undefined;
+			};
+			is_platform_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
 			is_ingestion_operator: { Args: Record<PropertyKey, never>; Returns: boolean };
 			ingestion_review_queue: {
 				Args: { p_run?: string; p_version?: string; p_offset?: number; p_search?: string };

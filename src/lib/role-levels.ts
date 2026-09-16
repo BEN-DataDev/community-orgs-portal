@@ -1,6 +1,7 @@
 /**
  * Per-organisation role levels, mirroring `community_orgs.roles.hierarchy_level`.
- * Roles are scoped to an organisation — there is no site-wide role.
+ * These roles are scoped to an organisation. Platform administrators are
+ * separately appointed and receive effective owner-level access.
  *
  * This lives outside `$lib/server` because the UI needs it to decide whether to
  * render edit controls. It is a display concern only: the authoritative checks

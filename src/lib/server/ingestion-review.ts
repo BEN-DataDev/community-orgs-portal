@@ -62,3 +62,79 @@ export const queueSchema = z.object({
 		})
 	)
 });
+
+export const fieldPreviewSchema = z.object({
+	organisation_id: z.string().uuid().nullable(),
+	organisation_name: z.string().nullable(),
+	fields: z.array(
+		z.object({
+			field: z.string(),
+			table: z.string().nullable(),
+			source_value: z.unknown(),
+			current_value: z.unknown(),
+			status: z.enum([
+				'suppressed',
+				'unmapped',
+				'missing',
+				'invalid',
+				'ambiguous',
+				'unchanged',
+				'conflict',
+				'new',
+				'changed'
+			]),
+			protected: z.boolean(),
+			revision: z.string(),
+			target_rows: z.number(),
+			changed_at: z.string().nullable()
+		})
+	)
+});
+
+export const approvalsSchema = z.array(
+	z.object({
+		id: z.string().uuid(),
+		review_revision: z.number(),
+		organisation_id: z.string().uuid().nullable(),
+		fields: z.array(
+			z.object({
+				field: z.string(),
+				current_value: z.unknown(),
+				source_value: z.unknown(),
+				revision: z.string()
+			})
+		),
+		approved_at: z.string(),
+		published_at: z.string().nullable(),
+		published_organisation: z.string().uuid().nullable()
+	})
+);
+export const approvalInput = z.object({
+	run: id,
+	version: id,
+	revision: z.coerce.number().int().min(1),
+	organisation: z.union([z.string().uuid(), z.literal('')]),
+	fields: fieldPreviewSchema.shape.fields.min(1).max(3)
+});
+
+export const withdrawalSchema = z.object({
+	organisation_id: z.string().uuid().nullable(),
+	suppressions: z.array(
+		z.object({
+			field: z.enum(['*', 'abn', 'website']),
+			reason: z.string(),
+			suppressed_at: z.string()
+		})
+	)
+});
+export const suppressionInput = z.object({
+	run: id,
+	version: id,
+	field: z.enum(['*', 'abn', 'website']),
+	reason: z.string().trim().min(1).max(2000),
+	expected: z.object({
+		organisation_id: z.string().uuid().nullable(),
+		field: fieldPreviewSchema.shape.fields.element.optional()
+	}),
+	confirmed: z.literal('yes')
+});

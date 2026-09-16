@@ -93,4 +93,53 @@
 			</div>
 		</div>
 	</div>
+	{#if data.sources.length}
+		<section
+			aria-label="Sources and freshness"
+			class="card preset-outlined-surface-200-800 mt-6 space-y-3 p-4"
+		>
+			<h2 class="font-semibold">Sources and freshness</h2>
+			<p class="text-sm">
+				Source observation dates describe when data was retrieved, not when the organisation last
+				confirmed it.
+			</p>
+			<ul class="space-y-3">
+				{#each data.sources as source}<li>
+						<p>
+							<strong
+								>{source.field === 'entity_name'
+									? 'Entity name'
+									: source.field === 'abn'
+										? 'ABN'
+										: source.field === 'website'
+											? 'Website'
+											: source.field}</strong
+							>
+							· {#if source.url}<a class="anchor" href={source.url} rel="noopener noreferrer"
+									>{source.title}</a
+								>{:else}{source.title}{/if}
+						</p>
+						<p class="text-sm">
+							Source observed: {new Date(source.observed_at).toLocaleDateString('en-AU', {
+								timeZone: 'UTC'
+							})} · Published: {new Date(source.published_at).toLocaleDateString('en-AU', {
+								timeZone: 'UTC'
+							})}
+						</p>
+						<p class="text-sm">
+							{source.unchanged_since_import
+								? 'Unchanged since import; not independently verified.'
+								: 'Edited since import; the current value may differ from this source.'}
+						</p>
+						{#if source.licence}<p class="text-sm">
+								Licence: {#if source.licence_url}<a
+										class="anchor"
+										href={source.licence_url}
+										rel="noopener noreferrer">{source.licence}</a
+									>{:else}{source.licence}{/if}
+							</p>{/if}
+					</li>{/each}
+			</ul>
+		</section>
+	{/if}
 </div>

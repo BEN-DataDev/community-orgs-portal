@@ -143,14 +143,20 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	}
 
 	/**
-	 * `/admin` needs more than a session. Roles in this schema are scoped to an
-	 * organisation, so the closest honest mapping for a site-wide area is
-	 * "admin or owner of at least one organisation".
+	 * The Admin task hub also accepts ingestion operators. Individual tasks
+	 * retain their own capability checks.
 	 */
 	if (pathname === '/admin/ingestion' || pathname.startsWith('/admin/ingestion/')) {
 		if (!(await isIngestionOperator(event.locals.supabase)))
 			error(403, 'Ingestion operator access required.');
-	} else if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+	} else if (pathname === '/admin' || pathname === '/admin/') {
+		if (
+			!(await isSiteAdmin(event.locals.supabase, user?.id)) &&
+			!(await isIngestionOperator(event.locals.supabase))
+		) {
+			error(403, 'You do not have access to this area.');
+		}
+	} else if (pathname.startsWith('/admin/')) {
 		if (!(await isSiteAdmin(event.locals.supabase, user?.id))) {
 			error(403, 'You do not have access to this area.');
 		}

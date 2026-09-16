@@ -1,7 +1,15 @@
 # Portal implementation plan
 
 Prepared: 15 September 2026. Updated: 16 September 2026 after acquisition-code review.
-Status: in progress — ACNC private staging and initial operator review implemented and tested locally; hosted deployment has not started.
+Status: pilot source approval and publication workflow browser-verified by the user. Full register field coverage is the next priority; acquisition job controls and scheduling are deferred.
+
+## Current priority: complete import fields
+
+Implement [the complete public register field coverage plan](import-field-coverage-plan.md)
+(F01–F05) before acquisition job controls or scheduling. It uses the reviewed
+transformation, mapping and parsing modules from both referenced repositories.
+Start with the versioned ACNC field inventory and source-to-public mapping contract;
+then extend schema, transformations, review/publication, public pages and pilot replay.
 
 ## Recommendation
 
@@ -300,7 +308,7 @@ revision checks and an append-only event trail accessible to database administra
 
 This advances **P07, P09, P14, P18 and P19**, without completing those tasks.
 Candidates are suggestions; there is no automatic merge or verified identifier
-link. Field-level differences, selected-field approval, publication, suppression,
+link. Initial field-level comparisons are described below; selected-field approval, publication, suppression,
 source administration and a history UI remain outstanding. Source/run browsing
 currently lists the latest 50 runs and 50 records per page.
 
@@ -310,6 +318,213 @@ container with minimal auth/portal fixtures; the hosted migration chain and brow
 workflow against a deployed Supabase instance remain unverified. See
 [operator review setup](private-staging.md#operator-review).
 
-Next: field-level change proposals and manual-edit protection (P10/P15), followed
-by the transactional publication service (P17). Deploy and verify this review
-increment on a chosen development Supabase instance before pilot use.
+The field-preview increment below advances P10/P15. Deploy and verify the review
+workflow on a chosen development Supabase instance before pilot use.
+
+## Field preview increment — 16 September 2026
+
+Added current/source comparisons to import review and database-managed protection
+for name, ABN and website. Existing values are protected during migration; edits,
+clears and child-row deletions advance revisions. Missing source fields preserve
+portal values; unmapped fields and ambiguous child rows remain review-only.
+
+This advances **P10/P15/P19/P23** but does not complete them. Mapping is limited to
+three fields. Immutable field selections, stale-approval checks at publication,
+conflict resolution, suppression and imported-field provenance remain outstanding.
+See [field protection details](private-staging.md#field-previews-and-protection--16-september-2026).
+
+The publication increment below adds selected-field change sets and transaction
+checks for target protection and revisions.
+The hosted database has not been migrated; full development deployment/browser
+verification remains a release gate.
+
+## Publication increment — 16 September 2026
+
+Implemented immutable selected-field approvals and transactional publication for
+name, ABN and website. Operators approve a saved link/create target, inspect the
+saved values and publish separately. The database validates the review revision,
+field snapshot, protection, source availability/completeness and native source link.
+New organisations are public; existing visibility is preserved. The existing
+owner-grant trigger skips privately marked imports and still grants ownership for
+normal portal creation. Publication is atomic and idempotent by approval ID, with private history.
+
+This advances **P10/P15/P17/P19/P20** for the bounded three-field pilot. Imported
+values remain protected; automatic refresh/conflict overrides, suppression,
+withdrawal, public attribution and guarded rollback remain unfinished. Table-level
+publication locks are appropriate only for a small pilot until measured/reworked.
+See [publication setup and constraints](private-staging.md#selected-field-approval-and-publication--16-september-2026).
+
+Validation: isolated PostgreSQL regression tests and Svelte route tests cover
+failure rollback, stale approvals, manual corrections, replay, duplicate creation,
+source pauses and partial runs. Development Supabase deployment, its full migration
+chain and browser verification remain release gates before any real publication.
+
+Next: verify the complete workflow on a designated development Supabase instance,
+then add public source attribution and withdrawal/suppression before cohort release.
+
+## Platform administrator — 16 September 2026
+
+Applied `20260916015048_platform_administrators.sql` through Supabase MCP to
+`gqltsfijginclwszrcfj`. Explicitly granted user
+`2b902bc4-832e-40fb-9c64-6948c57f5c65` platform administration at the user's request.
+The private `platform_access.administrators` table records the grant and reason.
+This grants application-wide organisation access and owner-level role management
+without creating per-organisation memberships. Admin navigation now checks this
+explicit capability; organisation administrators retain their scoped access.
+
+Existing MFA and anonymous-session restrictions remain. Client roles cannot read
+or modify the grant table. A database administrator can revoke access by deleting
+the user's row. This does not grant Supabase dashboard access or database superuser
+rights. Ingestion integrates the capability when its migrations are deployed;
+the earlier ingestion/publication migrations remain undeployed on the remote DB.
+
+Validated local RLS/private reads, denied self-grants/non-admin access and immediate
+revocation. Confirmed the real grant through an authenticated database claim
+simulation. Application changes are in the workspace and require the usual web
+application deployment for hosted navigation to use the new capability.
+
+## Development activation — 16 September 2026
+
+Applied the four ingestion migrations through Supabase MCP to the existing project
+`gqltsfijginclwszrcfj` (the same project configured by the local development app):
+
+| Migration                  | Remote version   |
+| -------------------------- | ---------------- |
+| Private staging            | `20260916020403` |
+| Operator review            | `20260916020406` |
+| Field preview/protection   | `20260916020408` |
+| Selected-field publication | `20260916020409` |
+
+Local migration filenames now match the remote ledger; no migration-history rows
+were rewritten. This supersedes earlier notes saying these migrations are undeployed.
+No source was enabled and no records were staged or published.
+
+The local Vite app runs at `http://127.0.0.1:5174` (5173 was occupied). Sign-in
+returns HTTP 200; unauthenticated admin/ingestion requests redirect to sign-in.
+Under authenticated AAL2 claims for user `2b902bc4-832e-40fb-9c64-6948c57f5c65`,
+Supabase confirms platform-admin and ingestion-operator access and returns a valid
+empty review queue. All ingestion tables have RLS; authenticated users have no
+direct private-schema access. Svelte checks and admin/ingestion route tests pass.
+
+An actual signed-in browser session was not available for this verification;
+interactive login, navigation and rendered review verification remain pending.
+This starts the local app; it does not deploy a hosted web application.
+Next: sign in locally, then stage a synthetic sample and exercise review/publication.
+
+## Synthetic workflow verification — 16 September 2026
+
+Staged `offline-acnc-sample-v1` as **run 1**, containing two private synthetic
+records, in the configured Supabase project. The enabled source resource is
+`synthetic-acnc-resource-v1`; its metadata explicitly identifies it as synthetic.
+No live ACNC source was enabled. Python fixture/hash validation: 17 tests passed.
+
+Added `supabase/tests/ingestion_deployed_workflow.sql` and exercised the deployed
+schema under authenticated operator claims for the appointed administrator. Passed:
+queue/detail loading, create review, stale-review rejection, selected-field approval,
+publication, idempotent retry, duplicate creation rejection, manual-edit protection,
+no ownership assignment and exclusion of unselected ABN data. This checks the
+actual hosted triggers and RLS, superseding the earlier minimal-schema limitation
+for this scenario. It is a database integration test, not a browser automation test.
+
+The entire review/publication exercise was rolled back. Only the private source,
+run and two staged records remain; there are no saved reviews, approvals, published
+organisations or publication events from this test. Open Admin → Import review →
+`offline-acnc-sample-v1` to inspect the staged examples. They are synthetic and must
+not be presented as real community organisations.
+
+MCP's postgres connection could not assume `ingestion_worker`. Staging therefore
+used its existing execute privilege directly; no memberships or grants were changed.
+The dedicated worker login/membership still needs provisioning for scheduled jobs.
+
+Next implementation: public source attribution (P24), followed by suppression and
+withdrawal controls (P28) before real-cohort publication. Interactive review and
+approval in the signed-in browser remains a separate verification step.
+
+## Attribution and suppression increment — 16 September 2026
+
+Applied `20260916034216_attribution_and_suppression.sql` to the configured Supabase
+project. Organisation overview pages now show per-field sources, observed/published
+dates, licence metadata when supplied and whether the value was edited since import.
+Only an explicit public projection is exposed; raw records and private review notes
+remain private. Links are restricted to HTTP(S) without embedded credentials.
+
+Admin → Import review now includes withdrawal/suppression controls. Operators can
+clear a linked ABN/website or make the entire linked organisation private, with a
+required reason and confirmation. Clearing a field checks the displayed snapshot;
+changed/ambiguous targets require reloading. Explicit removal also clears human
+corrections, which the form states. Suppression is retained across source versions
+and enforced during approval, publication and direct target updates. No operator
+UI can undo suppression. Whole-record withdrawal applies to the entire linked
+organisation, including organisations that existed before the import.
+
+This advances **P24/P28** for the three-field pilot. It does not erase private raw
+archives/audit history, purge external caches, implement an unsuppression workflow
+or identify duplicates under unrelated native/resource IDs. Required name removal
+uses whole-record withdrawal. Source metadata qualification and public licence
+text still need operator review before real publication. Public source links use
+reviewed `public_*` metadata, not arbitrary links copied from raw records.
+
+Validation: Svelte, targeted lint, build, route tests and safe-link tests passed.
+Isolated and deployed-schema rollback tests cover public attribution, manual edits,
+stale-removal rejection, replay/direct restoration denial, later source versions,
+withdrawal and unauthorised access. Remote tests left zero public organisations,
+publications or suppressions; the two earlier private synthetic records remain.
+Browser rendering of this new workflow remains unverified.
+
+Next: bounded live ACNC acquisition and source configuration for the pilot (P13/P18),
+with current metadata/schema validation and disabled-by-default source enablement.
+Keep real publication separate from acquisition until the source terms and mapping
+have been reviewed. Full rollback operations and scheduled refresh remain later work.
+
+## Bounded live ACNC acquisition — 16 September 2026
+
+Implemented `ingestion.live_acnc` and disabled-by-default pilot configuration in
+`tools/ingestion/python/config/acnc-pilot.json`. The client bounds postcode scope,
+page count/size, response bytes, HTTP requests, timeout and retries. It qualifies
+resource membership/activity, reviewed licence title and field schema, rejects
+out-of-scope rows and rechecks metadata after pagination. It emits private evidence
+for complete/partial/failed runs and never publishes or opens a database connection.
+
+The live postcode **2730** pilot completed with **6 accepted records**, **2 pages**,
+**0 quarantined records**. Metadata and field schema remained consistent. See
+[qualification evidence](acnc-live-pilot-validation.json); raw data stays outside
+the repository. Records were staged via Supabase MCP as **run 6**. The source has
+reviewed public attribution metadata but is **paused after staging**, preventing
+field approval/publication until separately enabled for the pilot. Existing
+synthetic records and withdrawn test organisations were not modified.
+
+This advances **P13/P18**. Source configuration is file/database based; the operator
+source-management UI, worker identity, scheduled runs, bulk-resource fallback and
+stable cross-release native-ID qualification remain outstanding. Scoped CKAN
+completion is not a guarantee of a national or atomic snapshot.
+
+Validation: 26 offline Python tests pass, including scope rejection, malformed
+schema, metadata drift, retry/byte/time budgets and Retry-After handling. The real
+network run used four requests (metadata, two data pages, metadata recheck).
+
+Next: inspect run 6 in Admin → Import review, qualify the pilot inclusion/matching
+and public attribution before enabling publication. Build source enable/pause and
+job controls before scheduled acquisition.
+
+### Source approval administration (16 September 2026)
+
+- Added **Admin → Source approvals** (`/admin/sources`) and a contextual link
+  beside field approval errors caused by paused sources or incomplete imports.
+- Platform admins can inspect source licence, staging evidence, recent imports
+  and status history, then explicitly enable or pause the source/resource with
+  a reason and confirmation. Returning to review preserves the run and record.
+- Source changes use authenticated, admin-only RPCs, locked source snapshots and
+  private audit events. Enabling does not publish records or permit incomplete
+  imports; it enables the whole source/resource for staging and review operations.
+- Applied migration `20260916060046_source_approval`. The live ACNC source was left
+  paused for explicit admin approval. Acquisition metadata is historical;
+  the displayed current status and status-change history are authoritative.
+- Verified route authorization/validation/stale responses, existing ingestion
+  route tests, Svelte check and targeted ESLint. Database enable/pause/audit/stale
+  checks passed in a rolled-back transaction.
+- User confirmed the browser workflow works for ABN **75349327058**: source
+  enablement, field approval, publication and checking the resulting organisation
+  and source attribution. This is user-reported verification.
+- Next (revised after field-coverage review): complete F01–F05 in the
+  [import field coverage plan](import-field-coverage-plan.md). Acquisition job
+  controls, refresh scheduling and changed-record detection follow this work.

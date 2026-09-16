@@ -1,3 +1,4 @@
+import { attributionSchema } from '$lib/server/source-attribution';
 import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireOrgAccess, requireOrgEditor } from '$lib/server/authorization';
@@ -11,7 +12,8 @@ import {
 	toColumns
 } from '$lib/server/validation';
 
-export const load: PageServerLoad = async ({ locals: { supabase, user }, params }) => {
+export const load: PageServerLoad = async ({ locals: { supabase, user }, params, setHeaders }) => {
+	setHeaders({ 'cache-control': 'private, no-store' });
 	const orgId = orgIdSchema.safeParse(params.id);
 	if (!orgId.success) {
 		error(404, 'Organisation not found.');
@@ -57,7 +59,14 @@ export const load: PageServerLoad = async ({ locals: { supabase, user }, params 
 		error(500, 'Could not load this organisation.');
 	}
 
+	const attribution = await supabase.rpc('organisation_source_attribution', {
+		p_organisation: orgId.data
+	});
+	const sources = attributionSchema.safeParse(attribution.data);
+	if (attribution.error || !sources.success)
+		error(500, 'Could not load organisation source attribution.');
 	return {
+		sources: sources.data,
 		organisation,
 		relationships: relationships ?? [],
 		roleLevel

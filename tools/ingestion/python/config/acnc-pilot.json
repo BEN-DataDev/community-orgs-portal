@@ -1,0 +1,11 @@
+{
+  "enabled": false,
+  "resource_id": "eb1e6be4-5b13-4feb-b28e-388bf7c26f93",
+  "postcode": "2730",
+  "page_size": 5,
+  "max_pages": 2,
+  "timeout_seconds": 10,
+  "deadline_seconds": 90,
+  "max_response_bytes": 2097152,
+  "expected_licence_title": "Creative Commons Attribution 3.0 Australia"
+}

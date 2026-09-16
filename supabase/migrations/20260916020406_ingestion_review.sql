@@ -30,12 +30,17 @@ alter table ingestion.review_events enable row level security;
 revoke all on ingestion.operators, ingestion.reviews, ingestion.review_events from public, anon, authenticated, service_role;
 
 create function community_orgs.is_ingestion_operator() returns boolean
-language sql stable security definer set search_path = '' as $$
- select auth.uid() is not null
+language plpgsql stable security definer set search_path = '' as $$
+declare platform_admin boolean := false;
+begin
+ if to_regprocedure('community_orgs.is_platform_admin()') is not null then
+  execute 'select community_orgs.is_platform_admin()' into platform_admin;
+ end if;
+ return platform_admin or (auth.uid() is not null
  and coalesce((auth.jwt()->>'is_anonymous')::boolean,false) = false
  and (not community_orgs.user_has_verified_mfa() or coalesce(auth.jwt()->>'aal' = 'aal2', false))
- and exists(select 1 from ingestion.operators where user_id=auth.uid());
-$$;
+ and exists(select 1 from ingestion.operators where user_id=auth.uid()));
+end $$;
 revoke all on function community_orgs.is_ingestion_operator() from public, anon;
 grant execute on function community_orgs.is_ingestion_operator() to authenticated;
 

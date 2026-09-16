@@ -1,7 +1,9 @@
 # ACNC qualification and private staging
 
-Implemented: 16 September 2026. Migration tested in an isolated PostgreSQL 16
-container, not applied to the hosted portal.
+Implemented: 16 September 2026. All four ingestion migrations are now applied
+to Supabase project `gqltsfijginclwszrcfj`. Historical test notes below describe
+earlier isolated verification. See the implementation plan’s development activation
+section for the current deployment and verification status.
 
 ## Live source validation
 
@@ -24,7 +26,7 @@ of the whole register. Use the complete-snapshot guard before any future reconci
 
 ## Database foundation
 
-[Migration](../supabase/migrations/20260916010000_private_ingestion_staging.sql) creates:
+[Migration](../supabase/migrations/20260916020403_private_ingestion_staging.sql) creates:
 
 - `ingestion.sources`: registered resource/metadata; disabled by default.
 - `ingestion.ingestion_runs`: immutable run key, envelope, completion and timestamps.
@@ -52,8 +54,8 @@ runs can all be stored as evidence. Completion does not confer publication appro
 
 Raw evidence is currently stored privately as JSONB, including the run envelope.
 Before larger scheduled imports, add retention/removal operations covering both
-copies and consider private object storage. The follow-up review migration adds review queues and candidate suggestions; field
-locks, publication and withdrawal automation remain outstanding.
+copies and consider private object storage. The follow-up review migration adds review queues and candidate suggestions. The third migration adds mapped-field protection
+and comparisons; the fourth migration adds selected-field publication. Withdrawal automation remains outstanding.
 
 ## Stage a validated envelope
 
@@ -104,7 +106,7 @@ protection, suppression/removal and reviewed publication transactions.
 
 ## Operator review
 
-Apply `20260916020000_ingestion_review.sql` after the staging migration on a chosen
+Apply `20260916020406_ingestion_review.sql` after the staging migration on a chosen
 development database. The existing `community_orgs` API schema exposes three
 narrow functions; **do not expose the private `ingestion` schema**. The page uses
 the signed-in user's session, not a service key. Regenerate database types after
@@ -153,3 +155,178 @@ organisation creation. Additional isolated auth-claim tests covered enrolled MFA
 with missing/AAL1/AAL2 assurance. Svelte checks and route tests pass; the production
 build succeeds with sourcemap/annotation and optional Sharp packaging warnings.
 Browser interaction and a full Supabase deployment still need verification.
+
+## Field previews and protection — 16 September 2026
+
+Apply `20260916020408_ingestion_field_preview.sql` after the review migration.
+**Compare fields** on a candidate opens a current/source comparison. A saved link
+is the default comparison target; an explicit new-organisation preview clears it.
+Comparing does not change the saved match or approve any field.
+
+The first mapping covers `organisations.entity_name`, `legal_details.abn` and
+`contact_info.website`. Dates, administrative addresses, aliases and other source
+assertions remain **unmapped** evidence until their semantics are agreed. ABNs
+are not verified by this comparison. Missing/null assertions never propose a
+clear. Non-string/blank values are invalid; multiple child rows are ambiguous.
+
+Private `ingestion.field_state` records a revision and protection marker per
+organisation/table/field. The migration protects existing non-null mapped values.
+Database triggers track subsequent changes through existing forms or direct
+writes, including null clears and child-row deletion; no-op updates do not bump
+revisions. New non-null values are protected too. Organisation reassignment of
+these rows requires a reviewed migration. Direct client access to protection
+state is revoked; there is no browser-controlled bypass or unlock operation.
+
+Previews classify fields as **new, unchanged, changed, conflict, missing,
+unmapped, invalid or ambiguous**. A differing protected field is a conflict even
+if its current value is null or its child row was deleted. These markers prevent
+such differences being presented as ready-to-apply updates; they do not prohibit
+ordinary authorised human edits.
+
+This increment supplied the protection/preview foundation. The publication
+increment below adds immutable selected-field snapshots and enforcement. Previews
+remain live reads; record-level reviews alone do not authorise publication. There
+is no automatic unlock.
+
+Validation: `supabase/tests/ingestion_field_preview.sql` exercises access denial,
+new/missing/unmapped values, unchanged fields, protected edits/clears/deletions,
+no-op revisions and multiple target rows. Run it with `psql -v ON_ERROR_STOP=1`
+on a disposable database after all three migrations. Route tests additionally
+check saved-link/default-new targets and preview failures. Local SQL testing used
+PostgreSQL 16 with minimal auth/portal fixtures, not a full hosted migration chain.
+
+## Selected-field approval and publication — 16 September 2026
+
+Apply `20260916020409_ingestion_publication.sql` after the field-preview migration.
+The operator workflow is:
+
+1. Save a **link** or **create** review with an identity-check note.
+2. Compare the saved target and select eligible fields. New organisations require
+   the name field. Missing, protected, invalid, ambiguous and unmapped values are
+   not eligible. ABNs must have 11 digits; websites must use HTTP(S) and fit the
+   portal column. ABN format checking does not establish registry validity.
+3. Save the field approval. The server compares each displayed snapshot with a
+   fresh preview, including values, row count, protection and revision. A changed
+   review target/revision or stale field requires another review.
+4. Inspect the saved target and before/after values, then choose **Publish these
+   approved fields**. Only selected fields are applied.
+
+New organisations are explicitly **public**. Linked organisations retain their
+existing visibility, including private visibility. A private `creation_targets`
+marker lets the existing owner-grant trigger recognise an imported creation. No
+ownership/role grants are made for imports; normal portal creation retains its
+owner grant. The marker is not a client-controlled setting. Complete runs from enabled sources are required at approval and publication.
+The worker's `publication_eligible: false` envelope remains unchanged: extraction
+never confers permission to publish; the separate operator approval does.
+
+Private `change_sets` stores immutable approvals; `publications` records the actor,
+time, resulting organisation and applied snapshots; `source_links` binds each
+resource-scoped native record to one portal organisation. All are RLS-enabled with
+no direct browser/service-role table grants. The three API functions require the
+same operator/MFA checks as review. The UI shows the latest 20 approvals per version.
+
+Publication locks the three mapped portal tables in a fixed order, rechecks the
+review, source enablement, field snapshots, protection and source link, and applies
+all selected fields in one transaction. Any failure rolls back every write. These
+coarse locks intentionally favour correctness for the small pilot; they briefly
+block portal writes and must be replaced/measured before high-volume publication.
+They also cover missing child rows, preventing an insert from racing the preview.
+
+Retrying a published change-set ID returns its recorded organisation without
+writing again, even after a later human correction. Another create approval for
+an already linked source record is rejected. Different native source identities
+still require human duplicate checks; shared ABNs/names never automatically merge.
+Imported values remain protected by the existing triggers. This conservative first
+version allows filling unprotected gaps and creating organisations, but does not
+allow unattended refreshes or conflict overrides. It does not unlock human values.
+
+The publication UI records history for operators; public source-attribution screens,
+withdrawal/suppression, conflict resolution, guarded rollback and bulk scheduling
+remain separate work. Regenerate API types after deployment; local signatures have
+been added in advance. No hosted migration or live publication was performed.
+
+### Publication verification
+
+`supabase/tests/ingestion_publication.sql` uses rollback-only synthetic fixtures.
+It covers operator denial, protected fields, wrong-target approvals, a failure on
+the second field rolling back the first, visibility preservation, selected-only
+writes, replay after human corrections, stale field/review revisions, source
+pause/incomplete runs, public creation, duplicate source-identity prevention and preservation of normal
+owner grants while imported creation grants none.
+Run it as postgres on a disposable database after all four migrations. Tests here
+used PostgreSQL 16 with minimal auth/portal fixtures; this does not verify the
+complete hosted schema, browser interaction or deployment.
+
+Svelte checks, targeted ESLint/format checks, route/session tests and production
+build passed. Build output retains the existing annotation/optional Sharp warnings.
+
+## Deployed synthetic sample
+
+Run `1` (`offline-acnc-sample-v1`) now contains two synthetic records for the Admin
+→ Import review task. Source/resource metadata marks the sample as synthetic.
+A deployed-schema integration test exercised selected-field publication and human
+edit protection in a transaction that was rolled back; no public sample organisations
+or approvals remain. The sample is ready for inspection in the signed-in UI.
+
+To repeat the database verification using an administrative connection, set
+`test.ingestion_operator` to an existing authorised operator UUID and execute
+`supabase/tests/ingestion_deployed_workflow.sql`. It requires the untouched fixture
+and intentionally stops if its first version has already been reviewed. It uses
+transaction-local authenticated claims, not an actual browser session. Publication
+writes are rolled back, though database sequence values may advance.
+
+## Public attribution and withdrawal
+
+Migration `20260916034216_attribution_and_suppression.sql` is deployed. The organisation
+overview calls `organisation_source_attribution` after its access checks. Responses
+contain only source identity, reviewed display/link/licence metadata, observed and
+published dates, field names and an edited-since-import flag. No raw values, actor
+IDs or private review/suppression reasons are exposed. Hidden organisations return
+no public attribution to unauthorised callers. Organisation overview responses use
+`private, no-store` caching; existing externally cached copies are not purged.
+
+Populate these **reviewed public fields** in `ingestion.sources.metadata` when
+qualifying a real source (the private raw metadata can retain additional keys):
+
+| Key | Purpose |
+| --- | --- |
+| `public_title` | Public source/publisher label |
+| `public_url` | HTTP(S) dataset/register page |
+| `public_licence` | Reviewed licence/attribution text |
+| `public_licence_url` | HTTP(S) licence page |
+
+Missing titles fall back to the source ID; missing licence/link fields are omitted.
+Synthetic sources are always labelled **Synthetic test data**. Public URL rendering
+rejects non-HTTP(S) schemes and embedded credentials. Dates describe retrieval and
+publication, never independent confirmation. Revision changes distinguish manual
+corrections even if a user eventually restores the same text.
+
+The **Withdrawal and suppression** panel operates on the selected source record's
+actual linked organisation, not a candidate currently being compared. It shows the
+linked target and current ABN/website before field removal. A reason and explicit
+confirmation are required. `suppress_ingestion_content` repeats the capability check,
+locks the portal tables in publication order, validates the target/snapshot and
+records suppression before removing the value or changing `is_public` to false.
+Ambiguous child rows and stale field previews are rejected atomically. For an
+unpublished record, suppression simply blocks future publication of that content.
+
+`ingestion.suppressions` is private, RLS-enabled and client writes are revoked.
+It retains the first reason, operator and timestamp per native-record/field; repeated
+requests do not erase that evidence. Field suppression covers every version of that
+source identity and imports targeting the linked organisation. Publication/approval
+gates reject suppressed content, and target-table triggers reject attempts to
+restore a suppressed field or make a withdrawn organisation public. There is no
+client-controlled bypass, and no restore button. Suppression under one source ID
+does not automatically discover the same entity under a different resource/native
+ID when it is proposed as a different organisation.
+
+Explicit ABN/website removal clears the current value even if manually corrected;
+operators must review the displayed value. Withdrawing an entire record hides the
+whole linked organisation, including independently entered content. Required entity
+names are retained privately rather than nulled. Private staging evidence and audit
+history are retained: this is withdrawal from publication, not complete erasure.
+
+Regression: `supabase/tests/attribution_and_suppression.sql` requires an existing
+operator UUID in `test.ingestion_operator`. It creates synthetic records and rolls
+back every change. It passed against the actual deployed schema. The earlier staged
+sample remains untouched and can be used for a signed-in browser walkthrough.

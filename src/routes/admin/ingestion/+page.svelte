@@ -1,9 +1,34 @@
 <script lang="ts">
+	import WithdrawalControls from '$components/ingestion/WithdrawalControls.svelte';
 	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 	let { data, form }: PageProps = $props();
 	const queue = $derived(data.queue);
+	function previewHref(target: string) {
+		const params = new URLSearchParams({
+			run: queue.run!,
+			version: queue.detail!.id,
+			target,
+			offset: String(data.offset),
+			search: data.search
+		});
+		return `${resolve('/admin/ingestion')}?${params}`;
+	}
+	function display(value: unknown) {
+		return value == null ? '—' : typeof value === 'string' ? value : JSON.stringify(value);
+	}
+	const explanations = {
+		suppressed: 'Suppressed content cannot be published or restored.',
+		conflict: 'Protected existing or manually edited value; requires conflict resolution.',
+		unchanged: 'Source and current value agree.',
+		new: 'Proposed new value; not approved for publication.',
+		changed: 'Source differs from current value.',
+		missing: 'Source omitted this field; preserve the current value.',
+		unmapped: 'Mapping not approved; evidence only.',
+		invalid: 'Source value has an unsupported type or is empty.',
+		ambiguous: 'Multiple target rows; resolve the target before applying changes.'
+	};
 	function href(run: string, version?: string, offset = 0) {
 		const params = new URLSearchParams({ run, offset: String(offset) });
 		if (version) params.set('version', version);
@@ -14,6 +39,7 @@
 <svelte:head><title>Import review</title></svelte:head>
 <div class="space-y-6">
 	<header>
+		<a class="anchor" href={resolve('/admin')}>Back to Admin</a>
 		<h1 class="text-2xl font-bold">Import review</h1>
 		<p>Compare source evidence with existing organisations and record a proposed decision.</p>
 		<p class="text-sm">
@@ -112,6 +138,7 @@
 								class="card border-surface-200-800 border p-4"
 							>
 								<h4 class="font-semibold">{candidate.entity_name}</h4>
+								<a class="anchor" href={previewHref(candidate.org_id)}>Compare fields</a>
 								<p>{candidate.reason}</p>
 								<p class="text-sm">
 									ABN: {candidate.abn ?? 'None'} · {candidate.physical_address ??
@@ -125,6 +152,132 @@
 							</article>{:else}<p>
 								No candidates found. Try a broader name search before proposing a new organisation.
 							</p>{/each}
+						{#if data.preview}
+							<section aria-label="Field change preview" class="space-y-3">
+								<h3 class="text-lg font-semibold">Field change preview</h3>
+								<p>
+									Comparing with: <strong
+										>{data.preview.organisation_name ?? 'Proposed new organisation'}</strong
+									>
+								</p>
+								<p class="text-sm">
+									This comparison does not select a match or approve changes. Existing values and
+									manual corrections are protected. Only name, ABN and website currently have
+									approved comparison mappings; ABNs remain unverified.
+								</p>
+								<a class="anchor" href={previewHref('')}>Preview as a new organisation</a>
+								<div class="table-wrap">
+									<table class="table text-sm">
+										<thead
+											><tr><th>Field</th><th>Current</th><th>Source</th><th>Assessment</th></tr
+											></thead
+										><tbody>
+											{#each data.preview.fields as field}<tr
+													><th scope="row">{field.field}</th><td
+														class="max-w-64 break-words whitespace-normal"
+														>{display(field.current_value)}</td
+													><td class="max-w-64 break-words whitespace-normal"
+														>{display(field.source_value)}</td
+													><td class="min-w-48 whitespace-normal"
+														><strong>{field.status}</strong>
+														<p>{explanations[field.status]}</p>
+														{#if field.protected}<p>
+																Protected · revision {field.revision}
+															</p>{/if}</td
+													></tr
+												>{/each}
+										</tbody>
+									</table>
+								</div>
+							</section>
+						{/if}
+						{#if data.preview && queue.detail.review && ['link', 'create'].includes(queue.detail.review.decision) && data.preview.organisation_id === queue.detail.review.organisation_id}
+							<form method="POST" use:enhance class="card preset-tonal space-y-3 p-4">
+								<h3 class="font-semibold">Approve selected fields</h3>
+								<input type="hidden" name="intent" value="approve" /><input
+									type="hidden"
+									name="run"
+									value={queue.run!}
+								/><input type="hidden" name="version" value={queue.detail.id} /><input
+									type="hidden"
+									name="revision"
+									value={queue.detail.review.revision}
+								/><input
+									type="hidden"
+									name="organisation"
+									value={data.preview.organisation_id ?? ''}
+								/>
+								<p>
+									Only selected values will be applied. A new organisation requires its name and
+									will be public. Existing visibility is preserved.
+								</p>
+								{#each data.preview.fields.filter((f) => ['new', 'changed'].includes(f.status) && !f.protected) as field}
+									<label class="flex items-start gap-2"
+										><input
+											type="checkbox"
+											class="checkbox"
+											name="field"
+											value={JSON.stringify(field)}
+										/><span>{field.field}: {display(field.source_value)}</span></label
+									>
+								{:else}<p>
+										No eligible changes. Protected conflicts require separate resolution.
+									</p>{/each}
+								{#if form && 'intent' in form && form.intent === 'approve'}
+									<p role="status" class="text-sm font-medium">{form.message}</p>
+									{#if 'sourceBlocked' in form && form.sourceBlocked && data.isSiteAdmin}
+										<a
+											class="anchor"
+											href={`${resolve('/admin/sources')}?${new URLSearchParams({ run: queue.run!, version: queue.detail.id })}`}
+											>Review and enable source</a
+										>
+									{/if}
+								{/if}
+								<button class="btn preset-filled-primary-500">Save field approval</button>
+							</form>
+						{/if}
+						{#if data.withdrawal}<WithdrawalControls
+								run={queue.run!}
+								version={queue.detail.id}
+								status={data.withdrawal}
+								fields={data.withdrawalFields}
+							/>{/if}
+						{#if data.approvals.length}
+							<section aria-label="Saved field approvals" class="space-y-3">
+								<h3 class="text-lg font-semibold">Saved field approvals</h3>
+								{#each data.approvals as approval}<article
+										class="card border-surface-200-800 space-y-2 border p-4"
+									>
+										<p>
+											Approved {approval.approved_at} · review revision {approval.review_revision}
+										</p>
+										<p>Target: {approval.organisation_id ?? 'New public organisation'}</p>
+										<ul>
+											{#each approval.fields as field}<li class="break-all">
+													{field.field}: {display(field.current_value)} → {display(
+														field.source_value
+													)} (revision {field.revision})
+												</li>{/each}
+										</ul>
+										{#if approval.published_at}<p>Published {approval.published_at}</p>
+											<a
+												class="anchor"
+												href={resolve('/organisations/[id]', {
+													id: approval.published_organisation!
+												})}>View organisation</a
+											>
+										{:else}<form method="POST" use:enhance>
+												<input type="hidden" name="intent" value="publish" /><input
+													type="hidden"
+													name="approval"
+													value={approval.id}
+												/><button class="btn preset-filled-primary-500"
+													>Publish these approved fields</button
+												>
+											</form>{/if}
+									</article>{/each}
+							</section>
+						{/if}
 						{#if queue.detail.review}<p class="text-sm">
 								Saved decision: {queue.detail.review.decision} · revision {queue.detail.review
 									.revision} · {queue.detail.review.reviewed_at}

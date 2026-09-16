@@ -77,16 +77,12 @@ export async function requireOrgEditor(
 	error(403, 'You do not have permission to change this organisation.');
 }
 
-/**
- * `/admin` is a site-wide area, but the schema only models per-organisation
- * roles. The closest honest mapping is: an admin or owner of at least one
- * organisation.
- */
+/** Platform administrators can manage every organisation without membership. */
 export async function isSiteAdmin(
 	supabase: TypedSupabaseClient,
 	userId: string | undefined
 ): Promise<boolean> {
 	if (!userId) return false;
-	const organisations = await userOrganisations(supabase, userId);
-	return organisations.some((org) => (org.max_hierarchy_level ?? 0) >= EDITOR_LEVEL);
+	const { data, error } = await supabase.rpc('is_platform_admin');
+	return !error && data === true;
 }

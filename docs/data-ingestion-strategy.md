@@ -402,3 +402,12 @@ The first concrete implementation should qualify and isolate the reused Python
 extractors with fixtures, then add private staging, an approved CSV importer and
 the adapted ACNC client with a dry-run comparison against existing records.
 This produces a reviewable sample before any automated public publication is enabled.
+
+## Current implementation priority: complete field coverage
+
+The three-field publication pilot is browser-verified but does not meet full public
+register coverage. Follow [F01–F05](import-field-coverage-plan.md) before job controls
+and scheduling: inventory all source columns, adapt the two repositories’ mappings
+and parsers with the documented corrections, extend schema and publication, render
+public facts, and reprocess the pilot with new versioned evidence. This sequencing
+supersedes earlier next-step recommendations to proceed directly to automation.

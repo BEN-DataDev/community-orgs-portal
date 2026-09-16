@@ -1,7 +1,7 @@
 import type { LayoutServerLoad } from './$types';
 import { loadAccountAvatar } from '$lib/server/account-avatar';
 import { isIngestionOperator } from '$lib/server/ingestion-review';
-import { EDITOR_LEVEL } from '$lib/role-levels';
+import { isSiteAdmin } from '$lib/server/authorization';
 
 export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 	/**
@@ -44,7 +44,10 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 		aal: locals.aal,
 		isAnonymous: locals.isAnonymous,
 		memberships,
-		isSiteAdmin: memberships?.some((org) => org.max_hierarchy_level >= EDITOR_LEVEL) ?? false,
+		isSiteAdmin: await isSiteAdmin(
+			locals.supabase,
+			locals.isAnonymous ? undefined : locals.user?.id
+		),
 		cookies: cookies.getAll()
 	};
 };

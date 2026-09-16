@@ -1,7 +1,7 @@
 [project]
 name = "community-orgs-ingestion"
 version = "0.1.0"
-description = "Offline acquisition prototype; no publication or live transport"
+description = "Bounded ACNC acquisition and private staging tools; no publication"
 requires-python = ">=3.10"
 dependencies = []
 
