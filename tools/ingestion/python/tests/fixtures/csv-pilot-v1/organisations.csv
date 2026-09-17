@@ -1,0 +1,10 @@
+source_record_id,entity_name,entity_kind,abn,incorporation_jurisdiction,incorporation_number,website,locality,state,postcode,scope_basis,service_area,category,description,evidence_ref,source_modified_at
+csv-001,Synthetic Valley Garden Circle,community_group,,,,,BATLOW,NSW,2730,located_in,,Environment,"Volunteers grow food, share seedlings and host café mornings.",fixture:csv-001,
+csv-002,Synthetic Valley Arts Association,legal_entity,00000000000,NSW,0000123,https://example.org/arts,BATLOW,NSW,2730,located_in,,"Arts, culture and heritage",,fixture:csv-002,2026-09-15T00:00:00Z
+csv-003,Synthetic Valley Arts — Local Branch,branch,00000000000,,,,BATLOW,NSW,2730,located_in,,"Arts, culture and heritage",,fixture:csv-003,
+csv-004,Synthetic Regional Outreach,service,,,,,WAGGA WAGGA,NSW,2650,serves_area,Snowy Valleys,Welfare and community support,Invented recurring outreach; requires a delivering organisation link.,fixture:csv-004,
+csv-005,Synthetic Valley Garden Circle,community_group,,,,,BATLOW,NSW,2730,located_in,,Environment,Same name as csv-001; different source identity requires duplicate review.,fixture:csv-005,
+csv-006,,community_group,,,,,BATLOW,NSW,2730,located_in,,Environment,Deliberately invalid: required name missing.,fixture:csv-006,
+csv-007,Synthetic Invalid Identifier,community_group,12A456,,,,BATLOW,NSW,2730,located_in,,Environment,,fixture:csv-007,
+csv-008,Synthetic Unsafe Website,community_group,,,,javascript:alert(1),BATLOW,NSW,2730,located_in,,Environment,,fixture:csv-008,
+csv-009,Synthetic Northern Group,community_group,,,,,DARWIN,NT,0800,unknown,,Environment,Outside pilot; preserves a leading-zero postcode. No local service evidence.,fixture:csv-009,

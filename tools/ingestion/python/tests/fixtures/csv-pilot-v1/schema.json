@@ -1,0 +1,112 @@
+{
+  "schema_version": "portal-csv-pilot-v1",
+  "status": "fixture contract for P12; not an implemented importer API",
+  "format": {
+    "encoding": "UTF-8",
+    "delimiter": ",",
+    "quotechar": "\"",
+    "line_ending": "LF",
+    "header": true,
+    "blank": "Unknown/omitted; never a deletion assertion",
+    "extra_or_missing_columns": "Reject file before staging",
+    "malformed_csv": "Reject file if reliable record boundaries cannot be recovered"
+  },
+  "columns": [
+    {
+      "name": "source_record_id",
+      "required": true,
+      "type": "string",
+      "handling": "Private source-native identity; never an organisation UUID."
+    },
+    {
+      "name": "entity_name",
+      "required": true,
+      "type": "string",
+      "handling": "Candidate organisations.entity_name after identity and field review."
+    },
+    {
+      "name": "entity_kind",
+      "required": true,
+      "type": "enum:legal_entity,community_group,branch,service",
+      "handling": "Private classification; branch/service mappings remain held for review."
+    },
+    {
+      "name": "abn",
+      "required": false,
+      "type": "11 ASCII digits",
+      "handling": "Candidate legal_details.abn; format only, not verified; never a merge key alone."
+    },
+    {
+      "name": "incorporation_jurisdiction",
+      "required": false,
+      "type": "enum:NSW",
+      "handling": "Retain with incorporation_number as a private identifier assertion; publication mapping requires P12 review."
+    },
+    {
+      "name": "incorporation_number",
+      "required": false,
+      "type": "string",
+      "handling": "Preserve leading zeroes; require jurisdiction when present; no registry validation asserted."
+    },
+    {
+      "name": "website",
+      "required": false,
+      "type": "absolute HTTP(S) URL without credentials",
+      "handling": "Candidate contact_info.website; syntax is not ownership or reachability."
+    },
+    {
+      "name": "locality",
+      "required": false,
+      "type": "string",
+      "handling": "Private locality evidence; no inferred street address or service coverage."
+    },
+    {
+      "name": "state",
+      "required": false,
+      "type": "Australian state/territory abbreviation",
+      "handling": "Private locality evidence."
+    },
+    {
+      "name": "postcode",
+      "required": false,
+      "type": "4 ASCII digits",
+      "handling": "Private locality evidence; string preserves leading zeroes."
+    },
+    {
+      "name": "scope_basis",
+      "required": true,
+      "type": "enum:located_in,serves_area,unknown",
+      "handling": "Private inclusion-review evidence; not automatic eligibility."
+    },
+    {
+      "name": "service_area",
+      "required": false,
+      "type": "string",
+      "handling": "Private supplied service-area text; not geocoding or boundary proof."
+    },
+    {
+      "name": "category",
+      "required": false,
+      "type": "string",
+      "handling": "Private source category; map against P01 in review."
+    },
+    {
+      "name": "description",
+      "required": false,
+      "type": "string",
+      "handling": "Private context for this fixture; not approved for automatic publication."
+    },
+    {
+      "name": "evidence_ref",
+      "required": true,
+      "type": "string",
+      "handling": "Private source reference; fixture: references below are synthetic, not live evidence."
+    },
+    {
+      "name": "source_modified_at",
+      "required": false,
+      "type": "RFC3339 UTC timestamp",
+      "handling": "Source modification time, separate from file observation; blank means unknown."
+    }
+  ]
+}

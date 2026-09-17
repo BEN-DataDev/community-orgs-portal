@@ -180,7 +180,7 @@ records with clear source attribution and freshness information.
 | P01 | Write the pilot inclusion policy — complete | [Policy v1.0](pilot-inclusion-policy.md) defines Snowy Valleys scope, categories, entity/group/service distinctions, exclusions and evidence/review rules |
 | P02 | Fix relationship UUID conversion (gap G01) — complete | Partner search uses string IDs, excludes the current organisation and surfaces failures; browser creation succeeds                              |
 | P03 | Capture a development baseline             | Record check/build results and relevant SQL test results against a disposable/local database; identify hosted migration drift before deployment |
-| P04 | Qualify source samples                     | Record exact resource/version, licence, attribution and schema for a small ACNC sample and CSV fixture; start ABN access preparation            |
+| P04 | Qualify source samples — complete          | [Qualification record](source-sample-qualification.md): retained six-record ACNC evidence, versioned synthetic CSV/schema/manifest, and ABN access handoff |
 | P05 | Sketch the core journeys                   | Import → match → field review → publish; organisation edit → conflict review; reject/withdraw → suppress                                        |
 
 **Exit:** a representative sample, agreed working scope and reviewable workflow
@@ -807,3 +807,20 @@ RLS or the production SvelteKit enhancement runtime. No deployment or hosted dat
 changes were made. The browser script requires Playwright and installed Chromium;
 use `PLAYWRIGHT_MODULE` to point to an existing Playwright module when it is not
 installed locally, as with the other browser regression scripts.
+
+
+### P04 complete — source sample qualification, 17 September 2026
+
+[Qualification record](source-sample-qualification.md) consolidates the exact ACNC
+resource/revision, recorded licence, attribution specification, schema and retained
+six-record observation. Added a nine-record synthetic CSV with versioned schema,
+file hashes, explicit internal-development use basis and expected candidate/hold/
+quarantine outcomes. ACNC mapping coverage and CSV integrity checks pass.
+
+Official ABN registration, agreement and response/method documentation were checked;
+the access handoff records owner registration/GUID provisioning, withdrawal handling
+and the current recommended exact-ABN operation (`SearchByABNv202001`) for P16.
+No registration or agreement acceptance was submitted. Credentials and live
+verification remain pending. P12 still owns the importer and qualification of a real
+approved provider export; the synthetic fixture grants no provider permissions.
+No hosted data, source enablement, schedule or deployment changed.

@@ -43,6 +43,10 @@ ordered while preparing this plan.
 
 ### Source onboarding record
 
+P04 records the [qualified ACNC sample, synthetic CSV contract and ABN access
+handoff](source-sample-qualification.md). The CSV fixture is for development only;
+real exports still need provider-specific access and schema qualification.
+
 Before enabling an adapter, record its publisher, dataset/resource identifiers,
 URLs, format, geographic coverage, fields, update cadence, access method,
 credentials reference, rate limits, licence/terms URL and version, attribution,

@@ -1,0 +1,97 @@
+{
+  "manifest_version": "p04-csv-qualification-v1",
+  "source_id": "synthetic-community-csv",
+  "resource_id": "csv-pilot-v1",
+  "publisher": "Community organisations portal development fixtures",
+  "created_on": "2026-09-17",
+  "observed_at": "2026-09-17T00:00:00Z",
+  "observation_basis": "Fixed synthetic fixture timestamp, not a provider observation",
+  "synthetic": true,
+  "access_status": "development_fixture_only",
+  "enabled": false,
+  "publication_eligible": false,
+  "licence": {
+    "identifier": null,
+    "basis": "Project-authored synthetic test data; no third-party data or provider licence. Repository-wide redistribution rights are not established by this fixture.",
+    "permitted_use": "Internal development and regression checks only; not real directory content.",
+    "terms_ref": "docs/source-sample-qualification.md#csv-fixture"
+  },
+  "attribution": "Synthetic community CSV fixture v1 — Community organisations portal development fixtures; not real organisations.",
+  "scope": {
+    "kind": "synthetic-test-cases",
+    "intended_pilot": "Snowy Valleys LGA, NSW",
+    "complete_snapshot": false
+  },
+  "source_native_identity": "source_id + resource_id + source_record_id; file row number is diagnostic only",
+  "retention": "Synthetic files may remain in Git; real source retention/removal must be qualified separately.",
+  "credentials_ref": null,
+  "refresh_cadence": "None; versioned static development fixture",
+  "technical_contact": "Repository maintainers (development fixture only)",
+  "files": {
+    "organisations.csv": "796696e13c89f542b695126cbbd09f5a2103a2509ff3ecfa586aa7fad543f910",
+    "schema.json": "2347de7985c53056f305313f6b4f8c457743408116ae1cddde7e8540a9ef26fe"
+  },
+  "row_count": 9,
+  "expected_counts": {
+    "candidate": 2,
+    "hold": 4,
+    "quarantine": 3
+  },
+  "expected_rows": [
+    {
+      "record_number": 1,
+      "source_record_id": "csv-001",
+      "disposition": "candidate",
+      "reason": "No ABN is allowed; P01 evidence and matching still require review."
+    },
+    {
+      "record_number": 2,
+      "source_record_id": "csv-002",
+      "disposition": "candidate",
+      "reason": "Synthetic ABN placeholder is format-only, never registry-verified."
+    },
+    {
+      "record_number": 3,
+      "source_record_id": "csv-003",
+      "disposition": "hold",
+      "reason": "Branch shares placeholder ABN; do not merge with csv-002."
+    },
+    {
+      "record_number": 4,
+      "source_record_id": "csv-004",
+      "disposition": "hold",
+      "reason": "Service requires delivering-organisation and geographic evidence review."
+    },
+    {
+      "record_number": 5,
+      "source_record_id": "csv-005",
+      "disposition": "hold",
+      "reason": "Duplicate name candidate; do not automatically merge with csv-001."
+    },
+    {
+      "record_number": 6,
+      "source_record_id": "csv-006",
+      "disposition": "quarantine",
+      "reason": "Missing entity_name."
+    },
+    {
+      "record_number": 7,
+      "source_record_id": "csv-007",
+      "disposition": "quarantine",
+      "reason": "ABN has invalid format."
+    },
+    {
+      "record_number": 8,
+      "source_record_id": "csv-008",
+      "disposition": "quarantine",
+      "reason": "Website scheme is not HTTP(S)."
+    },
+    {
+      "record_number": 9,
+      "source_record_id": "csv-009",
+      "disposition": "hold",
+      "reason": "No Snowy Valleys location/service evidence; postcode 0800 remains text."
+    }
+  ],
+  "expectation_status": "P12 acceptance expectations; no import, staging or publication has occurred."
+}

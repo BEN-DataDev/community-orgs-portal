@@ -49,6 +49,14 @@ Nested addresses are objects, identifiers are strings, and omitted values do not
 become false or deletion assertions. Source dates remain labelled raw strings until
 a verified source-specific date mapping exists.
 
+## P04 source qualification
+
+See the [source qualification record](../../../docs/source-sample-qualification.md)
+for retained ACNC evidence, the versioned synthetic CSV fixture under
+`tests/fixtures/csv-pilot-v1`, and ABN access preparation. The CSV schema and manifest
+are a P12 development contract, not an implemented importer or approved real export.
+Do not pass these CSV records to the ACNC-specific staging commands.
+
 ## Fixture and output
 
 `tests/fixtures/acnc-pages.json` contains two invented records, not copied register
