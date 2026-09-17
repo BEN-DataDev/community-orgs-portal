@@ -181,7 +181,7 @@ records with clear source attribution and freshness information.
 | P02 | Fix relationship UUID conversion (gap G01) — complete | Partner search uses string IDs, excludes the current organisation and surfaces failures; browser creation succeeds                              |
 | P03 | Capture a development baseline             | Record check/build results and relevant SQL test results against a disposable/local database; identify hosted migration drift before deployment |
 | P04 | Qualify source samples — complete          | [Qualification record](source-sample-qualification.md): retained six-record ACNC evidence, versioned synthetic CSV/schema/manifest, and ABN access handoff |
-| P05 | Sketch the core journeys                   | Import → match → field review → publish; organisation edit → conflict review; reject/withdraw → suppress                                        |
+| P05 | Sketch the core journeys — complete        | [Journey sketches v1.0](core-journeys.md): import → match → field review → publish; organisation edit → conflict review; reject/withdraw → suppress, with current/proposed boundaries |
 
 **Exit:** a representative sample, agreed working scope and reviewable workflow
 sketches exist. Current application failures are distinguished from proposed work.
@@ -824,3 +824,19 @@ No registration or agreement acceptance was submitted. Credentials and live
 verification remain pending. P12 still owns the importer and qualification of a real
 approved provider export; the synthetic fixture grants no provider permissions.
 No hosted data, source enablement, schedule or deployment changed.
+
+### P05 complete — core journey sketches, 17 September 2026
+
+[Journey sketches v1.0](core-journeys.md) documents import → match → field review
+→ publish, organisation edit → conflict review, and reject/withdraw → suppress.
+Each journey has a decision flow, low-fidelity screen sketches, actor boundaries,
+failure/retry outcomes and walkthrough acceptance scenarios grounded in P01/P04.
+Existing routes and controls are distinguished from proposed CSV import, conflict
+resolution and broader reconciliation work. Rejection, field suppression and
+whole-organisation withdrawal have explicit, different effects.
+
+Validation: checked the sketches against current route actions, review components,
+authorization and field-preview rules; all 11 local reference links resolve and
+the three Mermaid blocks have balanced fences. Documentation-only change; no
+application tests, hosted operations or deployment were needed. P05 completion
+does not mark the later implementation milestones complete.
