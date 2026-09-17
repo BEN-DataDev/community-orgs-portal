@@ -12,7 +12,9 @@ Acquisition job controls and scheduling are implemented, the database migrations
 are deployed, and the worker is running on AKHOME. Manual live run 9 accepted all
 six pilot records without quarantine and reused their unchanged versions. Scheduling
 is off. The portal changes are live, with public/protected-route HTTP checks passed.
-Signed-in job-form verification and remaining second-cycle checks follow. See
+Signed-in job controls are operator-verified and the requested controlled recovery
+checks have passed in a disposable database. Next is choosing and verifying a
+pilot refresh schedule; broader snapshot reconciliation remains separate. See
 [acquisition jobs](acquisition-jobs.md). The F05 status above records user
 verification, not new publication totals.
 

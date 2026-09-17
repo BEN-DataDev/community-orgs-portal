@@ -52,8 +52,9 @@ is configured with scheduling off. The portal changes are now live on Vercel.
 - Hosted HTTP checks passed: homepage, organisation list and a representative
   organisation's overview/contact/legal/operations/finance pages returned 200
   without authentication; acquisition/review pages redirected to sign-in; an
-  unauthenticated cron request returned 401. Signed-in browser form submission
-  remains an operator check; the successful manual run used the management API.
+  unauthenticated cron request returned 401. Signed-in job controls were subsequently
+  verified by the operator in the recovery checks below; run 9 itself used the
+  management API.
 - Open [Acquisition jobs](https://community-orgs-portal.vercel.app/admin/ingestion/jobs)
   or [review run 9](https://community-orgs-portal.vercel.app/admin/ingestion?run=9)
   after signing in. No second import or publication was triggered by deployment.
@@ -208,9 +209,90 @@ Existing ingestion suites continue to exercise unchanged replay, legitimate
 changes, manual-edit protection, suppression/withdrawal and failed/partial runs.
 This increment does not infer closures or delete missing organisations, even for
 complete filtered results. National bulk acquisition, stable native-ID
-qualification across resource releases, hosted worker measurements and the live
-second-cycle/browser release checks remain outstanding. P26 application/worker code is implemented and its database migration is deployed;
+qualification across resource releases and broader operational sizing remain
+outstanding. The requested recovery scenarios are now verified below. P26 application/worker code is implemented and its database migration is deployed;
 worker hosting, database connectivity and a six-record live refresh are verified
 on AKHOME. The production portal is deployed and public/protected-route HTTP
-checks passed. Signed-in form checks and the remaining P27/P30 release scenarios
-are still outstanding.
+checks passed. The operator has now confirmed the signed-in queue/restart,
+source-pause and re-enable checks below. Controlled active-job interruption,
+manual-edit protection, withdrawal replay and source-failure checks also passed
+in the disposable database; see the controlled recovery results below.
+
+## Operator recovery checks
+
+Tested on: 2026-09-17
+Acquisition scheduling: Off
+
+| Check | Job ID / Run ID | Observed result | Pass / Fail |
+| --- | --- | --- | --- |
+| Worker stopped, then restarted | d19e3c07-867b-40ef-b0e0-ec28d57674bd | Same job completed, with one staged import and no duplicate organisations. | Pass |
+| Source paused with a queued job | d04b0c07-2d28-4482-a346-b25de104c7ea | The queued job was  cancelled, and new acquisition requests are blocked. | Pass |
+| Fresh job after source re-enabled | 1aa2064f-bbe2-40fe-8472-7433e92ba442 | Fresh job completes; the cancelled job stays cancelled. | Pass |
+
+Notes:
+
+- Duplicate organisations or imports:
+- Errors or unexpected behaviour:
+- Worker restarted and source re-enabled after testing:
+
+### Database corroboration — 17 September 2026
+
+Read-only hosted inspection corroborated the three recorded outcomes:
+
+- `d19e3c07-867b-40ef-b0e0-ec28d57674bd`: complete, run **11**, one attempt,
+  six accepted records and zero quarantine.
+- `d04b0c07-2d28-4482-a346-b25de104c7ea`: cancelled, zero attempts and no staged run.
+- `1aa2064f-bbe2-40fe-8472-7433e92ba442`: complete, run **12**, one attempt,
+  six accepted records and zero quarantine.
+
+The ACNC source is enabled and its schedule interval remains null (Off). These
+checks close the operator queue/restart, source-pause and re-enable scenarios.
+They do not test interruption after a worker has claimed a job: both successful
+jobs completed on their first attempt. The separate disposable-database tests
+below now supply that evidence. The operator's notes above remain unchanged;
+no unrecorded observations have been inferred.
+
+
+## Controlled recovery results — 17 September 2026
+
+**All four requested recovery scenarios passed.** Results are also recorded in
+[the machine-readable validation report](acquisition-recovery-validation.json).
+The test used newly created PostgreSQL 16 and worker containers on an internal-only
+Docker network. HTTP responses were synthetic fixtures, the worker used the
+restricted LOGIN migration, and no live credentials or production containers were
+used. The existing ingestion SQL suites ran successfully in the same database.
+
+| Scenario | Observed result | Outcome |
+| --- | --- | --- |
+| Process killed during pagination | Worker reached the second-page request after processing page one, then received SIGKILL (exit 137). Replacement was idle while the original lease was valid. After test-only lease expiry, attempt 2 fetched a complete fresh acquisition and staged exactly one run. Old token rejected. | Pass |
+| Process killed after checkpoint | Worker received SIGKILL after its checkpoint transaction committed. Attempt 2 reused the identical envelope and observation time, made no source requests, and staged exactly one run. Old token rejected. | Pass |
+| Protected human edit | Published synthetic records, corrected a name manually, then acquired changed source data through the worker. Review showed a protected conflict; the human correction and original identity links remained intact. | Pass |
+| Withdrawal survives refresh/replay | Suppressed a website and withdrew the second organisation before a changed-data refresh. Anonymous reads did not return the website or withdrawn organisation. Existing reprocessing suites also passed suppression/whole-record withdrawal replay checks. | Pass |
+| Failed and partial source | A pre-acquisition failure retained a failed run with zero records. A page-two failure retained a partial run with one new record. Public state and previous versions were preserved. An otherwise eligible name approval was rejected specifically with `Complete enabled source required`; neither incomplete run gained an approval. | Pass |
+
+Lease expiry was advanced **only in the disposable database** after killing the
+processes. The tests exercise actual process death, PostgreSQL transactions,
+restart/checkpoint behaviour and token rejection, but do not wait five real minutes
+or simulate a physical power failure of AKHOME. PostgreSQL auth helpers emulate
+application JWTs; hosted sign-in behaviour is supported by the operator checks.
+
+To repeat from the repository root (Docker must be running):
+
+```sh
+# Only needed if the local worker image is missing.
+docker build -t community-orgs-acquisition:local \
+  -f tools/ingestion/deploy/Dockerfile tools/ingestion
+
+python3 scripts/test-acquisition-recovery.py
+```
+
+The runner mounts the current Python source read-only, uses fixture-only transport,
+creates its own network/database/worker containers and removes them on exit. It
+does not accept a database URL or load the AKHOME credential directory. The live
+worker was left running; acquisition scheduling was not changed.
+
+This closes the requested recovery checks. The next operational decision is the
+pilot refresh cadence, followed by observing its first scheduled job. Scheduling
+remains Off until explicitly enabled. Broader P27 complete-snapshot reconciliation
+and closure semantics are separate work; these tests do not establish that missing
+records in filtered CKAN results mean an organisation has closed.

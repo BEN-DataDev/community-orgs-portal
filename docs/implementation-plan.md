@@ -1,10 +1,11 @@
 # Portal implementation plan
 
-Prepared: 15 September 2026. Updated: 17 September 2026 after production portal and worker deployment.
+Prepared: 15 September 2026. Updated: 17 September 2026 after recovery verification and source-status review.
 Status: full ACNC register field coverage and the F05 release gate are complete,
 with approval/publication and post-publication checks confirmed by the user.
+ACNC is the only implemented acquisition adapter. Other sources remain outstanding.
 
-## Current priority: signed-in job controls and remaining second-cycle checks
+## Current priorities: extend source coverage and finish ACNC scheduling
 
 [The complete public register field coverage plan](import-field-coverage-plan.md)
 (F01–F05) has passed its release gate. F02–F05 and website-v3 migrations are applied
@@ -22,11 +23,53 @@ hosted Supabase project. The worker now runs on AKHOME under Docker Desktop,
 with restricted credentials and verified TLS/database connectivity. The first
 manual live refresh completed as run 9 with six accepted records and no quarantine;
 scheduling is off. The production portal is deployed and public/protected-route
-HTTP checks passed. Next: verify the signed-in acquisition form and complete the
-remaining second-cycle/recovery checks before choosing a refresh schedule.
+HTTP checks passed. The operator has now verified signed-in queue/restart,
+source-pause and re-enable controls, corroborated by runs 11 and 12 and the
+cancelled job's database state. Controlled active-job interruption (before and
+after checkpoint), manual-edit protection, withdrawal replay, and failed/partial
+source checks have now passed in an isolated disposable database. The remaining
+ACNC scheduling step is to choose the pilot refresh cadence and observe the first
+scheduled job. Scheduling remains
+Off; broader complete-snapshot reconciliation is still separate work.
 Broader sources retain their own qualification gates.
 
-## Recommendation
+### Source implementation status
+
+The staging, provenance, review, publication and recovery controls provide a
+foundation for additional sources. Each source still needs its own adapter,
+qualification, mappings and acceptance tests; the deployed ACNC worker does not
+automatically acquire other providers.
+
+| Source | Current status | Remaining work |
+| --- | --- | --- |
+| ACNC Register | Implemented and deployed; six-record pilot and recovery checks passed | Choose and verify scheduling; broader snapshot reconciliation and bulk fallback remain separate work |
+| Approved CSV files (P12) | Planned; importer not implemented | Validate source metadata and rows, retain provenance, quarantine malformed rows and support reviewed publication |
+| Exact-ABN Lookup (P16) | Upstream code assessed; adapter not integrated | Correct and test parser contracts, bound requests and configure an access GUID for live verification |
+| ABN public bulk extract | Not implemented | Separate streaming XML adapter when scale warrants it |
+| NSW incorporated associations | Upstream scraper assessed; adapter not integrated | Qualify an approved export for CSV import, or establish access/reuse and test current markup before automated collection |
+| Landcare, neighbourhood houses, sports and arts directories | Expansion backlog | Select pilot providers, qualify access/reuse and implement provider mappings/adapters |
+| My Community Directory | Planned; not integrated | Obtain partner agreement and technical documentation before implementing the adapter |
+| ACNC AIS financial history | Deferred beyond the initial release | Separate adapter and reporting-period schema with explicit financial-measure definitions |
+
+### Next implementation sequence
+
+1. Build the **approved CSV importer (P12)** against the existing staging and review
+   workflow. Verify metadata validation, row quarantine, replay without duplicates
+   and no public changes before approval.
+2. Use it for a **small, approved NSW associations export** to extend coverage beyond
+   charities. Record access/reuse evidence and incorporation-number mappings before
+   importing; route ambiguous matches to review.
+3. Adapt **exact-ABN verification (P16)** to strengthen identity checks across sources.
+   Parser fixtures can proceed before credentials are available; live verification
+   remains pending until access is configured.
+4. Select further directories from measured coverage gaps and onboard each through
+   the same qualification and publication gates.
+
+The ACNC cadence decision can proceed alongside this work. It does not enable any
+additional source. This sequence supersedes the original first-batch instructions
+below; the milestone tables remain the broader backlog, not a completion checklist.
+
+## Original delivery approach
 
 Start with a small, complete workflow: an operator imports source records, reviews
 matches and changes, publishes a batch, and an authorised organisation editor can
@@ -60,9 +103,11 @@ have already happened.
 
 ### Working defaults
 
-- Pilot: Snowy Valleys and nearby communities, with a configurable boundary.
+- Pilot: Snowy Valleys LGA, plus organisations elsewhere with evidenced service
+  delivery within it, as defined in the completed [P01 inclusion policy](pilot-inclusion-policy.md).
 - Initial target: approximately 50–100 reviewed records, including existing records,
-  duplicate candidates and groups without ABNs. This is a proposed test cohort.
+  duplicate candidates and groups without ABNs. The P01 policy defines the cohort;
+  the six-record ACNC sample does not yet fulfil that target.
 - Initial sources: ACNC Register and approved CSV files; ABN verification when access
   is available. No AIS financial-history import in the first release.
 - Access: retain current organisation roles; add a distinct platform ingestion role.
@@ -73,7 +118,10 @@ have already happened.
 
 These defaults allow work to proceed without choosing every later feature now.
 
-## Progress: offline ACNC first step
+## Historical progress: offline ACNC first step
+
+These early progress notes describe their implementation stage. Later deployment
+and recovery results above supersede their operational limitations.
 
 On 16 September 2026, implemented the isolated ACNC prototype under
 `tools/ingestion/python`. It records upstream provenance, fixes address-line loss,
@@ -129,7 +177,7 @@ records with clear source attribution and freshness information.
 
 | ID  | Task                                       | Deliverable / acceptance                                                                                                                        |
 | --- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| P01 | Write the pilot inclusion policy           | Area, categories, entity/group/service distinctions and exclusions are explicit                                                                 |
+| P01 | Write the pilot inclusion policy — complete | [Policy v1.0](pilot-inclusion-policy.md) defines Snowy Valleys scope, categories, entity/group/service distinctions, exclusions and evidence/review rules |
 | P02 | Fix relationship UUID conversion (gap G01) | Partner search uses string IDs, excludes the current organisation and surfaces failures; browser creation succeeds                              |
 | P03 | Capture a development baseline             | Record check/build results and relevant SQL test results against a disposable/local database; identify hosted migration drift before deployment |
 | P04 | Qualify source samples                     | Record exact resource/version, licence, attribution and schema for a small ACNC sample and CSV fixture; start ABN access preparation            |
@@ -255,7 +303,10 @@ Schedule these after the pilot, in the order supported by coverage and user feed
 | Broader visual redesign                                             | Evidence from working user journeys and content                                                                                 |
 | ABAC (G11)                                                          | Specific access requirements that current roles cannot reasonably express                                                       |
 
-## First implementation batch
+## Original first implementation batch
+
+Historical sequencing is retained here for context. Use the current priorities
+and next implementation sequence above for new work.
 
 Start with **P01–P05 and R01–R04**. Keep changes reviewable in small units:
 
@@ -288,7 +339,7 @@ deployment state before applying them to the hosted environment.
 
 | Decision                         | Needed by                     | Proposed default                                                       |
 | -------------------------------- | ----------------------------- | ---------------------------------------------------------------------- |
-| Pilot geography/categories       | P01                           | Snowy Valleys and nearby communities; a small multi-sector cohort      |
+| Pilot geography/categories       | P01 — resolved                | [Policy v1.0](pilot-inclusion-policy.md): Snowy Valleys LGA or evidenced service delivery within it; defined community categories |
 | Legal entity/group/service model | P11                           | Separate identities/scopes; never merge merely because ABNs are shared |
 | Who approves publication         | P06–P07                       | Explicitly appointed platform operators                                |
 | Custom roles or ABAC             | No pilot dependency           | Retain organisation roles and add a narrow platform capability         |
@@ -705,3 +756,35 @@ and review pages redirected to sign-in, and unauthenticated cron access returned
 The live worker/queue path was tested through the management API. Signed-in browser
 form submission remains an operator check. This was a working-tree CLI deployment;
 the uncommitted changes must be included before any later Git-triggered deployment.
+
+
+### Operator recovery checks confirmed — 17 September 2026
+
+The operator recorded Pass for worker stopped/restarted, source paused with queued
+work, and a fresh job after re-enablement. Read-only database inspection confirmed
+runs **11** and **12** complete with six accepted records, zero quarantine and one
+attempt each; the paused job remains cancelled with no staged run. The source is
+enabled and scheduling remains Off. See [operator recovery checks](acquisition-jobs.md#operator-recovery-checks).
+
+These close the signed-in job-control checks. They do not demonstrate recovery
+from interruption of an already running acquisition. Controlled failure/replay
+verification remains the next step; P27/P30 are not marked complete.
+
+
+### Controlled recovery verification complete — 17 September 2026
+
+Ran `scripts/test-acquisition-recovery.py` on an isolated Docker network with a
+fresh PostgreSQL 16 database, synthetic source responses and the real Python
+worker/database RPCs. Both SIGKILL scenarios recovered on attempt 2 with exactly
+one staged run; checkpoint recovery made no source requests. Changed-data refresh
+preserved a manual correction, field suppression and whole-record withdrawal.
+Failed/partial source runs preserved public data and existing versions; an eligible
+partial-run approval was rejected by the completion gate. Existing ingestion SQL
+suites also passed. All temporary containers/network were removed.
+
+The [controlled recovery report](acquisition-jobs.md#controlled-recovery-results--17-september-2026)
+records the exact evidence and test-only lease-expiry acceleration. This closes
+the four requested recovery scenarios. No production data, deployment or schedule
+was changed. Next is an explicit refresh-cadence decision and first scheduled-job
+verification; P27 reconciliation/closure semantics remain a distinct implementation
+concern and are not marked complete by these checks.
