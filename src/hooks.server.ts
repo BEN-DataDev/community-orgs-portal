@@ -1,13 +1,12 @@
 import { createServerClient } from '@supabase/ssr';
 import type { SetAllCookies } from '@supabase/ssr';
-import { error, redirect, type Handle } from '@sveltejs/kit';
+import { redirect, type Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
 import type { Database } from '$lib/db.types';
 import type { TypedSupabaseClient } from '$lib/supabase-client';
-import { isIngestionOperator } from '$lib/server/ingestion-review';
-import { isSiteAdmin } from '$lib/server/authorization';
+import { requireAdminAccess } from '$lib/server/admin-access';
 import { guardRedirect } from '$lib/server/guard';
 
 /**
@@ -147,21 +146,7 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	 * The Admin task hub also accepts ingestion operators. Individual tasks
 	 * retain their own capability checks.
 	 */
-	if (pathname === '/admin/ingestion' || pathname.startsWith('/admin/ingestion/')) {
-		if (!(await isIngestionOperator(event.locals.supabase)))
-			error(403, 'Ingestion operator access required.');
-	} else if (pathname === '/admin' || pathname === '/admin/') {
-		if (
-			!(await isSiteAdmin(event.locals.supabase, user?.id)) &&
-			!(await isIngestionOperator(event.locals.supabase))
-		) {
-			error(403, 'You do not have access to this area.');
-		}
-	} else if (pathname.startsWith('/admin/')) {
-		if (!(await isSiteAdmin(event.locals.supabase, user?.id))) {
-			error(403, 'You do not have access to this area.');
-		}
-	}
+	await requireAdminAccess(event.locals.supabase, isAnonymous ? undefined : user?.id, pathname);
 
 	return resolve(event);
 };

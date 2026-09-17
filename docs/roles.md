@@ -1,3 +1,7 @@
+> Historical design examples. The [P06 capability matrix](capability-matrix.md)
+> defines the current pilot access contract. These examples are not implemented
+> authorization rules; custom role builders and ABAC remain deferred.
+
 Here's the complete code for the role management route which fits under /organizations/[id]/roles/ in our app structure:
 
 src/routes/organizations/[id]/roles/+page.server.ts

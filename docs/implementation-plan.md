@@ -196,8 +196,8 @@ for access approval or real-format validation.
 
 | ID  | Task                                           | Deliverable / acceptance                                                                                                                                       |
 | --- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P06 | Define the capability matrix                   | Separate public reader, organisation member/admin/owner, ingestion operator and platform administrator                                                         |
-| P07 | Implement scoped operator access               | Global ingestion controls cannot be used merely because someone administers one organisation; reads and mutations enforce this server-side and in the database |
+| P06 | Define the capability matrix — complete        | [Capability matrix v1.0](capability-matrix.md) separates public/registered readers, organisation roles, ingestion operators and platform administrators; records session, scope and P07/P08 verification rules |
+| P07 | Implement scoped operator access — complete | [Hosted access verification](scoped-operator-access.md): migration and application deployed; server/RPC/role/MFA checks and signed-in production boundaries verified |
 | P08 | Implement minimum organisation role management | List assignments, grant/revoke existing roles using authorised RPCs; enforce actor/target scope and MFA requirements                                           |
 | P09 | Add private ingestion storage                  | Sources, runs, source records/versions, links, assertions and change sets; raw objects are private and retained under source policy                            |
 | P10 | Add publication and edit protection            | Explicit publication state/visibility, revision checks, manual field ownership, publication events and suppression rules                                       |
@@ -840,3 +840,59 @@ authorization and field-preview rules; all 11 local reference links resolve and
 the three Mermaid blocks have balanced fences. Documentation-only change; no
 application tests, hosted operations or deployment were needed. P05 completion
 does not mark the later implementation milestones complete.
+
+
+### P06 complete — capability matrix, 17 September 2026
+
+[Capability matrix v1.0](capability-matrix.md) defines organisation and global
+authority, including the retained moderator role, registered-reader access,
+operator candidate visibility and platform administrators’ effective owner access.
+It records conditional MFA, role hierarchy/actor rules, controlled appointment
+requirements, machine identities and publication/removal boundaries.
+
+Repository evidence is linked separately from P07/P08 acceptance scenarios.
+Appointment audit history and ownership-continuity safeguards are explicitly
+identified as incomplete rather than implied by role names. Historical role/ABAC
+examples now point to the pilot contract. Validation: local documentation links
+and diff whitespace checked; no runtime changes or application tests required.
+P07/P08 remain separate implementation/verification milestones.
+
+
+### P07 complete locally — scoped operator access, 17 September 2026
+
+[Access verification](scoped-operator-access.md) records the operator/platform
+administrator boundary and its server/database tests. The Admin hub now checks
+its capability independently with private caching; the hook shares the same
+route gate. Organisation admin/owner assignments confer no global access.
+
+Tests against real access migrations uncovered a legacy SELECT policy that
+allowed expired organisation assignments to read private base rows. Migration
+`20260917063242_scoped_access_expiry.sql` replaces it with the expiry-aware helper.
+Active organisation access and independent platform appointments are preserved.
+
+Validation: five SQL suites pass against 33 unmodified migrations in disposable
+PostGIS 17, including every global task RPC, role scope, conditional MFA,
+revocation and reviewed publication. New and existing route regressions, Svelte
+check, targeted ESLint and production build pass. Auth scaffolding is emulated;
+no hosted verification or deployment was performed. Deploy the migration and
+application before claiming hosted closure. P08 remains separate work.
+
+
+### P07 deployed and verified — 17 September 2026
+
+Applied `scoped_access_expiry` to hosted Supabase as **20260917063242** and aligned
+the repository migration filename with that version. Production deployment
+**dpl_9PPf4QrDxtVqyMYN7zQjB9bzDQZt** is READY at
+[community-orgs-portal.vercel.app](https://community-orgs-portal.vercel.app).
+
+The hosted rollback-only P07 SQL suite passed, including role scope, direct RPC
+denials, private grants, conditional MFA and revocation. Real signed-in HTTP
+checks with temporary owner/operator/administrator accounts verified both page
+and action boundaries. Reusing sessions after appointment revocation and role
+expiry denied Admin/RPC access and hid the private organisation through PostgREST.
+All temporary accounts, assignments and organisations were removed; no production
+source, schedule or publication changed. See [hosted verification](scoped-operator-access.md).
+
+This closes the deployment/verification work left pending in the local entry
+above. P07 is complete; P08 remains separate. The working-tree deployment must
+be preserved in Git before a later Git-triggered release.

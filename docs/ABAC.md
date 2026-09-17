@@ -1,3 +1,7 @@
+> Historical design examples. The [P06 capability matrix](capability-matrix.md)
+> defines the current pilot access contract. These examples are not implemented
+> authorization rules; custom role builders and ABAC remain deferred.
+
 # Schema changes needed to implement the full ABAC system:
 
 ```sql

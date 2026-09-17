@@ -1,4 +1,4 @@
--- Run as postgres. Exercise the RPC used by isSiteAdmin as authenticated.
+-- Run as postgres. Organisation rank must never confer platform/admin access.
 -- All fixtures and mutations are rolled back, including auth profile triggers.
 BEGIN;
 DO $$
@@ -39,16 +39,19 @@ BEGIN
         END IF;
 
         SET LOCAL ROLE authenticated;
-        -- Match the application's max_hierarchy_level >= EDITOR_LEVEL (3) test.
+        -- This RPC describes organisation membership, not global admin authority.
         SELECT coalesce(max(r.max_hierarchy_level),0),
                coalesce(bool_or(r.max_hierarchy_level >= 3),false),
                max(r.organisation_name), max(r.organisation_slug)
         INTO actual_level, qualifies, org_name, org_slug
         FROM community_orgs.get_user_organisations_with_roles(actor) r;
+        IF community_orgs.is_platform_admin() OR community_orgs.is_ingestion_operator() THEN
+            RAISE EXCEPTION 'Organisation scenario % granted global authority', scenario;
+        END IF;
         RESET ROLE;
 
         IF actual_level <> expected_level OR qualifies <> (expected_level >= 3) THEN
-            RAISE EXCEPTION 'Admin gate failed for %: level %, qualifies %',
+            RAISE EXCEPTION 'Organisation rank failed for %: level %, qualifies %',
                 scenario, actual_level, qualifies;
         END IF;
         IF expected_level > 0 AND

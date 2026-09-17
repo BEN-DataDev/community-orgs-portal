@@ -1,3 +1,7 @@
+> Historical design examples. The [P06 capability matrix](capability-matrix.md)
+> defines the current pilot access contract. These examples are not implemented
+> authorization rules; custom role builders and ABAC remain deferred.
+
 ```sql
     -- Create organization owners table
     CREATE TABLE community_orgs.org_owners (

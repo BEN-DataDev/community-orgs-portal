@@ -3,6 +3,8 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
+		"test:operator-access": "node scripts/test-operator-access.mjs",
+		"test:operator-access:db": "python3 scripts/test-operator-access-db.py",
 		"test:relationships": "node scripts/test-relationship-search.mjs",
 		"test:cron": "node scripts/test-cron.mjs",
 		"docs:skeleton:sync": "python3 scripts/sync-skeleton-docs.py",

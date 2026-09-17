@@ -19,8 +19,8 @@ blocks simplify existing layouts; illustrative values below are invented.
 | Ingestion operator | Admin → Acquisition jobs / Import review: acquire, match, approve, publish and suppress | Server/database capability checks apply; an import does not grant organisation ownership |
 | Platform administrator | Admin → Source approvals and acquisition configuration | Source enablement and scheduling are separate from record approval/publication |
 
-These describe the existing task boundaries, not a replacement for the full P06
-capability matrix or P08 role-management work. Existing operator checks include
+The [P06 capability matrix](capability-matrix.md) expands these task boundaries
+and records the remaining P07/P08 implementation and verification requirements. Existing operator checks include
 the database's authentication/MFA requirements. Permission failures stop the
 action; the UI must not suggest retrying under an organisation role as a bypass.
 
