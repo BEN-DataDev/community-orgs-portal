@@ -8,7 +8,7 @@
 
 	interface Props {
 		/** Excluded from the partner search so an organisation cannot partner itself. */
-		orgId: number;
+		orgId: Organisation['org_id'];
 		errors?: Record<string, string[] | undefined>;
 		onSave?: () => void;
 		supabase: TypedSupabaseClient;

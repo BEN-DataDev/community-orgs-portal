@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import RelationshipForm from '$components/forms/RelationshipForm.svelte';
 	import RelationshipTimeline from '$components/visualizations/RelationshipTimeline.svelte';
 	import { formatDate } from '$lib/utils/formatters';
@@ -29,7 +28,7 @@
 	{#if showCreateForm}
 		<div class="card preset-outlined-surface-200-800 mb-6 p-4">
 			<RelationshipForm
-				orgId={Number(page.params.id)}
+				orgId={organisation.org_id}
 				errors={form?.errors}
 				onSave={() => (showCreateForm = false)}
 				{supabase}

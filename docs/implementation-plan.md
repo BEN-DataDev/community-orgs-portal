@@ -178,7 +178,7 @@ records with clear source attribution and freshness information.
 | ID  | Task                                       | Deliverable / acceptance                                                                                                                        |
 | --- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | P01 | Write the pilot inclusion policy — complete | [Policy v1.0](pilot-inclusion-policy.md) defines Snowy Valleys scope, categories, entity/group/service distinctions, exclusions and evidence/review rules |
-| P02 | Fix relationship UUID conversion (gap G01) | Partner search uses string IDs, excludes the current organisation and surfaces failures; browser creation succeeds                              |
+| P02 | Fix relationship UUID conversion (gap G01) — complete | Partner search uses string IDs, excludes the current organisation and surfaces failures; browser creation succeeds                              |
 | P03 | Capture a development baseline             | Record check/build results and relevant SQL test results against a disposable/local database; identify hosted migration drift before deployment |
 | P04 | Qualify source samples                     | Record exact resource/version, licence, attribution and schema for a small ACNC sample and CSV fixture; start ABN access preparation            |
 | P05 | Sketch the core journeys                   | Import → match → field review → publish; organisation edit → conflict review; reject/withdraw → suppress                                        |
@@ -788,3 +788,22 @@ the four requested recovery scenarios. No production data, deployment or schedul
 was changed. Next is an explicit refresh-cadence decision and first scheduled-job
 verification; P27 reconciliation/closure semantics remain a distinct implementation
 concern and are not marked complete by these checks.
+
+
+### P02 complete — relationship partner search, 17 September 2026
+
+Organisation UUIDs now remain strings from the page through the form and search
+exclusion filter. Lookup failures are visible; empty results have a distinct
+message. Editing the search clears the selected partner, and late responses
+cannot restore stale results or override a newer search.
+
+Validation: Svelte check, targeted ESLint, production build and
+`npm run test:relationships` passed. The browser regression exercises the actual
+page, form, picker and server action with synthetic Supabase transport/storage
+and a test form-enhancement adapter. It covers current-organisation exclusion,
+query/network failures, empty results, stale responses, selection reset, successful
+creation and rejection without editor access. It does not verify hosted database
+RLS or the production SvelteKit enhancement runtime. No deployment or hosted data
+changes were made. The browser script requires Playwright and installed Chromium;
+use `PLAYWRIGHT_MODULE` to point to an existing Playwright module when it is not
+installed locally, as with the other browser regression scripts.

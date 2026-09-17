@@ -80,9 +80,15 @@ Status meanings:
 
 ## Detailed gaps
 
-### G01 — Relationship search still treats UUIDs as numbers
+### G01 — Relationship search UUID conversion — resolved 17 September 2026
 
-**Priority: high. Type: implementation defect identified in source.**
+**Status: P02 complete.** UUIDs now remain strings, the current organisation is
+excluded, lookup failures are visible and stale results/selections are cleared.
+Local browser regression covers creation through the real server action with
+synthetic storage and a test enhancement adapter; hosted verification is not
+claimed. See [P02 validation](implementation-plan.md#p02-complete--relationship-partner-search-17-september-2026).
+
+The following describes the original defect.
 
 The [relationship page](../src/routes/organisations/[id]/relationships/+page.svelte)
 passes `Number(page.params.id)` into the form. Organisation IDs are UUID strings.
