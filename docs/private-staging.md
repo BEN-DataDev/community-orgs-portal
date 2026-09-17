@@ -1,5 +1,9 @@
 # ACNC qualification and private staging
 
+For the current P09 storage contract and raw-retention implementation, see
+[private ingestion storage](private-ingestion-storage.md). The historical notes below
+describe earlier increments; P09 adds local retention controls but awaits deployment.
+
 Implemented: 16 September 2026. All four ingestion migrations are now applied
 to Supabase project `gqltsfijginclwszrcfj`. Historical test notes below describe
 earlier isolated verification. See the implementation plan’s development activation

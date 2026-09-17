@@ -1,4 +1,4 @@
-"""Run P07/P08 against real portal/access/ingestion migrations in disposable PostGIS.
+"""Run P07/P08/P09 against real portal/access/ingestion migrations in disposable PostGIS.
 
 No host ports, mounts, credentials or external database URLs. Only auth users,
 factors and JWT helpers are emulated; capability functions and RLS are unmodified.
@@ -62,7 +62,7 @@ try:
         sql(path.read_text())
     print(f'Applied {len(migrations)} unmodified portal/access/ingestion migrations.', flush=True)
     for name in ['p2_admin_access_regression.sql', 'platform_administrators.sql',
-                 'operator_access.sql', 'organisation_role_management.sql', 'p1_access_regression.sql', 'ingestion_review.sql', 'ingestion_publication.sql']:
+                 'operator_access.sql', 'organisation_role_management.sql', 'p1_access_regression.sql', 'ingestion_review.sql', 'ingestion_publication.sql', 'private_raw_retention.sql']:
         print(sql((ROOT / 'supabase/tests' / name).read_text()).strip(), flush=True)
         print(f'{name}: passed', flush=True)
     # Two administrators race to revoke the two remaining owners. The second

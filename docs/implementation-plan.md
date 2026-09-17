@@ -199,7 +199,7 @@ for access approval or real-format validation.
 | P06 | Define the capability matrix — complete        | [Capability matrix v1.0](capability-matrix.md) separates public/registered readers, organisation roles, ingestion operators and platform administrators; records session, scope and P07/P08 verification rules |
 | P07 | Implement scoped operator access — complete | [Hosted access verification](scoped-operator-access.md): migration and application deployed; server/RPC/role/MFA checks and signed-in production boundaries verified |
 | P08 | Implement minimum organisation role management — complete | [P08 implementation and hosted verification](organisation-role-management.md): scoped assignments, hierarchy/MFA, owner safeguards and signed-in production checks passed                                           |
-| P09 | Add private ingestion storage                  | Sources, runs, source records/versions, links, assertions and change sets; raw objects are private and retained under source policy                            |
+| P09 | Add private ingestion storage — complete locally | [P09 storage and retention](private-ingestion-storage.md): existing private schema plus source-policy raw retention, holds, preview/removal and replay-safe audit; hosted verification pending |
 | P10 | Add publication and edit protection            | Explicit publication state/visibility, revision checks, manual field ownership, publication events and suppression rules                                       |
 | P11 | Define identifier and entity mapping           | Jurisdiction-scoped identifiers, legal-entity versus branch/service rules, duplicate constraints and a migration path for existing records                     |
 
@@ -936,3 +936,24 @@ synthetic role audit rows were removed; no pilot acquisition or publication chan
 [P08 hosted evidence](organisation-role-management.md#hosted-verification--17-september-2026)
 closes the deployment and verification work in the local entry above. P08 is
 complete. Preserve the deployed working-tree changes before a later Git release.
+
+
+### P09 complete locally — private ingestion storage, 17 September 2026
+
+[P09 storage and retention](private-ingestion-storage.md) maps sources, runs,
+versioned identities, links, assertions and change sets to the existing private
+schema. Added source-specific raw snapshot retention with default holds, preview,
+transactional removal across envelopes/payloads/checkpoints and private removal
+audit. Original hashes preserve immutable run replay after expiry; fresh observations
+retain shared raw objects and active jobs hold cleanup for recovery.
+
+Raw objects remain private JSONB for the bounded pilot. Assertions, source-value
+provenance and publication audit are retained separately; this is not complete
+personal-data erasure. No source retention period is assumed or seeded.
+
+Validation: 35 real migrations, eight SQL access/publication/storage suites,
+concurrent owner-revocation checks and all 51 Python ingestion tests passed in local
+disposable environments. The full ingestion SQL suites and real worker crash/recovery
+checks also passed on PostgreSQL 16. See the P09 record for deployment and forward repair.
+No hosted migration, raw removal, source enablement or schedule change was performed;
+hosted verification remains pending.

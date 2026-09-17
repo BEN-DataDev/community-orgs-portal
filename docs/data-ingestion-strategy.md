@@ -186,7 +186,10 @@ It lacks the provenance, source identity and review structures needed for ingest
 | `suppression_rules`      | Source/record/field restrictions preventing republishing withdrawn data                                                    |
 
 Enforce uniqueness on `(source_id, source_native_id)` and idempotent version hashes.
-Keep raw payloads in private object storage, with paths/hashes in Postgres. Version
+For bulk ingestion, keep raw payloads in private object storage, with paths/hashes
+in Postgres. The bounded pilot uses transactional private JSONB objects and
+[source-specific retention controls](private-ingestion-storage.md); an external
+object store remains a scaling option. Version
 history is subject to withdrawal and retention rules; it is not an immutable archive
 of information the provider requires deleted.
 
