@@ -70,11 +70,17 @@ export const GET: RequestHandler = async ({ request }) => {
 			if (cleanupError) return json({ success: false, stage: 'avatar_cleanup' }, { status: 500 });
 		}
 
+		const { data: acquisitions, error: acquisitionError } = await supabase
+			.schema('community_orgs')
+			.rpc('enqueue_due_acquisitions');
+		if (acquisitionError)
+			return json({ success: false, stage: 'acquisition_queue' }, { status: 500 });
+
 		console.info('Cron completed:', {
 			completedAt: new Date().toISOString(),
 			purgedAnonymousUsers: purged
 		});
-		return json({ success: true, data, purgedAnonymousUsers: purged });
+		return json({ success: true, data, purgedAnonymousUsers: purged, acquisitions });
 	} catch (error) {
 		console.error('Cron execution failed:', error);
 		return json({ success: false, stage: 'execution' }, { status: 500 });

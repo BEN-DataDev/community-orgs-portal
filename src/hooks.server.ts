@@ -133,6 +133,7 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	const target = guardRedirect({
 		pathname,
 		search,
+		method: event.request.method,
 		hasSession: session !== null,
 		isAnonymous,
 		aal

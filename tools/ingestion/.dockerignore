@@ -1,0 +1,10 @@
+*
+!python/
+python/*
+!python/ingestion/
+!python/ingestion/**
+!deploy/
+deploy/*
+!deploy/poll-worker.sh
+**/__pycache__
+**/*.pyc

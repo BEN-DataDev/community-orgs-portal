@@ -1,0 +1,19 @@
+[Unit]
+Description=Process one bounded Community Orgs acquisition job
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=community-orgs-ingestion
+Group=community-orgs-ingestion
+WorkingDirectory=/opt/community-orgs-portal/tools/ingestion/python
+EnvironmentFile=/etc/community-orgs/acquisition.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PGCONNECT_TIMEOUT=10
+ExecStart=/usr/bin/python3 -m ingestion.worker
+TimeoutStartSec=10min
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true

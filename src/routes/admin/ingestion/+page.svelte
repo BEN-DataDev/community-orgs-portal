@@ -1,4 +1,5 @@
 <script lang="ts">
+	import SavedApprovals from '$components/ingestion/SavedApprovals.svelte';
 	import FieldGroups from '../../../components/ingestion/FieldGroups.svelte';
 	import WithdrawalControls from '$components/ingestion/WithdrawalControls.svelte';
 	import { resolve } from '$app/paths';
@@ -16,9 +17,6 @@
 		});
 		return `${resolve('/admin/ingestion')}?${params}`;
 	}
-	function display(value: unknown) {
-		return value == null ? '—' : typeof value === 'string' ? value : JSON.stringify(value);
-	}
 
 	function href(run: string, version?: string, offset = 0) {
 		const params = new URLSearchParams({ run, offset: String(offset) });
@@ -31,6 +29,7 @@
 <div class="space-y-6">
 	<header>
 		<a class="anchor" href={resolve('/admin')}>Back to Admin</a>
+		<a class="anchor" href={resolve('/admin/ingestion/jobs')}>Acquisition jobs</a>
 		<h1 class="text-2xl font-bold">Import review</h1>
 		<p>Compare source evidence with existing organisations and record a proposed decision.</p>
 		<p class="text-sm">
@@ -43,7 +42,7 @@
 		<label class="label flex-1"
 			>Import run<select class="select" name="run" value={queue.run ?? ''} required>
 				{#each queue.runs as run}<option value={run.id}
-						>{run.run_key} · {run.completion} · {run.observed_at}</option
+						>Run {run.id} · {run.run_key} · {run.completion} · {run.observed_at}</option
 					>{/each}
 			</select></label
 		><button class="btn preset-filled-primary-500" disabled={!queue.runs.length}>Open run</button>
@@ -55,6 +54,14 @@
 				<strong>{selectedRun.completion}</strong>
 			</p>{/if}
 		<p>{queue.total} staged records. Partial and failed runs remain evidence only.</p>
+		{#if queue.reprocessing}
+			<p>
+				Reprocessed from <a class="anchor" href={href(queue.reprocessing.parent_run_id)}
+					>run {queue.reprocessing.parent_run_id}</a
+				>. The observation date is unchanged. {queue.reprocessing.quarantined} records quarantined; new
+				facts require fresh review and approval.
+			</p>
+		{/if}
 		<div class="grid gap-6 xl:grid-cols-[minmax(16rem,1fr)_2fr]">
 			<section aria-label="Staged records" class="space-y-3">
 				<ul class="space-y-2">
@@ -83,6 +90,14 @@
 				{#if queue.detail}
 					{#key `${queue.run}:${queue.detail.id}:${queue.detail.review?.revision ?? 0}`}
 						<h2 class="text-xl font-bold">Source record {queue.detail.native_id}</h2>
+						{#if queue.detail.linked_organisation_id}
+							<p>
+								This source identity is already linked to an organisation.
+								<a class="anchor" href={previewHref(queue.detail.linked_organisation_id)}
+									>Compare with the linked organisation</a
+								> before saving a new review.
+							</p>
+						{/if}
 						<div class="overflow-x-auto">
 							<table class="w-full text-left text-sm">
 								<caption class="pb-2 text-left font-semibold">Source values</caption><thead
@@ -203,40 +218,11 @@
 								fields={data.withdrawalFields}
 							/>{/if}
 						{#if data.approvals.length}
-							<section aria-label="Saved field approvals" class="space-y-3">
-								<h3 class="text-lg font-semibold">Saved field approvals</h3>
-								{#each data.approvals as approval}<article
-										class="card border-surface-200-800 space-y-2 border p-4"
-									>
-										<p>
-											Approved {approval.approved_at} · review revision {approval.review_revision}
-										</p>
-										<p>Target: {approval.organisation_id ?? 'New public organisation'}</p>
-										<ul>
-											{#each approval.fields as field}<li class="break-all">
-													{field.field}: {display(field.current_value)} → {display(
-														field.source_value
-													)} (revision {field.revision})
-												</li>{/each}
-										</ul>
-										{#if approval.published_at}<p>Published {approval.published_at}</p>
-											<a
-												class="anchor"
-												href={resolve('/organisations/[id]', {
-													id: approval.published_organisation!
-												})}>View organisation</a
-											>
-										{:else}<form method="POST" use:enhance>
-												<input type="hidden" name="intent" value="publish" /><input
-													type="hidden"
-													name="approval"
-													value={approval.id}
-												/><button class="btn preset-filled-primary-500"
-													>Publish these approved fields</button
-												>
-											</form>{/if}
-									</article>{/each}
-							</section>
+							<SavedApprovals
+								approvals={data.approvals}
+								savedApprovalId={form && 'approvalId' in form ? form.approvalId : null}
+								message={form?.message}
+							/>
 						{/if}
 						{#if queue.detail.review}<p class="text-sm">
 								Saved decision: {queue.detail.review.decision} · revision {queue.detail.review

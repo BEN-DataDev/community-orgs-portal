@@ -1,0 +1,1605 @@
+{
+	"validated_on": "2026-09-17",
+	"execution": "isolated PostgreSQL; all writes rolled back",
+	"live_migrations_applied": true,
+	"live_replay_staged": true,
+	"release_gate": "pending",
+	"parent_run_id": 6,
+	"run_key": "acnc-reprocess-run-6-v2",
+	"parser_version": "acnc-ckan-v2",
+	"mapping_version": "acnc-register-fields-v2",
+	"observed_at": "2026-09-16T04:47:41.708096+00:00",
+	"processed_at": "2026-09-16T22:45:18.698514+00:00",
+	"completion": "partial",
+	"records": {
+		"examined": 6,
+		"accepted": 5,
+		"quarantined": 1
+	},
+	"source_counts": {
+		"supplied": 135,
+		"absent": 278,
+		"invalid": 1,
+		"unmapped": 0
+	},
+	"isolated_workflow": {
+		"review_units_per_accepted_record": 62,
+		"approved": 0,
+		"published": 0,
+		"previously_published": 2,
+		"suppressed": 0,
+		"quarantined_record_workflow": "unknown; no replay version exists",
+		"note": "One original reviewed link reproduced through review/publication APIs; no production approvals copied."
+	},
+	"invalid_fields": [
+		{
+			"source_key": "Charity_Website",
+			"reason": "Missing HTTP(S) scheme; strict URL validation quarantines whole record."
+		}
+	],
+	"columns": [
+		{
+			"source_key": "ABN",
+			"review_unit": "abn",
+			"supplied": 6,
+			"absent": 0,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 1,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 1,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Aboriginal_or_TSI",
+			"review_unit": "beneficiaries.aboriginal_or_tsi",
+			"supplied": 1,
+			"absent": 5,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Address_Line_1",
+			"review_unit": "administrative_address",
+			"supplied": 6,
+			"absent": 0,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Address_Line_2",
+			"review_unit": "administrative_address",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Address_Line_3",
+			"review_unit": "administrative_address",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Address_Type",
+			"review_unit": "administrative_address",
+			"supplied": 6,
+			"absent": 0,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Adults",
+			"review_unit": "beneficiaries.adults",
+			"supplied": 3,
+			"absent": 3,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Advancing_Culture",
+			"review_unit": "purposes.advancing_culture",
+			"supplied": 1,
+			"absent": 5,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Advancing_Education",
+			"review_unit": "purposes.advancing_education",
+			"supplied": 1,
+			"absent": 5,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Advancing_Health",
+			"review_unit": "purposes.advancing_health",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Advancing_Religion",
+			"review_unit": "purposes.advancing_religion",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Advancing_natual_environment",
+			"review_unit": "purposes.advancing_natural_environment",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Advancing_security_or_safety_of_Australia_or_Australian_public",
+			"review_unit": "purposes.advancing_security_or_safety_of_australia_or_australian_public",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Advancing_social_or_public_welfare",
+			"review_unit": "purposes.advancing_social_or_public_welfare",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Aged_Persons",
+			"review_unit": "beneficiaries.aged_persons",
+			"supplied": 4,
+			"absent": 2,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Charity_Legal_Name",
+			"review_unit": "entity_name",
+			"supplied": 6,
+			"absent": 0,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 1,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 1,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Charity_Size",
+			"review_unit": "charity_size",
+			"supplied": 5,
+			"absent": 1,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Charity_Website",
+			"review_unit": "website",
+			"supplied": 2,
+			"absent": 3,
+			"invalid": 1,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Children",
+			"review_unit": "beneficiaries.children",
+			"supplied": 3,
+			"absent": 3,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Communities_Overseas",
+			"review_unit": "beneficiaries.communities_overseas",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Country",
+			"review_unit": "administrative_address",
+			"supplied": 6,
+			"absent": 0,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Date_Organisation_Established",
+			"review_unit": "date_established",
+			"supplied": 6,
+			"absent": 0,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Early_Childhood",
+			"review_unit": "beneficiaries.early_childhood",
+			"supplied": 1,
+			"absent": 5,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Ethnic_Groups",
+			"review_unit": "beneficiaries.ethnic_groups",
+			"supplied": 2,
+			"absent": 4,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Families",
+			"review_unit": "beneficiaries.families",
+			"supplied": 3,
+			"absent": 3,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Females",
+			"review_unit": "beneficiaries.females",
+			"supplied": 2,
+			"absent": 4,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Financial_Year_End",
+			"review_unit": "financial_year_end",
+			"supplied": 6,
+			"absent": 0,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Financially_Disadvantaged",
+			"review_unit": "beneficiaries.financially_disadvantaged",
+			"supplied": 1,
+			"absent": 5,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "General_Community_in_Australia",
+			"review_unit": "beneficiaries.general_community_in_australia",
+			"supplied": 3,
+			"absent": 3,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "HPC",
+			"review_unit": "hpc",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "LGBTIQA+",
+			"review_unit": "beneficiaries.lgbtiqa_plus",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Males",
+			"review_unit": "beneficiaries.males",
+			"supplied": 2,
+			"absent": 4,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Migrants_Refugees_or_Asylum_Seekers",
+			"review_unit": "beneficiaries.migrants_refugees_or_asylum_seekers",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Number_of_Responsible_Persons",
+			"review_unit": "responsible_person_count",
+			"supplied": 6,
+			"absent": 0,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Operates_in_ACT",
+			"review_unit": "operating_jurisdictions.act",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Operates_in_NSW",
+			"review_unit": "operating_jurisdictions.nsw",
+			"supplied": 4,
+			"absent": 2,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Operates_in_NT",
+			"review_unit": "operating_jurisdictions.nt",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Operates_in_QLD",
+			"review_unit": "operating_jurisdictions.qld",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Operates_in_SA",
+			"review_unit": "operating_jurisdictions.sa",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Operates_in_TAS",
+			"review_unit": "operating_jurisdictions.tas",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Operates_in_VIC",
+			"review_unit": "operating_jurisdictions.vic",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Operates_in_WA",
+			"review_unit": "operating_jurisdictions.wa",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Operating_Countries",
+			"review_unit": "operating_countries_text",
+			"supplied": 3,
+			"absent": 3,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Other_Beneficiaries",
+			"review_unit": "beneficiaries.other_beneficiaries",
+			"supplied": 1,
+			"absent": 5,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Other_Charities",
+			"review_unit": "beneficiaries.other_charities",
+			"supplied": 2,
+			"absent": 4,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Other_Organisation_Names",
+			"review_unit": "other_names_text",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "PBI",
+			"review_unit": "pbi",
+			"supplied": 2,
+			"absent": 4,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "People_at_risk_of_homelessness",
+			"review_unit": "beneficiaries.people_at_risk_of_homelessness",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "People_with_Chronic_Illness",
+			"review_unit": "beneficiaries.people_with_chronic_illness",
+			"supplied": 1,
+			"absent": 5,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "People_with_Disabilities",
+			"review_unit": "beneficiaries.people_with_disabilities",
+			"supplied": 1,
+			"absent": 5,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Postcode",
+			"review_unit": "administrative_address",
+			"supplied": 6,
+			"absent": 0,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Pre_Post_Release_Offenders",
+			"review_unit": "beneficiaries.pre_post_release_offenders",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Preventing_or_relieving_suffering_of_animals",
+			"review_unit": "purposes.preventing_or_relieving_suffering_of_animals",
+			"supplied": 1,
+			"absent": 5,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Promote_or_oppose_a_change_to_law__government_poll_or_prac",
+			"review_unit": "purposes.advocacy_for_charitable_purposes",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Promoting_or_protecting_human_rights",
+			"review_unit": "purposes.promoting_or_protecting_human_rights",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Promoting_reconciliation__mutual_respect_and_tolerance",
+			"review_unit": "purposes.promoting_reconciliation_mutual_respect_and_tolerance",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Purposes_beneficial_to_ther_general_public_and_other_analogous",
+			"review_unit": "purposes.other_charitable_purposes",
+			"supplied": 2,
+			"absent": 4,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Registration_Date",
+			"review_unit": "acnc_registered_date",
+			"supplied": 6,
+			"absent": 0,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Rural_Regional_Remote_Communities",
+			"review_unit": "beneficiaries.rural_regional_remote_communities",
+			"supplied": 3,
+			"absent": 3,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "State",
+			"review_unit": "administrative_address",
+			"supplied": 6,
+			"absent": 0,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Town_City",
+			"review_unit": "administrative_address",
+			"supplied": 6,
+			"absent": 0,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Unemployed_Person",
+			"review_unit": "beneficiaries.unemployed_person",
+			"supplied": 1,
+			"absent": 5,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Veterans_or_their_families",
+			"review_unit": "beneficiaries.veterans_or_their_families",
+			"supplied": 1,
+			"absent": 5,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Victims_of_Disasters",
+			"review_unit": "beneficiaries.victims_of_disasters",
+			"supplied": 2,
+			"absent": 4,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Victims_of_crime",
+			"review_unit": "beneficiaries.victims_of_crime",
+			"supplied": 1,
+			"absent": 5,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "Youth",
+			"review_unit": "beneficiaries.youth",
+			"supplied": 3,
+			"absent": 3,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "animals",
+			"review_unit": "beneficiaries.animals",
+			"supplied": 1,
+			"absent": 5,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "environment",
+			"review_unit": "beneficiaries.environment",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		},
+		{
+			"source_key": "other_gender_identities",
+			"review_unit": "beneficiaries.other_gender_identities",
+			"supplied": 0,
+			"absent": 6,
+			"invalid": 0,
+			"unmapped": 0,
+			"isolated_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			},
+			"live_workflow": {
+				"approved": 0,
+				"published": 0,
+				"previously_published": 0,
+				"suppressed": 0,
+				"unknown": 1
+			}
+		}
+	],
+	"live_run_id": 7,
+	"live_workflow": {
+		"run_id": 7,
+		"completion": "partial",
+		"accepted": 5,
+		"quarantined": 1,
+		"approved": 0,
+		"published": 0,
+		"previously_published": 2,
+		"suppressed": 0,
+		"parent_evidence_unchanged": true,
+		"original_versions_unchanged": true,
+		"existing_links_unchanged": true,
+		"anonymous_public_facts": 2,
+		"anonymous_register_projections": 0,
+		"hosted_browser_verified": false,
+		"live_retry": "Not executed: automatic approval review declined optional retry; local tests passed."
+	},
+	"v3_live_replay": {
+		"run_id": 8,
+		"run_key": "acnc-reprocess-run-6-v3",
+		"completion": "complete",
+		"records": 6,
+		"quarantined": 0,
+		"source_counts": {
+			"supplied": 136,
+			"absent": 278,
+			"invalid": 0,
+			"unmapped": 0
+		},
+		"review_states": {
+			"new": 104,
+			"missing": 266,
+			"unchanged": 2
+		},
+		"approved": 0,
+		"published": 0,
+		"previously_published": 2,
+		"suppressed": 0,
+		"runs_6_and_7_unchanged": true,
+		"preexisting_versions_unchanged": true,
+		"existing_links_unchanged": true,
+		"hosted_database_checks": "passed",
+		"hosted_browser_verified": false
+	}
+}

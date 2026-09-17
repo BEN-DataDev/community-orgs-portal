@@ -76,10 +76,17 @@ try {
 		console.error(e.message);
 	});
 	await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/f03-test`);
-	await page.getByRole('checkbox', { name: 'Select all eligible in Legal' }).waitFor();
+	await page.locator('summary').first().waitFor();
+	assert.equal(await page.locator('details[open]').count(), 0);
 	assert.equal(await page.locator('fieldset').count(), 7);
+	const legalSummary = page.locator('summary').filter({ hasText: /^Legal/ });
+	assert.match(
+		await legalSummary.innerText(),
+		/1 eligible · 1 conflicting · 1 invalid · 1 excluded/
+	);
+	await legalSummary.click();
 	const legal = page.getByRole('group', { name: 'Legal fields' });
-	assert.match(await legal.innerText(), /1 eligible · 1 conflicting · 1 invalid · 1 excluded/);
+	assert.equal(await legal.isVisible(), true);
 	await page.getByRole('checkbox', { name: 'Select all eligible in Legal' }).check();
 	let selected = await page
 		.locator('input[name=field]:checked')
@@ -89,6 +96,19 @@ try {
 		['pbi']
 	);
 	assert.equal(selected[0].source_value, false);
+	await legalSummary.click();
+	assert.equal(await legal.isVisible(), false);
+	assert.match(await legalSummary.innerText(), /1 selected/);
+	assert.equal(
+		await page.locator('form').evaluate((form) => new FormData(form).getAll('field').length),
+		1
+	);
+	await legalSummary.focus();
+	await page.keyboard.press('Enter');
+	await page
+		.locator('summary')
+		.filter({ hasText: /^Operations/ })
+		.click();
 	await page.getByRole('checkbox', { name: 'Select all eligible in Operations' }).check();
 	assert.equal(await page.locator('input[name=field]:checked').count(), 3);
 	await page.getByRole('checkbox', { name: 'purposes.advancing_health', exact: true }).uncheck();
@@ -98,6 +118,10 @@ try {
 	);
 	await page.getByRole('checkbox', { name: 'Select all eligible in Legal' }).uncheck();
 	assert.equal(await page.locator('input[name=field]:checked').count(), 1);
+	await page
+		.locator('summary')
+		.filter({ hasText: /^Contact/ })
+		.click();
 	await page.getByRole('checkbox', { name: 'administrative_address', exact: true }).check();
 	selected = await page
 		.locator('input[name=field]:checked')
@@ -106,6 +130,10 @@ try {
 	assert.deepEqual(address.current_value, { line_1: 'Old', line_2: 'Retained' });
 	assert.deepEqual(address.source_value, { line_1: 'New', line_2: 'Retained' });
 	assert.equal(address.mapping_token, 'm');
+	await page
+		.locator('summary')
+		.filter({ hasText: /^Unmapped/ })
+		.click();
 	assert.equal(
 		await page.getByRole('checkbox', { name: 'Select all eligible in Unmapped' }).isDisabled(),
 		true

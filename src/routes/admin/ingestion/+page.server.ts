@@ -48,7 +48,10 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	let approvals: z.infer<typeof approvalsSchema> = [];
 	if (parsed.data.detail && parsed.data.run) {
 		const target =
-			url.searchParams.get('target') ?? parsed.data.detail.review?.organisation_id ?? '';
+			url.searchParams.get('target') ??
+			parsed.data.detail.review?.organisation_id ??
+			parsed.data.detail.linked_organisation_id ??
+			'';
 		if (target && !z.string().uuid().safeParse(target).success)
 			error(400, 'Invalid preview organisation.');
 		const result = await locals.supabase.rpc('ingestion_field_preview', {
@@ -176,7 +179,8 @@ export const actions: Actions = {
 				});
 			return {
 				intent: 'approve',
-				message: 'Field approval saved. Review the saved values below before publishing.'
+				approvalId: result.data,
+				message: 'Field approval saved. Review the saved values before publishing.'
 			};
 		}
 		if (intent) return fail(400, { message: 'Unknown review action.' });

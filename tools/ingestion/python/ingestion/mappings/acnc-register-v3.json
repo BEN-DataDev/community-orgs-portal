@@ -1,0 +1,2074 @@
+{
+  "manifest_version": "acnc-register-fields-v3",
+  "status": "public_rendering_implemented_pilot_replay_pending",
+  "source_id": "acnc-register",
+  "resource_id": "eb1e6be4-5b13-4feb-b28e-388bf7c26f93",
+  "schema_evidence": "docs/acnc-live-pilot-validation.json",
+  "schema_sha256": "da5fb4d8d7b80c203f06841c1667ab902220051631d63b607d2c1d23ffdf116f",
+  "rules": {
+    "text": "Trim outer whitespace; preserve original text and case; no truncation.",
+    "identifier": "Require exactly 11 ASCII digits as a string; format validity is not registry verification.",
+    "postcode": "Require exactly four ASCII digits as a string; preserve leading zeroes.",
+    "url": "Accept http/https URLs without credentials; retain invalid source text as private evidence; do not invent a scheme.",
+    "date": "Parse valid DD/MM/YYYY to ISO date. Pilot-observed format; reject other formats for review. Do not infer date precision beyond the source.",
+    "calendar": "Parse DD-Mon using explicit English month names into month/day, with leap-day support and no invented year; preserve source text.",
+    "count": "Parse nonnegative decimal integer; reject fractional, signed, negative or nonnumeric values.",
+    "flag": "Explicit Y/N -> true/false; null/blank -> unknown. Other tokens require qualification, not Python truthiness.",
+    "other_names": "Preserve supplied text as one unclassified other-name value; splitting and alias type need source delimiter qualification.",
+    "countries": "Preserve supplied country-code text; split/code vocabulary requires qualification before array projection. Do not infer from address country.",
+    "native_id": "Retain resource-scoped CKAN row ID for traceability only; not a stable cross-release organisation identifier.",
+    "website_url": "Preserve valid explicit HTTP(S) URLs. For bare ASCII DNS names only (optional trailing slash), prepend https:// as an explicit scheme default, retain original evidence and record bare-dns-https-v1. Reject paths, ports, credentials, IP literals, Unicode/punycode and internal/reserved suffixes in schemeless input. This is syntax normalisation, not verification of reachability or ownership."
+  },
+  "destination_design": "acnc_register_details stores typed scalars and validated address/flag objects per organisation/source record. F03 adds selected publication, source-scoped revisions, attribution and suppression. F04 renders latest approved source observations in existing public sections through a narrow public RPC; disagreements remain separate, and private/suppressed facts are excluded. Address components are an atomic merge; flags are independently selectable. Pilot replay remains F05.",
+  "qualification_gates": [
+    "Only pilot-observed DD/MM/YYYY dates, DD-Mon calendars and Y/N flags are accepted; other formats quarantine records for qualification. Synthetic fixtures test validation, not broader source-format qualification.",
+    "Other-name delimiter/type and country-list vocabulary remain unresolved: supplied text is preserved without splitting.",
+    "Schema, transformations, selected publication and public rendering are implemented and locally tested. Retained-pilot replay and the full release gate remain F05."
+  ],
+  "upstream_references": [
+    {
+      "repository": "BEN-DataDev/orgs-sveltekit-etl",
+      "commit": "2676fdcc620e9a1c8beeacf587a8bcf688aa35c9",
+      "path": "app/transformers/data_transformer.py",
+      "use": "Field inventory; correct duplicate address keys, misspellings and source-key mismatches."
+    },
+    {
+      "repository": "BEN-DataDev/orgs-data-manager",
+      "commit": "dea271215b267097bc4364f562f62e784b2e1294",
+      "path": "database/production/mappings.py",
+      "use": "Destination reference; replace truthiness conversions and silent truncation."
+    }
+  ],
+  "fields": [
+    {
+      "source_key": "_id",
+      "source_type": "int",
+      "meaning": "Source-reported  id.",
+      "canonical_key": "id",
+      "canonical_type": "integer",
+      "transform_rule": "native_id",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "ingestion",
+        "table": "source_records",
+        "column": "native_id",
+        "json_path": null,
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Internal",
+        "label": " id",
+        "route": null,
+        "excluded_reason": "Technical CKAN row identifier, not an organisation fact."
+      },
+      "review_unit": "id",
+      "attribution": "private_identity",
+      "suppression": "private_identity",
+      "implementation_status": "technical_only",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/_id"
+    },
+    {
+      "source_key": "ABN",
+      "source_type": "text",
+      "meaning": "Source-reported abn.",
+      "canonical_key": "abn",
+      "canonical_type": "string",
+      "transform_rule": "identifier",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "legal_details",
+        "column": "abn",
+        "json_path": null,
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Legal",
+        "label": "ABN",
+        "route": "/organisations/[id]/legal",
+        "excluded_reason": null
+      },
+      "review_unit": "abn",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/ABN"
+    },
+    {
+      "source_key": "Charity_Legal_Name",
+      "source_type": "text",
+      "meaning": "Source-reported charity legal name.",
+      "canonical_key": "entity_name",
+      "canonical_type": "string",
+      "transform_rule": "text",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "organisations",
+        "column": "entity_name",
+        "json_path": null,
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Overview",
+        "label": "Registered legal name",
+        "route": "/organisations/[id]",
+        "excluded_reason": null
+      },
+      "review_unit": "entity_name",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Charity_Legal_Name"
+    },
+    {
+      "source_key": "Other_Organisation_Names",
+      "source_type": "text",
+      "meaning": "Source-reported other organisation names.",
+      "canonical_key": "other_names_text",
+      "canonical_type": "string",
+      "transform_rule": "other_names",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "other_names_text",
+        "json_path": null,
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Overview",
+        "label": "Other Organisation Names",
+        "route": "/organisations/[id]",
+        "excluded_reason": null
+      },
+      "review_unit": "other_names_text",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Other_Organisation_Names"
+    },
+    {
+      "source_key": "Address_Type",
+      "source_type": "text",
+      "meaning": "Source administrative address type, not inferred service location.",
+      "canonical_key": "administrative_address.type",
+      "canonical_type": "string",
+      "transform_rule": "text",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "administrative_address",
+        "json_path": "type",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Contact",
+        "label": "Address Type",
+        "route": "/organisations/[id]/contact",
+        "excluded_reason": null
+      },
+      "review_unit": "administrative_address",
+      "attribution": "per_fact_source_version",
+      "suppression": "whole_address_group_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Address_Type"
+    },
+    {
+      "source_key": "Address_Line_1",
+      "source_type": "text",
+      "meaning": "Source administrative address line_1, not inferred service location.",
+      "canonical_key": "administrative_address.line_1",
+      "canonical_type": "string",
+      "transform_rule": "text",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "administrative_address",
+        "json_path": "line_1",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Contact",
+        "label": "Address Line 1",
+        "route": "/organisations/[id]/contact",
+        "excluded_reason": null
+      },
+      "review_unit": "administrative_address",
+      "attribution": "per_fact_source_version",
+      "suppression": "whole_address_group_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Address_Line_1"
+    },
+    {
+      "source_key": "Address_Line_2",
+      "source_type": "text",
+      "meaning": "Source administrative address line_2, not inferred service location.",
+      "canonical_key": "administrative_address.line_2",
+      "canonical_type": "string",
+      "transform_rule": "text",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "administrative_address",
+        "json_path": "line_2",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Contact",
+        "label": "Address Line 2",
+        "route": "/organisations/[id]/contact",
+        "excluded_reason": null
+      },
+      "review_unit": "administrative_address",
+      "attribution": "per_fact_source_version",
+      "suppression": "whole_address_group_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Address_Line_2"
+    },
+    {
+      "source_key": "Address_Line_3",
+      "source_type": "text",
+      "meaning": "Source administrative address line_3, not inferred service location.",
+      "canonical_key": "administrative_address.line_3",
+      "canonical_type": "string",
+      "transform_rule": "text",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "administrative_address",
+        "json_path": "line_3",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Contact",
+        "label": "Address Line 3",
+        "route": "/organisations/[id]/contact",
+        "excluded_reason": null
+      },
+      "review_unit": "administrative_address",
+      "attribution": "per_fact_source_version",
+      "suppression": "whole_address_group_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Address_Line_3"
+    },
+    {
+      "source_key": "Town_City",
+      "source_type": "text",
+      "meaning": "Source administrative address locality, not inferred service location.",
+      "canonical_key": "administrative_address.locality",
+      "canonical_type": "string",
+      "transform_rule": "text",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "administrative_address",
+        "json_path": "locality",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Contact",
+        "label": "Town City",
+        "route": "/organisations/[id]/contact",
+        "excluded_reason": null
+      },
+      "review_unit": "administrative_address",
+      "attribution": "per_fact_source_version",
+      "suppression": "whole_address_group_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Town_City"
+    },
+    {
+      "source_key": "State",
+      "source_type": "text",
+      "meaning": "Source administrative address state, not inferred service location.",
+      "canonical_key": "administrative_address.state",
+      "canonical_type": "string",
+      "transform_rule": "text",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "administrative_address",
+        "json_path": "state",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Contact",
+        "label": "State",
+        "route": "/organisations/[id]/contact",
+        "excluded_reason": null
+      },
+      "review_unit": "administrative_address",
+      "attribution": "per_fact_source_version",
+      "suppression": "whole_address_group_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/State"
+    },
+    {
+      "source_key": "Postcode",
+      "source_type": "text",
+      "meaning": "Source administrative address postcode, not inferred service location.",
+      "canonical_key": "administrative_address.postcode",
+      "canonical_type": "string",
+      "transform_rule": "postcode",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "administrative_address",
+        "json_path": "postcode",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Contact",
+        "label": "Postcode",
+        "route": "/organisations/[id]/contact",
+        "excluded_reason": null
+      },
+      "review_unit": "administrative_address",
+      "attribution": "per_fact_source_version",
+      "suppression": "whole_address_group_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Postcode"
+    },
+    {
+      "source_key": "Country",
+      "source_type": "text",
+      "meaning": "Source administrative address country, not inferred service location.",
+      "canonical_key": "administrative_address.country",
+      "canonical_type": "string",
+      "transform_rule": "text",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "administrative_address",
+        "json_path": "country",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Contact",
+        "label": "Country",
+        "route": "/organisations/[id]/contact",
+        "excluded_reason": null
+      },
+      "review_unit": "administrative_address",
+      "attribution": "per_fact_source_version",
+      "suppression": "whole_address_group_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Country"
+    },
+    {
+      "source_key": "Charity_Website",
+      "source_type": "text",
+      "meaning": "Source-reported charity website.",
+      "canonical_key": "website",
+      "canonical_type": "string",
+      "transform_rule": "website_url",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "contact_info",
+        "column": "website",
+        "json_path": null,
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Contact",
+        "label": "Charity Website",
+        "route": "/organisations/[id]/contact",
+        "excluded_reason": null
+      },
+      "review_unit": "website",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Charity_Website"
+    },
+    {
+      "source_key": "Registration_Date",
+      "source_type": "text",
+      "meaning": "Source-reported registration date.",
+      "canonical_key": "acnc_registered_date",
+      "canonical_type": "date",
+      "transform_rule": "date",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "legal_details",
+        "column": "acnc_registered_date",
+        "json_path": null,
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Legal",
+        "label": "Registration Date",
+        "route": "/organisations/[id]/legal",
+        "excluded_reason": null
+      },
+      "review_unit": "acnc_registered_date",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Registration_Date"
+    },
+    {
+      "source_key": "Date_Organisation_Established",
+      "source_type": "text",
+      "meaning": "Source-reported date organisation established.",
+      "canonical_key": "date_established",
+      "canonical_type": "date",
+      "transform_rule": "date",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "organisations",
+        "column": "date_established",
+        "json_path": null,
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Overview",
+        "label": "Date Organisation Established",
+        "route": "/organisations/[id]",
+        "excluded_reason": null
+      },
+      "review_unit": "date_established",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Date_Organisation_Established"
+    },
+    {
+      "source_key": "Charity_Size",
+      "source_type": "text",
+      "meaning": "Source-reported charity size.",
+      "canonical_key": "charity_size",
+      "canonical_type": "string",
+      "transform_rule": "text",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "charity_size",
+        "json_path": null,
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Legal",
+        "label": "Charity Size",
+        "route": "/organisations/[id]/legal",
+        "excluded_reason": null
+      },
+      "review_unit": "charity_size",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Charity_Size"
+    },
+    {
+      "source_key": "Number_of_Responsible_Persons",
+      "source_type": "text",
+      "meaning": "Reported count of responsible persons, not identities or board composition.",
+      "canonical_key": "responsible_person_count",
+      "canonical_type": "integer",
+      "transform_rule": "count",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "responsible_person_count",
+        "json_path": null,
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Governance",
+        "label": "Number of Responsible Persons",
+        "route": "/organisations/[id]",
+        "excluded_reason": null
+      },
+      "review_unit": "responsible_person_count",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Number_of_Responsible_Persons"
+    },
+    {
+      "source_key": "Financial_Year_End",
+      "source_type": "text",
+      "meaning": "Reported financial year end, not revenue or a dated reporting observation.",
+      "canonical_key": "financial_year_end",
+      "canonical_type": "month_day",
+      "transform_rule": "calendar",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "financial_year_end",
+        "json_path": null,
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Finance",
+        "label": "Financial Year End",
+        "route": "/organisations/[id]/finance",
+        "excluded_reason": null
+      },
+      "review_unit": "financial_year_end",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Financial_Year_End"
+    },
+    {
+      "source_key": "Operates_in_ACT",
+      "source_type": "text",
+      "meaning": "Source-reported operation in ACT, not guaranteed local service availability.",
+      "canonical_key": "operating_jurisdictions.act",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "operating_jurisdictions",
+        "json_path": "act",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Operates in ACT",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "operating_jurisdictions.act",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Operates_in_ACT"
+    },
+    {
+      "source_key": "Operates_in_NSW",
+      "source_type": "text",
+      "meaning": "Source-reported operation in NSW, not guaranteed local service availability.",
+      "canonical_key": "operating_jurisdictions.nsw",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "operating_jurisdictions",
+        "json_path": "nsw",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Operates in NSW",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "operating_jurisdictions.nsw",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Operates_in_NSW"
+    },
+    {
+      "source_key": "Operates_in_NT",
+      "source_type": "text",
+      "meaning": "Source-reported operation in NT, not guaranteed local service availability.",
+      "canonical_key": "operating_jurisdictions.nt",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "operating_jurisdictions",
+        "json_path": "nt",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Operates in NT",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "operating_jurisdictions.nt",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Operates_in_NT"
+    },
+    {
+      "source_key": "Operates_in_QLD",
+      "source_type": "text",
+      "meaning": "Source-reported operation in QLD, not guaranteed local service availability.",
+      "canonical_key": "operating_jurisdictions.qld",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "operating_jurisdictions",
+        "json_path": "qld",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Operates in QLD",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "operating_jurisdictions.qld",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Operates_in_QLD"
+    },
+    {
+      "source_key": "Operates_in_SA",
+      "source_type": "text",
+      "meaning": "Source-reported operation in SA, not guaranteed local service availability.",
+      "canonical_key": "operating_jurisdictions.sa",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "operating_jurisdictions",
+        "json_path": "sa",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Operates in SA",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "operating_jurisdictions.sa",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Operates_in_SA"
+    },
+    {
+      "source_key": "Operates_in_TAS",
+      "source_type": "text",
+      "meaning": "Source-reported operation in TAS, not guaranteed local service availability.",
+      "canonical_key": "operating_jurisdictions.tas",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "operating_jurisdictions",
+        "json_path": "tas",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Operates in TAS",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "operating_jurisdictions.tas",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Operates_in_TAS"
+    },
+    {
+      "source_key": "Operates_in_VIC",
+      "source_type": "text",
+      "meaning": "Source-reported operation in VIC, not guaranteed local service availability.",
+      "canonical_key": "operating_jurisdictions.vic",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "operating_jurisdictions",
+        "json_path": "vic",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Operates in VIC",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "operating_jurisdictions.vic",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Operates_in_VIC"
+    },
+    {
+      "source_key": "Operates_in_WA",
+      "source_type": "text",
+      "meaning": "Source-reported operation in WA, not guaranteed local service availability.",
+      "canonical_key": "operating_jurisdictions.wa",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "operating_jurisdictions",
+        "json_path": "wa",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Operates in WA",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "operating_jurisdictions.wa",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Operates_in_WA"
+    },
+    {
+      "source_key": "Operating_Countries",
+      "source_type": "text",
+      "meaning": "Source-reported operating countries.",
+      "canonical_key": "operating_countries_text",
+      "canonical_type": "string",
+      "transform_rule": "countries",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "operating_countries_text",
+        "json_path": null,
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Operating Countries",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "operating_countries_text",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Operating_Countries"
+    },
+    {
+      "source_key": "PBI",
+      "source_type": "text",
+      "meaning": "Source-reported Public Benevolent Institution classification; not inferred DGR endorsement.",
+      "canonical_key": "pbi",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "pbi",
+        "json_path": null,
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Legal",
+        "label": "PBI",
+        "route": "/organisations/[id]/legal",
+        "excluded_reason": null
+      },
+      "review_unit": "pbi",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/PBI"
+    },
+    {
+      "source_key": "HPC",
+      "source_type": "text",
+      "meaning": "Source-reported Health Promotion Charity classification; not inferred DGR endorsement.",
+      "canonical_key": "hpc",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "hpc",
+        "json_path": null,
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Legal",
+        "label": "HPC",
+        "route": "/organisations/[id]/legal",
+        "excluded_reason": null
+      },
+      "review_unit": "hpc",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/HPC"
+    },
+    {
+      "source_key": "Preventing_or_relieving_suffering_of_animals",
+      "source_type": "text",
+      "meaning": "Source-reported charitable purpose: Preventing or relieving suffering of animals.",
+      "canonical_key": "purposes.preventing_or_relieving_suffering_of_animals",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "purposes",
+        "json_path": "preventing_or_relieving_suffering_of_animals",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Preventing or relieving suffering of animals",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "purposes.preventing_or_relieving_suffering_of_animals",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Preventing_or_relieving_suffering_of_animals"
+    },
+    {
+      "source_key": "Advancing_Culture",
+      "source_type": "text",
+      "meaning": "Source-reported charitable purpose: Advancing Culture.",
+      "canonical_key": "purposes.advancing_culture",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "purposes",
+        "json_path": "advancing_culture",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Advancing Culture",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "purposes.advancing_culture",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Advancing_Culture"
+    },
+    {
+      "source_key": "Advancing_Education",
+      "source_type": "text",
+      "meaning": "Source-reported charitable purpose: Advancing Education.",
+      "canonical_key": "purposes.advancing_education",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "purposes",
+        "json_path": "advancing_education",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Advancing Education",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "purposes.advancing_education",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Advancing_Education"
+    },
+    {
+      "source_key": "Advancing_Health",
+      "source_type": "text",
+      "meaning": "Source-reported charitable purpose: Advancing Health.",
+      "canonical_key": "purposes.advancing_health",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "purposes",
+        "json_path": "advancing_health",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Advancing Health",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "purposes.advancing_health",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Advancing_Health"
+    },
+    {
+      "source_key": "Promote_or_oppose_a_change_to_law__government_poll_or_prac",
+      "source_type": "text",
+      "meaning": "Source-reported charitable purpose: Promote or oppose a change to law  government poll or prac.",
+      "canonical_key": "purposes.advocacy_for_charitable_purposes",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "purposes",
+        "json_path": "advocacy_for_charitable_purposes",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Advocacy for charitable purposes",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "purposes.advocacy_for_charitable_purposes",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Promote_or_oppose_a_change_to_law__government_poll_or_prac"
+    },
+    {
+      "source_key": "Advancing_natual_environment",
+      "source_type": "text",
+      "meaning": "Source-reported charitable purpose: Advancing natual environment.",
+      "canonical_key": "purposes.advancing_natural_environment",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "purposes",
+        "json_path": "advancing_natural_environment",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Advancing natural environment",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "purposes.advancing_natural_environment",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Advancing_natual_environment"
+    },
+    {
+      "source_key": "Promoting_or_protecting_human_rights",
+      "source_type": "text",
+      "meaning": "Source-reported charitable purpose: Promoting or protecting human rights.",
+      "canonical_key": "purposes.promoting_or_protecting_human_rights",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "purposes",
+        "json_path": "promoting_or_protecting_human_rights",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Promoting or protecting human rights",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "purposes.promoting_or_protecting_human_rights",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Promoting_or_protecting_human_rights"
+    },
+    {
+      "source_key": "Purposes_beneficial_to_ther_general_public_and_other_analogous",
+      "source_type": "text",
+      "meaning": "Source-reported charitable purpose: Purposes beneficial to ther general public and other analogous.",
+      "canonical_key": "purposes.other_charitable_purposes",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "purposes",
+        "json_path": "other_charitable_purposes",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Other charitable purposes",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "purposes.other_charitable_purposes",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Purposes_beneficial_to_ther_general_public_and_other_analogous"
+    },
+    {
+      "source_key": "Promoting_reconciliation__mutual_respect_and_tolerance",
+      "source_type": "text",
+      "meaning": "Source-reported charitable purpose: Promoting reconciliation  mutual respect and tolerance.",
+      "canonical_key": "purposes.promoting_reconciliation_mutual_respect_and_tolerance",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "purposes",
+        "json_path": "promoting_reconciliation_mutual_respect_and_tolerance",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Promoting reconciliation  mutual respect and tolerance",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "purposes.promoting_reconciliation_mutual_respect_and_tolerance",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Promoting_reconciliation__mutual_respect_and_tolerance"
+    },
+    {
+      "source_key": "Advancing_Religion",
+      "source_type": "text",
+      "meaning": "Source-reported charitable purpose: Advancing Religion.",
+      "canonical_key": "purposes.advancing_religion",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "purposes",
+        "json_path": "advancing_religion",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Advancing Religion",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "purposes.advancing_religion",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Advancing_Religion"
+    },
+    {
+      "source_key": "Advancing_social_or_public_welfare",
+      "source_type": "text",
+      "meaning": "Source-reported charitable purpose: Advancing social or public welfare.",
+      "canonical_key": "purposes.advancing_social_or_public_welfare",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "purposes",
+        "json_path": "advancing_social_or_public_welfare",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Advancing social or public welfare",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "purposes.advancing_social_or_public_welfare",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Advancing_social_or_public_welfare"
+    },
+    {
+      "source_key": "Advancing_security_or_safety_of_Australia_or_Australian_public",
+      "source_type": "text",
+      "meaning": "Source-reported charitable purpose: Advancing security or safety of Australia or Australian public.",
+      "canonical_key": "purposes.advancing_security_or_safety_of_australia_or_australian_public",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "purposes",
+        "json_path": "advancing_security_or_safety_of_australia_or_australian_public",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Advancing security or safety of Australia or Australian public",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "purposes.advancing_security_or_safety_of_australia_or_australian_public",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Advancing_security_or_safety_of_Australia_or_Australian_public"
+    },
+    {
+      "source_key": "Aboriginal_or_TSI",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Aboriginal or TSI.",
+      "canonical_key": "beneficiaries.aboriginal_or_tsi",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "aboriginal_or_tsi",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Aboriginal or TSI",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.aboriginal_or_tsi",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Aboriginal_or_TSI"
+    },
+    {
+      "source_key": "Adults",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Adults.",
+      "canonical_key": "beneficiaries.adults",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "adults",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Adults",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.adults",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Adults"
+    },
+    {
+      "source_key": "Aged_Persons",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Aged Persons.",
+      "canonical_key": "beneficiaries.aged_persons",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "aged_persons",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Aged Persons",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.aged_persons",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Aged_Persons"
+    },
+    {
+      "source_key": "Children",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Children.",
+      "canonical_key": "beneficiaries.children",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "children",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Children",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.children",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Children"
+    },
+    {
+      "source_key": "Communities_Overseas",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Communities Overseas.",
+      "canonical_key": "beneficiaries.communities_overseas",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "communities_overseas",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Communities Overseas",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.communities_overseas",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Communities_Overseas"
+    },
+    {
+      "source_key": "Early_Childhood",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Early Childhood.",
+      "canonical_key": "beneficiaries.early_childhood",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "early_childhood",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Early Childhood",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.early_childhood",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Early_Childhood"
+    },
+    {
+      "source_key": "Ethnic_Groups",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Ethnic Groups.",
+      "canonical_key": "beneficiaries.ethnic_groups",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "ethnic_groups",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Ethnic Groups",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.ethnic_groups",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Ethnic_Groups"
+    },
+    {
+      "source_key": "Families",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Families.",
+      "canonical_key": "beneficiaries.families",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "families",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Families",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.families",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Families"
+    },
+    {
+      "source_key": "Females",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Females.",
+      "canonical_key": "beneficiaries.females",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "females",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Females",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.females",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Females"
+    },
+    {
+      "source_key": "Financially_Disadvantaged",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Financially Disadvantaged.",
+      "canonical_key": "beneficiaries.financially_disadvantaged",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "financially_disadvantaged",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Financially Disadvantaged",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.financially_disadvantaged",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Financially_Disadvantaged"
+    },
+    {
+      "source_key": "LGBTIQA+",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: LGBTIQA+.",
+      "canonical_key": "beneficiaries.lgbtiqa_plus",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "lgbtiqa_plus",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Lgbtiqa plus",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.lgbtiqa_plus",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/LGBTIQA+"
+    },
+    {
+      "source_key": "General_Community_in_Australia",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: General Community in Australia.",
+      "canonical_key": "beneficiaries.general_community_in_australia",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "general_community_in_australia",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "General Community in Australia",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.general_community_in_australia",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/General_Community_in_Australia"
+    },
+    {
+      "source_key": "Males",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Males.",
+      "canonical_key": "beneficiaries.males",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "males",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Males",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.males",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Males"
+    },
+    {
+      "source_key": "Migrants_Refugees_or_Asylum_Seekers",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Migrants Refugees or Asylum Seekers.",
+      "canonical_key": "beneficiaries.migrants_refugees_or_asylum_seekers",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "migrants_refugees_or_asylum_seekers",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Migrants Refugees or Asylum Seekers",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.migrants_refugees_or_asylum_seekers",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Migrants_Refugees_or_Asylum_Seekers"
+    },
+    {
+      "source_key": "Other_Beneficiaries",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Other Beneficiaries.",
+      "canonical_key": "beneficiaries.other_beneficiaries",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "other_beneficiaries",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Other Beneficiaries",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.other_beneficiaries",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Other_Beneficiaries"
+    },
+    {
+      "source_key": "Other_Charities",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Other Charities.",
+      "canonical_key": "beneficiaries.other_charities",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "other_charities",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Other Charities",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.other_charities",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Other_Charities"
+    },
+    {
+      "source_key": "People_at_risk_of_homelessness",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: People at risk of homelessness.",
+      "canonical_key": "beneficiaries.people_at_risk_of_homelessness",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "people_at_risk_of_homelessness",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "People at risk of homelessness",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.people_at_risk_of_homelessness",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/People_at_risk_of_homelessness"
+    },
+    {
+      "source_key": "People_with_Chronic_Illness",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: People with Chronic Illness.",
+      "canonical_key": "beneficiaries.people_with_chronic_illness",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "people_with_chronic_illness",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "People with Chronic Illness",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.people_with_chronic_illness",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/People_with_Chronic_Illness"
+    },
+    {
+      "source_key": "People_with_Disabilities",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: People with Disabilities.",
+      "canonical_key": "beneficiaries.people_with_disabilities",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "people_with_disabilities",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "People with Disabilities",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.people_with_disabilities",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/People_with_Disabilities"
+    },
+    {
+      "source_key": "Pre_Post_Release_Offenders",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Pre Post Release Offenders.",
+      "canonical_key": "beneficiaries.pre_post_release_offenders",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "pre_post_release_offenders",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Pre Post Release Offenders",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.pre_post_release_offenders",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Pre_Post_Release_Offenders"
+    },
+    {
+      "source_key": "Rural_Regional_Remote_Communities",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Rural Regional Remote Communities.",
+      "canonical_key": "beneficiaries.rural_regional_remote_communities",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "rural_regional_remote_communities",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Rural Regional Remote Communities",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.rural_regional_remote_communities",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Rural_Regional_Remote_Communities"
+    },
+    {
+      "source_key": "Unemployed_Person",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Unemployed Person.",
+      "canonical_key": "beneficiaries.unemployed_person",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "unemployed_person",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Unemployed Person",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.unemployed_person",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Unemployed_Person"
+    },
+    {
+      "source_key": "Veterans_or_their_families",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Veterans or their families.",
+      "canonical_key": "beneficiaries.veterans_or_their_families",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "veterans_or_their_families",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Veterans or their families",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.veterans_or_their_families",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Veterans_or_their_families"
+    },
+    {
+      "source_key": "Victims_of_crime",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Victims of crime.",
+      "canonical_key": "beneficiaries.victims_of_crime",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "victims_of_crime",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Victims of crime",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.victims_of_crime",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Victims_of_crime"
+    },
+    {
+      "source_key": "Victims_of_Disasters",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Victims of Disasters.",
+      "canonical_key": "beneficiaries.victims_of_disasters",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "victims_of_disasters",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Victims of Disasters",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.victims_of_disasters",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Victims_of_Disasters"
+    },
+    {
+      "source_key": "Youth",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: Youth.",
+      "canonical_key": "beneficiaries.youth",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "youth",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "Youth",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.youth",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/Youth"
+    },
+    {
+      "source_key": "animals",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: animals.",
+      "canonical_key": "beneficiaries.animals",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "animals",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "animals",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.animals",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/animals"
+    },
+    {
+      "source_key": "environment",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: environment.",
+      "canonical_key": "beneficiaries.environment",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "environment",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "environment",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.environment",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/environment"
+    },
+    {
+      "source_key": "other_gender_identities",
+      "source_type": "text",
+      "meaning": "Source-reported beneficiary/category: other gender identities.",
+      "canonical_key": "beneficiaries.other_gender_identities",
+      "canonical_type": "boolean",
+      "transform_rule": "flag",
+      "null_handling": "Null, missing or blank means unknown/not supplied, never false or a deletion. Invalid values require review.",
+      "cardinality": "one source scalar per organisation/source version",
+      "destination": {
+        "schema": "community_orgs",
+        "table": "acnc_register_details",
+        "column": "beneficiaries",
+        "json_path": "other_gender_identities",
+        "migration_required": false,
+        "status": "existing"
+      },
+      "public": {
+        "section": "Operations",
+        "label": "other gender identities",
+        "route": "/organisations/[id]/operations",
+        "excluded_reason": null
+      },
+      "review_unit": "beneficiaries.other_gender_identities",
+      "attribution": "per_fact_source_version",
+      "suppression": "canonical_fact_and_record",
+      "implementation_status": "publishable",
+      "fixture_ref": "tests/fixtures/acnc-field-coverage.json#populated/other_gender_identities"
+    }
+  ]
+}

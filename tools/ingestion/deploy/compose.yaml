@@ -1,0 +1,30 @@
+name: community-orgs-acquisition
+services:
+  worker:
+    image: community-orgs-acquisition:local
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: community-orgs-acquisition-worker
+    restart: unless-stopped
+    init: true
+    user: "1000:1000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 64
+    stop_grace_period: 45s
+    env_file:
+      - ${ACQUISITION_CONFIG_DIR:?Set ACQUISITION_CONFIG_DIR}/worker.env
+    volumes:
+      - ${ACQUISITION_CONFIG_DIR}/pgpass:/run/secrets/pgpass:ro
+      - ${ACQUISITION_CONFIG_DIR}/supabase-ca.crt:/run/secrets/supabase-ca.crt:ro
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"

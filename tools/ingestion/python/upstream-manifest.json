@@ -24,7 +24,9 @@
     "Preserved individual raw address lines and normalised line array",
     "Retained missing-ABN records for review; no ABN-based entity deduplication",
     "Versioned JSON envelope with raw hashes and provenance; publication disabled",
-    "F02 acnc_transform.py adapts the recorded transformer/mappings inventories: all 69 organisation columns, corrected canonical keys, explicit Y/N, strict dates/calendar/count/URL, no truncation or ambiguous splitting; parser v2 quarantines invalid or unknown fields."
+    "F02 acnc_transform.py adapts the recorded transformer/mappings inventories: all 69 organisation columns, corrected canonical keys, explicit Y/N, strict dates/calendar/count/URL, no truncation or ambiguous splitting; parser v2 quarantines invalid or unknown fields.",
+    "F05 reprocess_acnc.py is new local orchestration over the F02 normaliser, not an additional upstream adaptation: preserves retained observation/raw/page evidence, validates resource-scoped identity, quarantines invalid records and emits independent coverage states; no legacy loader writes.",
+    "Parser/mapping v3 qualifies bare ASCII DNS website names with an explicit inferred HTTPS scheme, preserved raw source text and normalisation warning; historical v2 contract remains retained. New local work, not an upstream adaptation."
   ],
   "pending": [
     "Live resource and schema qualification",

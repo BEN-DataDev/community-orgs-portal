@@ -9,7 +9,7 @@ from pathlib import Path
 import re
 from urllib.parse import urlsplit
 
-CONTRACT = json.loads((Path(__file__).parent / 'mappings/acnc-register-v1.json').read_text())
+CONTRACT = json.loads((Path(__file__).parent / 'mappings/acnc-register-v3.json').read_text())
 MAPPING_VERSION = CONTRACT['manifest_version']
 MONTHS = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split()
 
@@ -48,6 +48,21 @@ def transform(value, rule):
         month, day = MONTHS.index(value[3:]) + 1, int(value[:2])
         date(2000, month, day)  # Leap-day validation, not an asserted reporting year.
         return {'month': month, 'day': day}
+    if rule == 'website_url':
+        # Only qualify a bare ASCII DNS name (optional trailing slash). Do not
+        # guess schemes for paths, ports, email, IP literals or internal names.
+        if not re.match(r'^https?://', value):
+            host = value[:-1] if value.endswith('/') else value
+            labels = host.split('.')
+            if (len(host) > 253 or len(labels) < 2
+                    or not re.fullmatch(r'[A-Za-z]{2,63}', labels[-1])
+                    or labels[-1].lower() in {'local', 'localhost', 'internal', 'lan',
+                                              'test', 'invalid', 'example', 'onion'}
+                    or any(not re.fullmatch(r'[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?', label)
+                           or label.lower().startswith('xn--') for label in labels)):
+                raise ValueError('expected HTTP(S) URL or bare ASCII public DNS name')
+            value = 'https://' + value
+        return transform(value, 'url')
     if rule == 'url':
         parsed = urlsplit(value)
         if (parsed.scheme not in {'http', 'https'} or not parsed.hostname

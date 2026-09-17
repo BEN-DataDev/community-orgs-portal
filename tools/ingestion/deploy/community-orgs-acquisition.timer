@@ -1,0 +1,11 @@
+[Unit]
+Description=Check for queued Community Orgs acquisition jobs
+
+[Timer]
+OnBootSec=1min
+OnUnitInactiveSec=1min
+RandomizedDelaySec=15s
+Unit=community-orgs-acquisition.service
+
+[Install]
+WantedBy=timers.target

@@ -71,7 +71,7 @@ create table if not exists community_orgs.contact_info (
 create table community_orgs.roles(id uuid primary key default gen_random_uuid(),name text);
 create table community_orgs.user_organisation_roles(user_id uuid,organisation_id uuid,role_id uuid,granted_by uuid,is_active boolean);
 create function community_orgs.can_view_org(p_org uuid) returns boolean language sql as $$ select exists(select 1 from community_orgs.organisations where org_id=p_org and is_public) $$;
-grant usage on schema auth,community_orgs to anon,authenticated;
+grant usage on schema auth,community_orgs to anon,authenticated,service_role;
 grant select,insert,update,delete on all tables in schema community_orgs to authenticated;
 grant select on community_orgs.organisations to anon;
 -- Model the public visibility policy used by register-details reads.

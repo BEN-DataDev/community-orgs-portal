@@ -30,12 +30,17 @@ export const queueSchema = z.object({
 		})
 	),
 	run: id.nullable(),
+	reprocessing: z
+		.object({ parent_run_id: id, processed_at: z.string(), quarantined: z.number() })
+		.nullable()
+		.optional(),
 	total: z.number(),
 	records: z.array(z.object({ id, native_id: z.string(), name: z.string(), decision: z.string() })),
 	detail: z
 		.object({
 			id,
 			native_id: z.string(),
+			linked_organisation_id: z.string().uuid().nullable().optional(),
 			payload: z
 				.object({ assertions: z.array(z.object({ field: z.string(), value: z.unknown() })) })
 				.passthrough(),

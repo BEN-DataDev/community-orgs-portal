@@ -12,7 +12,7 @@ from typing import Callable
 from ingestion.acnc_transform import assertions, MAPPING_VERSION
 
 SOURCE_ID = "acnc-register"
-PARSER_VERSION = "acnc-ckan-v2"
+PARSER_VERSION = "acnc-ckan-v3"
 ENDPOINT = "https://data.gov.au/data/api/3/action/datastore_search"
 
 
@@ -43,12 +43,16 @@ def normalise(row: dict) -> dict:
     if not name:
         raise ValueError("missing Charity_Legal_Name")
     facts = assertions(row)
+    warnings = ["ABN is unverified; format validation is not registry verification"] if row.get("ABN") else ["No ABN supplied; retained for review"]
+    for fact in facts:
+        if fact['field'] == 'website' and fact['value'] != row['Charity_Website'].strip():
+            fact['normalisation'] = {'rule': 'bare-dns-https-v1', 'scheme_inferred': True}
+            warnings.append('Website scheme defaulted to HTTPS; source did not specify a scheme. Reachability and ownership are unverified.')
     return {
         "native_id": str(native_id),
         "mapping_version": MAPPING_VERSION,
         "assertions": facts,
-        "warnings": ["ABN is unverified; format validation is not registry verification"]
-        if row.get("ABN") else ["No ABN supplied; retained for review"],
+        "warnings": warnings,
     }
 
 

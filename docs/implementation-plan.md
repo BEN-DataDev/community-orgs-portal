@@ -1,16 +1,30 @@
 # Portal implementation plan
 
-Prepared: 15 September 2026. Updated: 16 September 2026 after acquisition-code review.
-Status: pilot source approval and publication workflow browser-verified by the user. Full register field coverage is the next priority; acquisition job controls and scheduling are deferred.
+Prepared: 15 September 2026. Updated: 17 September 2026 after production portal and worker deployment.
+Status: full ACNC register field coverage and the F05 release gate are complete,
+with approval/publication and post-publication checks confirmed by the user.
 
-## Current priority: complete import fields
+## Current priority: signed-in job controls and remaining second-cycle checks
 
-Implement [the complete public register field coverage plan](import-field-coverage-plan.md)
-(F01–F05) before acquisition job controls or scheduling. It uses the reviewed
-transformation, mapping and parsing modules from both referenced repositories.
-F01 is complete: see [the generated ACNC field inventory](acnc-field-coverage.md).
-F02 schema/transformations, F03 review/publication and F04 public pages are
-implemented and locally tested. Next implement F05 retained-pilot replay.
+[The complete public register field coverage plan](import-field-coverage-plan.md)
+(F01–F05) has passed its release gate. F02–F05 and website-v3 migrations are applied
+live. The complete six-record replay is run 8; original run 6 and partial run 7
+remain retained. The operator confirmed approval/publication and all follow-up
+checks, including hosted signed-out access, attribution/dates, coverage,
+exclusions/suppression and duplicates. See the
+[v3 validation and closure report](acnc-website-normalisation.md).
+
+Acquisition job controls and scheduling are now deployed: operator
+queue/status UI, bounded Python worker, fenced leases, immutable acquisition
+checkpoints, retry/backoff and cron enqueueing. See the [deployment and validation
+notes](acquisition-jobs.md). The acquisition migration and restricted database LOGIN are now applied to the
+hosted Supabase project. The worker now runs on AKHOME under Docker Desktop,
+with restricted credentials and verified TLS/database connectivity. The first
+manual live refresh completed as run 9 with six accepted records and no quarantine;
+scheduling is off. The production portal is deployed and public/protected-route
+HTTP checks passed. Next: verify the signed-in acquisition form and complete the
+remaining second-cycle/recovery checks before choosing a refresh schedule.
+Broader sources retain their own qualification gates.
 
 ## Recommendation
 
@@ -604,3 +618,90 @@ job controls before scheduled acquisition.
   helpers, not a hosted deployment. No live migration or pilot replay performed.
 - F05 remains: reprocess retained pilot evidence with fresh approvals and finish
   the full release gate against the deployed application.
+
+### F05 complete — retained-pilot publication and verification, 17 September 2026
+
+- V3 website normalisation and all F02–F05 migrations are applied live; run 8 is
+  complete with six accepted records and zero quarantine. Runs 6 and 7 remain
+  retained with their original evidence and observation time.
+- The operator confirmed fresh approval/publication and completion of all
+  post-publication checks. This supersedes pending release-gate statements in the
+  earlier progress entries above; their test and staging results remain historical.
+- The public route guard now permits signed-out organisation reads while retaining
+  protected submissions and admin routes. Local HTTP, regression and type checks
+  passed, followed by the operator’s confirmation of post-publication verification.
+- F01–F05 are complete. Acquisition job controls and scheduling are next; no jobs
+  are enabled by this documentation update.
+
+
+### Acquisition job controls and scheduling — 17 September 2026
+
+Implemented the local P26 increment in `/admin/ingestion/jobs`, private database
+queue RPCs, `ingestion.worker` and the existing cron route. Platform administrators
+configure postcode/licence and opt into a schedule; operators queue and inspect
+jobs. Duplicate requests reuse active jobs. Approval/configuration changes fence
+old workers; completed acquisition checkpoints survive worker interruption and
+staging is atomic with job completion. Partial/failed runs retain private evidence
+and cannot publish. Optional systemd deployment examples poll one job at a time.
+
+Validation: 51 Python tests, disposable PostgreSQL ingestion/job suites, the actual
+Python worker with a restricted local database login and fixture HTTP responses,
+route/cron regressions, Svelte check, targeted ESLint and production build passed.
+See [acquisition jobs](acquisition-jobs.md) for deployment instructions and limits.
+P26 awaits hosting and live verification; P27/P30 still require their remaining
+reconciliation and second-cycle release checks. No live jobs or schedules enabled.
+
+
+### Acquisition database deployment — 17 September 2026
+
+Applied `acquisition_jobs` (`20260917014227`) and `acquisition_worker_login`
+(`20260917014304`) to project `gqltsfijginclwszrcfj`. The LOGIN
+`community_orgs_acquisition` has only the staging-worker membership, NOINHERIT,
+no superuser/BYPASSRLS and a two-connection limit. Hosted privilege inspection passed; actual worker-login connectivity remains
+unverified. Jobs/configurations remain empty. Password
+provisioning and service installation await the worker-host selection; application
+deployment and a first manual live refresh remain pending. See the current
+[deployment record](acquisition-jobs.md#deployment-record).
+
+
+### AKHOME worker provisioning — 17 September 2026
+
+Installed `community-orgs-acquisition-worker` in Docker Desktop on AKHOME (WSL2).
+It polls once a minute, has `unless-stopped` restart behaviour, and uses a
+restricted password file outside Git. The project session pooler provides IPv4
+connectivity with verified Supabase TLS. A real password-authenticated connection
+assumed `ingestion_worker` and returned an idle queue; hosted jobs/configurations
+remain empty. Docker Desktop must be running and AKHOME awake/online. See
+[operating the worker](acquisition-jobs.md#operating-the-akhome-worker).
+
+Next: application deployment, pilot acquisition configuration and the first manual
+live refresh. Acquisition schedules remain off and publication remains explicit.
+
+
+### First live acquisition and portal deployment attempt — 17 September 2026
+
+Configured the approved postcode 2730 pilot with no schedule and queued manual job
+`5e68af3a-db56-47a1-ba49-b4166ef94219` through the management API. AKHOME processed
+it in one attempt: run **9**, six accepted records, zero quarantine and no errors.
+This validates the deployed queue/worker/staging path, not browser form submission.
+No publication was requested.
+
+The production portal deployment was rejected before upload by automatic approval
+review because the source bundle exceeds its 200,000-byte limit. The existing
+production site is unchanged. CLI credentials have expired; approval of a CLI
+deployment and renewed `vercel login` were requested. Application deployment and
+hosted job-form checks remain outstanding. See [deployment record](acquisition-jobs.md#deployment-record).
+
+
+### Production portal deployment — 17 September 2026
+
+After the user renewed the CLI login, deployed the current portal source to the
+existing production project. Deployment `dpl_9tF1mk7odunPnGwdPXjwjzf4mng3` is READY
+and aliased to `https://community-orgs-portal.vercel.app`. This resolves the earlier
+deployment blocker. Public organisation pages returned 200, protected acquisition
+and review pages redirected to sign-in, and unauthenticated cron access returned
+401. Run 9 remains complete with six accepted records, with scheduling off.
+
+The live worker/queue path was tested through the management API. Signed-in browser
+form submission remains an operator check. This was a working-tree CLI deployment;
+the uncommitted changes must be included before any later Git-triggered deployment.

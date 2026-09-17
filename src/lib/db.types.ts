@@ -1609,6 +1609,10 @@ export type Database = {
 			[_ in never]: never;
 		};
 		Functions: {
+            acquisition_dashboard: { Args: Record<PropertyKey, never>; Returns: Json };
+            enqueue_acnc_acquisition: { Args: { p_resource: string }; Returns: string };
+            configure_acnc_acquisition: { Args: { p_resource: string; p_postcode: string; p_licence: string; p_interval: number | null; p_revision: string }; Returns: undefined };
+            enqueue_due_acquisitions: { Args: Record<PropertyKey, never>; Returns: number };
             ingestion_source_approvals: { Args: Record<PropertyKey, never>; Returns: Json };
             set_ingestion_source_enabled: { Args: { p_source: string; p_resource: string; p_enabled: boolean; p_token: string; p_reason: string }; Returns: undefined };
 
@@ -1629,6 +1633,7 @@ export type Database = {
 				Returns: Json;
 			};
 			organisation_register_facts: { Args: { p_organisation: string }; Returns: Json };
+			ingestion_reprocessing_report: { Args: { p_run: string }; Returns: Json };
 			organisation_source_attribution: { Args: { p_organisation: string }; Returns: Json };
 			ingestion_withdrawal_status: { Args: { p_version: string }; Returns: Json };
 			suppress_ingestion_content: {

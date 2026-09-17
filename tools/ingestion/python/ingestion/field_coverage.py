@@ -7,7 +7,7 @@ from pathlib import Path
 
 PACKAGE = Path(__file__).resolve().parents[1]
 ROOT = PACKAGE.parents[2]
-MANIFEST = PACKAGE / 'ingestion/mappings/acnc-register-v1.json'
+MANIFEST = PACKAGE / 'ingestion/mappings/acnc-register-v3.json'
 EVIDENCE = ROOT / 'docs/acnc-live-pilot-validation.json'
 REPORT = ROOT / 'docs/acnc-field-coverage.md'
 

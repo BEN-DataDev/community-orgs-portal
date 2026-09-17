@@ -13,9 +13,20 @@ import { needsMfaChallenge, type SessionAal } from '$lib/auth/session';
  * Returns the path to redirect to, or `null` to let the request through.
  */
 
-/** Paths reachable without a session. Everything else requires one. */
-export function isPublicPath(pathname: string): boolean {
-	return pathname === '/' || pathname === '/auth' || pathname.startsWith('/auth/');
+function isAuthPath(pathname: string): boolean {
+	return pathname === '/auth' || pathname.startsWith('/auth/');
+}
+
+/** Requests reachable without a session. Everything else requires one. */
+export function isPublicPath(pathname: string, method = 'GET'): boolean {
+	if (pathname === '/' || isAuthPath(pathname)) return true;
+	// Public browsing still relies on row-level security to exclude private organisations.
+	return (
+		(method === 'GET' || method === 'HEAD') &&
+		/^\/organisations(?:\/[^/]+(?:\/(?:contact|legal|finance|operations|relationships|history))?)?\/?$/.test(
+			pathname
+		)
+	);
 }
 
 /**
@@ -50,6 +61,7 @@ export function isSignedInAuthPath(pathname: string): boolean {
 export interface GuardState {
 	pathname: string;
 	search: string;
+	method?: string;
 	hasSession: boolean;
 	isAnonymous: boolean;
 	aal: SessionAal | null;
@@ -58,6 +70,7 @@ export interface GuardState {
 export function guardRedirect({
 	pathname,
 	search,
+	method = 'GET',
 	hasSession,
 	isAnonymous,
 	aal
@@ -65,7 +78,7 @@ export function guardRedirect({
 	const signInWithReturn = () => `/auth/signin?redirectTo=${encodeURIComponent(pathname + search)}`;
 
 	if (!hasSession) {
-		return isPublicPath(pathname) ? null : signInWithReturn();
+		return isPublicPath(pathname, method) ? null : signInWithReturn();
 	}
 
 	const mfaPending = needsMfaChallenge(aal);
@@ -88,7 +101,7 @@ export function guardRedirect({
 		return null;
 	}
 
-	if (isPublicPath(pathname) && pathname !== '/' && !isSignedInAuthPath(pathname)) {
+	if (isAuthPath(pathname) && !isSignedInAuthPath(pathname)) {
 		/**
 		 * Straight to the challenge rather than to /organisations, which would
 		 * only bounce again on the next request.
@@ -104,7 +117,7 @@ export function guardRedirect({
 	 * `/auth` is exempt: the challenge screen lives there, and so does the way
 	 * out for someone who cannot complete it.
 	 */
-	if (mfaPending && !isPublicPath(pathname)) {
+	if (mfaPending && pathname !== '/' && !isAuthPath(pathname)) {
 		return `/auth/mfa?redirectTo=${encodeURIComponent(pathname + search)}`;
 	}
 

@@ -22,6 +22,8 @@ try {
 					return { data: { organisation_id: null, suppressions: [] }, error: null };
 				if (name === 'ingestion_field_approvals') return { data: [], error: null };
 				if (name === 'ingestion_field_preview') return { data: preview, error: previewError };
+				if (name === 'approve_ingestion_fields')
+					return { data: '00000000-0000-4000-8000-000000000003', error: saveError };
 				return name === 'is_ingestion_operator'
 					? { data: operator, error: null }
 					: name === 'ingestion_review_queue'
@@ -84,6 +86,15 @@ try {
 		calls.findLast(([name]) => name === 'ingestion_field_preview')[1].p_organisation,
 		queue.detail.review.organisation_id
 	);
+	const originalReview = queue.detail.review;
+	queue.detail.linked_organisation_id = originalReview.organisation_id;
+	queue.detail.review = null;
+	await load(event);
+	assert.equal(
+		calls.findLast(([name]) => name === 'ingestion_field_preview')[1].p_organisation,
+		queue.detail.linked_organisation_id
+	);
+	queue.detail.review = originalReview;
 	await load({ ...event, url: new URL('http://localhost/admin/ingestion?target=') });
 	assert.equal(
 		calls.findLast(([name]) => name === 'ingestion_field_preview')[1].p_organisation,
@@ -145,6 +156,7 @@ try {
 		field: JSON.stringify(field)
 	};
 	assert.match((await action(approvalForm)).message, /approval saved/);
+	assert.equal((await action(approvalForm)).approvalId, '00000000-0000-4000-8000-000000000003');
 	assert.equal(calls.at(-1)[0], 'approve_ingestion_fields');
 	assert.deepEqual(calls.at(-1)[1].p_fields, [field]);
 	const multi = new URLSearchParams(approvalForm);

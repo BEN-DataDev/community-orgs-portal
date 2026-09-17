@@ -1,7 +1,20 @@
 # Complete public register field coverage
 
-Priority: next implementation work, before acquisition jobs or scheduling.
-Prepared 16 September 2026. F01–F04 are implemented locally; F05 remains.
+Status: **F01–F05 complete; release gate verified by the operator.**
+Prepared 16 September 2026; updated 17 September. F02–F05 and website-v3 migrations
+are applied live. Complete run 8 retains all six pilot records; partial run 7
+remains historical evidence. The operator confirmed approval/publication and all
+post-publication checks, including hosted signed-out access, attribution/dates,
+coverage, exclusions/suppression and duplicates. See the
+[v3 migration, replay and closure report](acnc-website-normalisation.md).
+
+Acquisition job controls and scheduling are implemented, the database migrations
+are deployed, and the worker is running on AKHOME. Manual live run 9 accepted all
+six pilot records without quarantine and reused their unchanged versions. Scheduling
+is off. The portal changes are live, with public/protected-route HTTP checks passed.
+Signed-in job-form verification and remaining second-cycle checks follow. See
+[acquisition jobs](acquisition-jobs.md). The F05 status above records user
+verification, not new publication totals.
 
 ## Outcome and scope
 
@@ -13,10 +26,11 @@ metadata, credentials, reviewer notes and internal IDs are not organisation fact
 Publication still requires review; source enablement is not permission to publish
 raw envelopes. Withheld, withdrawn or suppressed values must remain unavailable.
 
-Local publication now supports all 69 ACNC organisation columns through 62
-review units, including one atomic administrative address. Public rendering now
-covers those units across the existing organisation sections. Pilot replay remains
-pending, and these migrations have not been applied to the live database.
+Publication supports all 69 ACNC organisation columns through 62 review units
+across the existing organisation sections. V2 replay is retained as partial run 7;
+qualified website normalisation v3 produced complete run 8. Fresh review,
+publication and post-publication verification are confirmed by the operator.
+Original observation time and retained evidence are preserved.
 
 ## Code to use as the basis
 
@@ -62,7 +76,8 @@ with strict validation and whole-record quarantine retaining raw evidence. The
 register-details migration adds constrained, default-private storage. Python and
 isolated PostgreSQL checks cover transformations, constraints and access. Only
 pilot-observed formats are accepted; ambiguous names/countries remain text.
-Expanded review/publication remains F03; no pilot runs have been reprocessed.
+Expanded review/publication was completed in F03; pilot replay and verification
+were subsequently completed in F05.
 
 Use current portal destinations when semantically correct; add migrations for
 facts or cardinalities they cannot represent. Choose exact tables during F01.
@@ -102,7 +117,8 @@ attribution and suppression; mandatory-name suppression withdraws public visibil
 The six review groups offer select-all-eligible and explicit exclusion/conflict/
 invalid counts. Approval remains separate from publication. Verified with the
 isolated PostgreSQL suites, 36 Python tests, route tests, a browser component test
-and Svelte checking. No live migration or pilot replay performed.
+and Svelte checking. Live migration and pilot replay were subsequently completed
+as part of F05.
 
 Extend preview, approval snapshots, validation, transaction writes, manual-edit
 protection, attribution and suppression together. Remove the current three-field
@@ -133,7 +149,8 @@ Verified with PostgreSQL anonymous-role reads, the actual page loaders and Svelt
 server rendering using anonymous database exports, plus browser checks of those
 rendered pages. All 69 source organisation columns are accounted for. The local
 auth harness emulates JWT helpers; hosted Supabase/browser verification and the
-retained-pilot replay remain part of F05. No live migration or replay performed.
+retained-pilot replay were subsequently completed in F05, with hosted browser
+verification confirmed by the operator.
 
 Render approved facts on the existing organisation sections with source links and
 observation/effective dates. Add a clearly labelled register-details section if a
@@ -143,6 +160,23 @@ as a shortcut. Check anonymous reads through both pages and database policies;
 manual administrator inspection alone is not public-access verification.
 
 ### F05 — Reprocess the pilot and verify completeness
+
+Implemented locally: offline replay preserves observation time, raw hashes and page
+evidence; database validation binds every accepted/quarantined row to its parent
+acquisition. Existing source links are retained without transferring reviews or
+approvals. The review defaults to the existing linked target and shows replay
+lineage; coverage separates source availability from approval/publication history.
+The six retained records, including ABN 75349327058, passed isolated replay checks.
+All 62 units passed synthetic publication/access/suppression tests and public page
+browser checks. Forty Python tests pass. See the [validation report](acnc-reprocessing-validation.md).
+
+V2 produced partial run 7 because a schemeless website quarantined one record.
+Website normalisation v3 qualified that format and produced complete run 8 with
+six accepted records and no quarantine, preserving the earlier runs. All five
+migrations were applied live. The operator subsequently confirmed fresh approval,
+publication and all post-publication checks. **The F05 release gate is complete.**
+See the [v3 closure report](acnc-website-normalisation.md) for the distinction
+between staging-time evidence and operator-confirmed completion.
 
 Re-normalise retained raw records using a new parser/mapping version and a new,
 explicit reprocessing run linked to the original acquisition. Preserve its
@@ -155,7 +189,8 @@ Test ABN 75349327058 and all six pilot records, supplemented by synthetic record
 for fields absent in the pilot. Existing approvals must not authorise newly added
 facts. Withdrawals must survive reprocessing and prevent restoration.
 
-Release gate:
+Release gate — complete, combining the recorded automated checks and operator
+confirmation of post-publication verification:
 
 - Every observed source column has a manifest entry; every public organisation
   fact has a working destination or a documented exclusion (no unexplained gaps).
@@ -169,5 +204,5 @@ Release gate:
   published and suppressed fields. Missing source information is not called an
   implementation success or invented to fill a page.
 
-Only after F01–F05 pass should acquisition job controls and scheduling resume.
+F01–F05 have passed; acquisition job controls and scheduling work can now resume.
 Broader sources follow their own qualification and complete-field coverage gates.

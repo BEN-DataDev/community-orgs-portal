@@ -3,6 +3,17 @@
 Requires Python 3.10 or later. Uses only the standard library; no installation,
 credentials, database, Flask, Redis or network connection is needed.
 
+F05 now provides `python3 -m ingestion.reprocess_acnc` for offline replay of a
+complete retained acquisition using the new parser/mapping. It preserves original
+observation/evidence and emits a separate private run; it never approves or
+publishes. F02–F05 migrations are applied live. The partial v2 replay remains run 7;
+the complete six-record v3 replay is now staged as run 8. See the [F05 report and commands](../../../docs/acnc-reprocessing-validation.md).
+
+Current local code uses parser/mapping v3 and `mappings/acnc-register-v3.json`.
+Bare ASCII DNS websites receive an explicitly recorded HTTPS default; ambiguous
+formats still quarantine. The v3 migration is applied live, with fresh review and
+separate publication still required. See [qualification and tests](../../../docs/acnc-website-normalisation.md).
+
 From this directory:
 
 ```bash
@@ -128,7 +139,8 @@ python3 -m ingestion.field_coverage --write
 python3 -m unittest discover -s tests
 ```
 
-The versioned contract is `ingestion/mappings/acnc-register-v1.json`; the generated
+The active versioned contract is `ingestion/mappings/acnc-register-v3.json`;
+`acnc-register-v1.json` retains the historical v2 contract. The generated
 report is `docs/acnc-field-coverage.md` at the repository root. `--write` regenerates
 only the report. To check a newly observed schema, use `--schema /path/schema.json`
 with a JSON object of column names to CKAN types. Unknown, missing or changed fields
@@ -138,7 +150,8 @@ cases are in `tests/fixtures/acnc-field-coverage.json`.
 
 ## F02 schema and transformations
 
-New acquisitions use `acnc-ckan-v2` / `acnc-register-fields-v2`. All mapped
+F02 introduced `acnc-ckan-v2` / `acnc-register-fields-v2`; current local acquisitions
+use v3 with the qualified website rule described above. All mapped
 organisation columns become typed assertions, with source spellings/raw values
 and mapping version retained in the private version payload. Invalid values or
 unknown columns quarantine the whole record. Blank/missing values create no
@@ -214,3 +227,19 @@ page loaders and Svelte server rendering against exported anonymous results,
 checking all 62 review units across five pages and withdrawn-page 404s. It uses
 no hosted credentials. The SQL harness emulates auth helpers; hosted application
 verification and retained-pilot replay remain F05 work.
+
+
+## Queued acquisition worker
+
+Run `python3 -m ingestion.worker` from this directory with a dedicated libpq
+connection configured for a LOGIN belonging to `ingestion_worker`. It processes
+one queued job and exits; invoke periodically from a supervisor. Requires `psql`
+on PATH and Python 3.10+, with no additional Python packages. Never use a portal
+administrator database login for the deployed worker.
+
+The operator UI queues work; the cron route enqueues due configurations; only the
+worker fetches CKAN. The worker saves a private envelope checkpoint, then commits
+staging and job completion together. No publication is performed. Schedules start
+off and require platform-admin configuration. See [deployment, recovery and
+validation](../../../docs/acquisition-jobs.md) and the optional service/timer files
+in `../deploy`.

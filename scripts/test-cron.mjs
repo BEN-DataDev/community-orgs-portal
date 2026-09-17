@@ -57,15 +57,16 @@ try {
 	assert.equal(calls.length, 2);
 
 	calls = [];
-	responses = [{ body: { status: 'healthy' } }, { body: 0 }, { body: [] }];
+	responses = [{ body: { status: 'healthy' } }, { body: 0 }, { body: [] }, { body: 2 }];
 	const success = await invoke(`Bearer ${secret}`);
 	assert.equal(success.status, 200);
 	assert.deepEqual(await success.json(), {
 		success: true,
 		data: { status: 'healthy' },
-		purgedAnonymousUsers: 0
+		purgedAnonymousUsers: 0,
+		acquisitions: 2
 	});
-	assert.equal(calls.length, 3);
+	assert.equal(calls.length, 4);
 	assert.ok(calls[2].url.endsWith('/rest/v1/rpc/abandoned_account_avatars'));
 	assert.ok(calls[0].url.endsWith('/rest/v1/rpc/health_check'));
 	assert.ok(calls[1].url.endsWith('/rest/v1/rpc/purge_stale_anonymous_users'));
@@ -85,10 +86,11 @@ try {
 		{ body: {} },
 		{ body: 0 },
 		{ body: [{ path: 'fixture/avatar-old.webp' }] },
-		{ body: [] }
+		{ body: [] },
+		{ body: 0 }
 	];
 	assert.equal((await invoke(`Bearer ${secret}`)).status, 200);
-	assert.equal(calls.length, 4);
+	assert.equal(calls.length, 5);
 	assert.ok(calls[3].url.endsWith('/storage/v1/object/avatars'));
 	calls = [];
 	responses = [
@@ -100,6 +102,17 @@ try {
 	assert.deepEqual(await (await invoke(`Bearer ${secret}`)).json(), {
 		success: false,
 		stage: 'avatar_cleanup'
+	});
+
+	responses = [
+		{ body: {} },
+		{ body: 0 },
+		{ body: [] },
+		{ status: 500, body: { message: 'queue failed' } }
+	];
+	assert.deepEqual(await (await invoke(`Bearer ${secret}`)).json(), {
+		success: false,
+		stage: 'acquisition_queue'
 	});
 
 	console.log(

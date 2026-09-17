@@ -56,6 +56,10 @@ class FieldCoverageTests(unittest.TestCase):
         from ingestion.field_coverage import ROOT
         sql = (ROOT / 'supabase/migrations/20260916080000_complete_field_publication.sql').read_text()
         mappings = {m['field']: m for m in json.loads(sql.split('$mapping$')[1])}
+        upgrade = (ROOT / 'supabase/migrations/20260917020000_acnc_website_normalisation.sql').read_text()
+        self.assertIn("update ingestion.field_mappings set mapping_version='acnc-register-fields-v3';", upgrade)
+        for m in mappings.values():
+            m['mapping_version'] = 'acnc-register-fields-v3'
         self.assertEqual(len(mappings), 62)
         for f in self.manifest['fields']:
             if f['source_key'] == '_id':
