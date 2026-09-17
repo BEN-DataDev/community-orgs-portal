@@ -198,7 +198,7 @@ for access approval or real-format validation.
 | --- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | P06 | Define the capability matrix — complete        | [Capability matrix v1.0](capability-matrix.md) separates public/registered readers, organisation roles, ingestion operators and platform administrators; records session, scope and P07/P08 verification rules |
 | P07 | Implement scoped operator access — complete | [Hosted access verification](scoped-operator-access.md): migration and application deployed; server/RPC/role/MFA checks and signed-in production boundaries verified |
-| P08 | Implement minimum organisation role management | List assignments, grant/revoke existing roles using authorised RPCs; enforce actor/target scope and MFA requirements                                           |
+| P08 | Implement minimum organisation role management — complete | [P08 implementation and hosted verification](organisation-role-management.md): scoped assignments, hierarchy/MFA, owner safeguards and signed-in production checks passed                                           |
 | P09 | Add private ingestion storage                  | Sources, runs, source records/versions, links, assertions and change sets; raw objects are private and retained under source policy                            |
 | P10 | Add publication and edit protection            | Explicit publication state/visibility, revision checks, manual field ownership, publication events and suppression rules                                       |
 | P11 | Define identifier and entity mapping           | Jurisdiction-scoped identifiers, legal-entity versus branch/service rules, duplicate constraints and a migration path for existing records                     |
@@ -896,3 +896,43 @@ source, schedule or publication changed. See [hosted verification](scoped-operat
 This closes the deployment/verification work left pending in the local entry
 above. P07 is complete; P08 remains separate. The working-tree deployment must
 be preserved in Git before a later Git-triggered release.
+
+
+### P08 complete locally — organisation role management, 17 September 2026
+
+Added the organisation **Manage access** page to list assignments and grant/revoke
+existing roles through authorised RPCs. Account settings exposes the caller's own
+account ID for sharing with a manager. Reads and mutations check the exact
+organisation, registered session and conditional MFA. The database preserves
+actor identity, rejects changes above the actor's hierarchy and denies direct
+browser assignment writes.
+
+Self-revocation is blocked; owner grants cannot expire and an active owner cannot
+be revoked without another non-expiring owner. Organisation locks serialise role
+changes. Concurrent revocation testing confirmed one owner remains. Existing
+ownerless imports and legacy expiring assignments are not automatically repaired.
+
+Validation: seven SQL suites against 34 unmodified migrations in disposable
+PostGIS 17, concurrent owner revocations, route/action and Svelte rendering tests,
+P07 route regressions, Svelte check, targeted ESLint and production build pass.
+See [P08 evidence and deployment steps](organisation-role-management.md).
+No hosted migration or application deployment was performed; signed-in production
+verification remains pending before hosted closure.
+
+
+### P08 deployed and verified — 17 September 2026
+
+Applied `organisation_role_management` as **20260917065322** and aligned the local
+migration filename. Production deployment **dpl_HEtHzw9KTmdB8WZYj58qE7Xhv2eH** is
+READY at [the portal](https://community-orgs-portal.vercel.app).
+
+The hosted rollback-only SQL suite passed. Real signed-in HTTP checks verified
+scoped assignment reads, grants, replay, revocation, actual audit identity and
+immediate same-session loss of access. Real TOTP verification confirmed AAL1 denial
+and AAL2 reads/mutations. Owner self-revocation was refused and a grant-first
+ownership transfer succeeded. All temporary accounts, factors, organisations and
+synthetic role audit rows were removed; no pilot acquisition or publication changed.
+
+[P08 hosted evidence](organisation-role-management.md#hosted-verification--17-september-2026)
+closes the deployment and verification work in the local entry above. P08 is
+complete. Preserve the deployed working-tree changes before a later Git release.

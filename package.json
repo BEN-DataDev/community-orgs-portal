@@ -3,6 +3,7 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
+		"test:organisation-roles": "node scripts/test-organisation-roles.mjs",
 		"test:operator-access": "node scripts/test-operator-access.mjs",
 		"test:operator-access:db": "python3 scripts/test-operator-access-db.py",
 		"test:relationships": "node scripts/test-relationship-search.mjs",

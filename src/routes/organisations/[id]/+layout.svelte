@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 
-	let { children } = $props();
+	let { children, data } = $props();
 
 	/** Always set inside the `[id]` route; the generic `page` type does not know that. */
 	let orgId = $derived(page.params.id ?? '');
@@ -18,7 +18,8 @@
 		{ route: '/organisations/[id]/finance', label: 'Finance' },
 		{ route: '/organisations/[id]/operations', label: 'Operations' },
 		{ route: '/organisations/[id]/relationships', label: 'Relationships' },
-		{ route: '/organisations/[id]/history', label: 'History' }
+		{ route: '/organisations/[id]/history', label: 'History' },
+		{ route: '/organisations/[id]/access', label: 'Manage access' }
 	] as const;
 </script>
 
@@ -33,7 +34,7 @@
 -->
 <nav aria-label="Organisation sections" class="-mx-4 mb-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
 	<ul class="border-surface-200-800 flex w-max min-w-full gap-1 border-b">
-		{#each sections as section (section.route)}
+		{#each sections.filter((section) => section.label !== 'Manage access' || data.canManageAccess) as section (section.route)}
 			{@const href = resolve(section.route, { id: orgId })}
 			{@const active = page.url.pathname === href}
 			<li>

@@ -94,10 +94,11 @@ organisations and inherit operator capability, without requiring either assignme
    target role no higher than the actor. Revoking also compares the target user's
    maximum active level: an admin cannot revoke even a lower assignment from a
    user who currently ranks as owner. Actors cannot forge the audit identity.
-4. P08 must use the role-management RPCs for grants/revocations, with current scope
-   and MFA checks. Existing RPCs do not establish a last-owner or self-revocation
-   safeguard; P08 must resolve and verify those cases before describing ownership
-   continuity as guaranteed. Request/review UI and custom role builders remain
+4. [P08](organisation-role-management.md) implements role-management RPCs with
+   current scope and MFA checks, blocks self-revocation and requires another
+   non-expiring owner before revoking an active owner. New owner grants cannot
+   expire. These safeguards are deployed and verified through hosted SQL and
+   signed-in production checks. Request/review UI and custom role builders remain
    separate from the minimum assignment workflow.
 5. Operator authority does not bypass complete/enabled-source requirements,
    selected-field approval, target revision checks, manual-edit protection,

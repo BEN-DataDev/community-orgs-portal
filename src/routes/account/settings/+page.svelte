@@ -61,6 +61,8 @@
 	<section class="card preset-tonal p-5"><AppearancePicker /></section>
 	<section id="access" class="card preset-tonal space-y-4 p-5">
 		<h2 class="h4">My access</h2>
+		<p class="text-sm">Share your account ID with an organisation manager to receive a role:</p>
+		<p class="font-mono text-sm break-all">{data.user?.id}</p>
 		<p class="text-surface-600-400 text-sm">Your roles apply to each organisation individually.</p>
 		{#if data.memberships === null}
 			<p role="status">We couldn’t load your access. Reload this page to try again.</p>

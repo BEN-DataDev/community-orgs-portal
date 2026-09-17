@@ -1,4 +1,4 @@
-"""Run P07 against real portal/access/ingestion migrations in disposable PostGIS.
+"""Run P07/P08 against real portal/access/ingestion migrations in disposable PostGIS.
 
 No host ports, mounts, credentials or external database URLs. Only auth users,
 factors and JWT helpers are emulated; capability functions and RLS are unmodified.
@@ -42,7 +42,7 @@ try:
       create table auth.users(id uuid primary key, email text, is_anonymous boolean default false,
         created_at timestamptz, updated_at timestamptz);
       create table auth.mfa_factors(id uuid primary key default gen_random_uuid(),
-        user_id uuid references auth.users, status text);
+        user_id uuid references auth.users, status text, factor_type text, created_at timestamptz, updated_at timestamptz);
       create function auth.jwt() returns jsonb language sql as $$
         select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;
       create function auth.uid() returns uuid language sql as $$ select (auth.jwt()->>'sub')::uuid $$;
@@ -62,8 +62,55 @@ try:
         sql(path.read_text())
     print(f'Applied {len(migrations)} unmodified portal/access/ingestion migrations.', flush=True)
     for name in ['p2_admin_access_regression.sql', 'platform_administrators.sql',
-                 'operator_access.sql', 'ingestion_review.sql', 'ingestion_publication.sql']:
+                 'operator_access.sql', 'organisation_role_management.sql', 'p1_access_regression.sql', 'ingestion_review.sql', 'ingestion_publication.sql']:
         print(sql((ROOT / 'supabase/tests' / name).read_text()).strip(), flush=True)
         print(f'{name}: passed', flush=True)
+    # Two administrators race to revoke the two remaining owners. The second
+    # transaction must see the committed first revocation after taking the lock.
+    sql("""
+      insert into auth.users(id) values
+        ('00000000-0000-4000-8000-000000000901'),
+        ('00000000-0000-4000-8000-000000000902'),
+        ('00000000-0000-4000-8000-000000000903');
+      insert into community_orgs.organisations(org_id,entity_name,slug,is_public)
+        values('00000000-0000-4000-8000-000000000911','Concurrent owners','p08-concurrent',false);
+      insert into platform_access.administrators(user_id,reason)
+        values('00000000-0000-4000-8000-000000000903','P08 concurrency');
+      insert into community_orgs.user_organisation_roles(user_id,organisation_id,role_id)
+        select u.id,'00000000-0000-4000-8000-000000000911',r.id from auth.users u
+        cross join community_orgs.roles r where r.name='owner' and u.id in
+        ('00000000-0000-4000-8000-000000000901','00000000-0000-4000-8000-000000000902');
+    """)
+    prefix = """begin; set local role authenticated;
+      set local request.jwt.claims='{"sub":"00000000-0000-4000-8000-000000000903","aal":"aal1"}';
+    """
+    def revoke(owner):
+        return f"""do $$ begin perform community_orgs.revoke_user_role(
+          '00000000-0000-4000-8000-{owner}', '00000000-0000-4000-8000-000000000911',
+          (select id from community_orgs.roles where name='owner'),auth.uid()); end $$;"""
+    first = subprocess.Popen(['docker','exec','-i',NAME,'psql','-U','postgres','-d','p07',
+        '-X','-q','-A','-t','-v','ON_ERROR_STOP=1'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, text=True)
+    try:
+        first.stdin.write(prefix + revoke('000000000901') + "select 'LOCKED'; select pg_sleep(2); commit;")
+        first.stdin.close()
+        if first.stdout.readline().strip() != 'LOCKED':
+            raise RuntimeError('First revocation did not acquire lock')
+        try:
+            sql(prefix + revoke('000000000902') + 'commit;')
+        except RuntimeError as exc:
+            if 'grant another non-expiring owner' not in str(exc):
+                raise
+        else:
+            raise RuntimeError('Concurrent revocations removed both owners')
+        first.wait(timeout=15)
+        if first.returncode:
+            raise RuntimeError(first.stderr.read())
+        print('Concurrent owner revocations: second transaction refused; one owner retained.', flush=True)
+    finally:
+        if first.poll() is None:
+            first.kill()
+            first.wait()
+
 finally:
     subprocess.run(['docker', 'rm', '-f', NAME], capture_output=True)
