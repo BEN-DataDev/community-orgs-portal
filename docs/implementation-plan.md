@@ -209,12 +209,17 @@ for access approval or real-format validation.
 | P08 | Implement minimum organisation role management — complete | [P08 implementation and hosted verification](organisation-role-management.md): scoped assignments, hierarchy/MFA, owner safeguards and signed-in production checks passed                                           |
 | P09 | Add private ingestion storage — complete and deployed | [P09 storage and retention](private-ingestion-storage.md#deployment-record): private schema, source-policy raw retention, holds, preview/removal and replay-safe audit; completion/deployment recorded in commit `703a903` |
 | P10 | Add publication and edit protection — complete | [P10 acceptance and recovery](publication-edit-protection.md): explicit visibility, revision/manual-edit protection, publication events, suppression and importer ownership checks; local regression and hosted catalog evidence |
-| P11 | Define identifier and entity mapping           | Jurisdiction-scoped identifiers, legal-entity versus branch/service rules, duplicate constraints and a migration path for existing records                     |
+| P11 | Define identifier and entity mapping — complete | [Mapping contract v1.0](identifier-entity-mapping.md): jurisdiction-scoped identifiers, legal-entity/branch/service rules, target duplicate constraints and a UUID-preserving migration path; schema enforcement remains P14 implementation |
 
 Before finalising migrations, compare proposed fields with actual source headers and
 existing portal records. Preserve the existing `org_id` UUIDs and relationships.
 Do not introduce a global unique ABN constraint across legal entities and branches
 without first resolving the entity model.
+
+P11 defines that model and its migration gates; it does not deploy identifier
+tables, verified matching or branch/service publication. P14 implements the
+[identity constraints and backfill](identifier-entity-mapping.md), with P16 supplying
+exact-ABN verification evidence. Current CSV branch/service holds remain in place.
 
 Imported records must not accidentally become publicly visible through the current
 `is_public` default or grant the importing operator ownership via an insert trigger.
@@ -237,7 +242,7 @@ provide a starting point but must be tested against their current authorization 
 | --- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | P12 | Build approved CSV importer — complete and deployed | [Importer and verification](approved-csv-import.md): validates metadata/rows, retains quarantine reasons, stages replay-safe records for reviewed publication                                            |
 | P13 | Adapt existing Python ACNC extractor   | Qualifies configured CKAN resource/schema; emits versioned staging records and manifest; supports a bulk-resource fallback    |
-| P14 | Add deterministic matching             | Existing source link, verified ABN and jurisdiction-scoped incorporation number; conflicting/ambiguous records go to review   |
+| P14 | Add deterministic matching             | Implement P11 identity schema/constraints and reviewed backfill; existing source link, verified ABN and jurisdiction-scoped incorporation number; conflicting/ambiguous records go to review |
 | P15 | Generate field-level changes           | Preview new, unchanged, changed, conflicting, rejected and missing records, with evidence and prior revisions                 |
 | P16 | Adapt existing Python exact-ABN lookup | Injects credentials, fixes parser/transformer contracts and bounds SOAP calls; unavailable access leaves verification pending |
 | P17 | Add transactional publication service  | Applies an approved immutable change set, checks revisions and records exact before/after values                              |
@@ -1028,3 +1033,20 @@ operator/browser and P12 hosted behaviour evidence is linked in the P10 record;
 no new hosted publication or browser test was performed. No deployment or hosted
 mutation was required. Forward repair is documented; guarded committed-change
 rollback remains P29, and unsuppression/conflict overrides remain separate work.
+
+
+### P11 complete — identifier and entity mapping, 18 September 2026
+
+[Mapping contract v1.0](identifier-entity-mapping.md) defines jurisdiction-scoped
+text identifiers, verification versus registry status, legal entities, independent
+groups, branches and service destinations. Canonical verified-holder constraints
+prevent duplicate legal identity without imposing global uniqueness on legacy ABN
+fields. Conflicting identifiers and ambiguous scope require review.
+
+The migration path inventories existing data, preserves UUIDs and references,
+backfills unverified evidence, and gates canonical matching on reviewed conflicts.
+It includes concurrency/replay acceptance cases and forward repair. Validation:
+checked the current schema, importer, source fixtures and publication constraints,
+local reference links and diff whitespace. This completes P11's definition scope;
+P14 implements the schema/matcher and P16 provides exact-ABN evidence. No migration,
+hosted data change or deployment was performed; CSV branch/service holds remain.

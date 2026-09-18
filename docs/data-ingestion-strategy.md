@@ -195,6 +195,11 @@ of information the provider requires deleted.
 
 ### Extend the public domain model
 
+The [P11 identifier and entity mapping contract](identifier-entity-mapping.md)
+defines the target identifier namespaces, entity destinations, duplicate constraints
+and migration path. These are design requirements; P14 schema/matching implementation
+and branch/service publication remain outstanding.
+
 - Add identifiers with `scheme`, `jurisdiction`, `value`, validity and verification
   source. ABNs and incorporation IDs are strings; namespace state registration IDs.
   Apply unique verified ABNs to **legal entities**, not indiscriminately to branches.
