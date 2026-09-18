@@ -133,6 +133,12 @@ begin
  if has_function_privilege('anon','community_orgs.publish_ingestion_fields(uuid)','execute')
  or has_function_privilege('authenticated','ingestion.write_field(uuid,bigint,text,jsonb)','execute')
  or has_table_privilege('authenticated','ingestion.field_mappings','update') then raise exception 'Unexpected grants'; end if;
+ -- The full migration runner uses the real MFA helper and factor table; the
+ -- older isolated harness emulates enrollment with the test_enrolled claim.
+ if to_regclass('auth.mfa_factors') is not null then
+  execute 'insert into auth.mfa_factors(user_id,status) values ($1,''verified'')'
+   using '00000000-0000-4000-8000-000000000f03'::uuid;
+ end if;
  set local role authenticated;
  perform set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000f03","aal":"aal1","test_enrolled":true}',true);
  begin perform community_orgs.publish_ingestion_fields(approval); raise exception 'MFA bypass'; exception when insufficient_privilege then null; end;

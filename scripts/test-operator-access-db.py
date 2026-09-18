@@ -1,4 +1,4 @@
-"""Run P07/P08/P09 against real portal/access/ingestion migrations in disposable PostGIS.
+"""Run P07/P08/P09/P10/P12 against real migrations in disposable PostGIS.
 
 No host ports, mounts, credentials or external database URLs. Only auth users,
 factors and JWT helpers are emulated; capability functions and RLS are unmodified.
@@ -67,6 +67,22 @@ try:
         print(f'{name}: passed', flush=True)
     print(sql(command(['python3', str(ROOT / 'scripts/build-csv-test-sql.py')])).strip(), flush=True)
     print('Approved CSV integration: passed', flush=True)
+    # P10: exercise all mapped fields and public visibility against the current
+    # migration chain, using parser-generated fixtures in each suite's session.
+    fixture_sql = command(['python3', '-c',
+        'import runpy, sys; from pathlib import Path; '
+        'p = Path(sys.argv[1]); sys.path.insert(0, str(p)); '
+        'runpy.run_path(str(p / "tests/emit_complete_fixture.py")); '
+        'runpy.run_path(str(p / "tests/emit_reprocessing_fixture.py"))',
+        str(ROOT / 'tools/ingestion/python')])
+    for name in ['ingestion_staging.sql', 'ingestion_field_preview.sql',
+                 'ingestion_complete_fields.sql', 'acnc_register_details.sql',
+                 'public_register_facts.sql', 'acnc_reprocessing.sql',
+                 'acnc_website_normalisation.sql']:
+        # Public-page suites also emit large synthetic browser exports. Keep
+        # successful output concise; command() retains diagnostics on failure.
+        sql(fixture_sql + (ROOT / 'supabase/tests' / name).read_text())
+        print(f'{name}: passed', flush=True)
     # Two administrators race to revoke the two remaining owners. The second
     # transaction must see the committed first revocation after taking the lock.
     sql("""

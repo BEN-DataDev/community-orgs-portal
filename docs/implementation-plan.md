@@ -208,7 +208,7 @@ for access approval or real-format validation.
 | P07 | Implement scoped operator access — complete | [Hosted access verification](scoped-operator-access.md): migration and application deployed; server/RPC/role/MFA checks and signed-in production boundaries verified |
 | P08 | Implement minimum organisation role management — complete | [P08 implementation and hosted verification](organisation-role-management.md): scoped assignments, hierarchy/MFA, owner safeguards and signed-in production checks passed                                           |
 | P09 | Add private ingestion storage — complete and deployed | [P09 storage and retention](private-ingestion-storage.md#deployment-record): private schema, source-policy raw retention, holds, preview/removal and replay-safe audit; completion/deployment recorded in commit `703a903` |
-| P10 | Add publication and edit protection            | Explicit publication state/visibility, revision checks, manual field ownership, publication events and suppression rules                                       |
+| P10 | Add publication and edit protection — complete | [P10 acceptance and recovery](publication-edit-protection.md): explicit visibility, revision/manual-edit protection, publication events, suppression and importer ownership checks; local regression and hosted catalog evidence |
 | P11 | Define identifier and entity mapping           | Jurisdiction-scoped identifiers, legal-entity versus branch/service rules, duplicate constraints and a migration path for existing records                     |
 
 Before finalising migrations, compare proposed fields with actual source headers and
@@ -1006,3 +1006,25 @@ runs, eight publications, seven organisations, existing source registrations and
 scheduling-off state are unchanged. See [hosted evidence](approved-csv-import.md#hosted-deployment-and-verification--18-september-2026)
 for management-connection versus worker-role test coverage. Real export qualification
 awaits a provider file and access/reuse evidence; no real CSV source was enabled.
+
+### P10 complete — publication and edit protection, 18 September 2026
+
+[P10 acceptance and recovery](publication-edit-protection.md) consolidates the
+existing protections for all 62 ACNC review units and the three mapped CSV fields.
+Private staging/approval, explicit publication visibility, immutable snapshots,
+manual protection, publication events, persistent suppression and importer
+ownership safeguards satisfy the current P10 scope. No new schema or application
+behaviour was needed.
+
+Expanded the full-migration disposable runner to include seven existing staging,
+field-protection, complete-field, public-fact and replay suites. Updated the legacy
+complete-field MFA fixture to enroll a factor when running against the real helper.
+Validation passed: 36 unmodified migrations, 15 SQL suites, CSV integration,
+concurrent owner-revocation checks, review route tests and attribution validation.
+
+Read-only hosted checks confirmed the migration history, 62 mappings, enabled
+protection/withdrawal/owner triggers and private audit-table grants. Existing F05
+operator/browser and P12 hosted behaviour evidence is linked in the P10 record;
+no new hosted publication or browser test was performed. No deployment or hosted
+mutation was required. Forward repair is documented; guarded committed-change
+rollback remains P29, and unsuppression/conflict overrides remain separate work.
