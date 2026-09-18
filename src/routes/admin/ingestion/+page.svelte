@@ -90,6 +90,23 @@
 				{#if queue.detail}
 					{#key `${queue.run}:${queue.detail.id}:${queue.detail.review?.revision ?? 0}`}
 						<h2 class="text-xl font-bold">Source record {queue.detail.native_id}</h2>
+						{#if queue.detail.identity_match}
+							<div class="card preset-tonal p-4" role="status">
+								<p class="font-semibold">Identity: {queue.detail.identity_match.status}</p>
+								<p>{queue.detail.identity_match.reason}</p>
+								{#if queue.detail.identity_match.organisation_id}
+									<a class="anchor" href={previewHref(queue.detail.identity_match.organisation_id)}
+										>Compare matched organisation</a
+									>
+								{/if}
+								{#if queue.detail.identity_match.status === 'hold'}
+									<p>
+										Defer this record until its identity evidence is resolved. Approval and
+										publication are blocked.
+									</p>
+								{/if}
+							</div>
+						{/if}
 						{#if queue.detail.linked_organisation_id}
 							<p>
 								This source identity is already linked to an organisation.
@@ -251,7 +268,9 @@
 								>Organisation (link decisions only)<select
 									class="select"
 									name="organisation"
-									value={queue.detail.review?.organisation_id ?? ''}
+									value={queue.detail.review?.organisation_id ??
+										queue.detail.identity_match?.organisation_id ??
+										''}
 									><option value="">No organisation selected</option
 									>{#if queue.detail.review?.organisation_id && !queue.candidates.some((c) => c.org_id === queue.detail!.review?.organisation_id)}<option
 											value={queue.detail.review.organisation_id}

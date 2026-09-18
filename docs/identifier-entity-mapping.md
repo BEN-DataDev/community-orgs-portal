@@ -1,8 +1,8 @@
 # Identifier and entity mapping (P11)
 
 Version 1.0, 18 September 2026. P11 is complete as a **definition and migration
-contract**. The target schema and constraints below are not deployed behavior.
-P14 implements matching and its identity schema; P16 supplies exact-ABN evidence.
+contract**. [P14 identity schema, matching and reviewed legacy backfill are now deployed](deterministic-matching.md#hosted-completion--18-september-2026).
+P16 supplies exact-ABN evidence.
 Branch/service publication needs the corresponding schema, review and publication
 changes before those CSV holds can be released.
 

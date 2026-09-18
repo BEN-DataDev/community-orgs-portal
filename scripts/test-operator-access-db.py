@@ -1,4 +1,4 @@
-"""Run P07/P08/P09/P10/P12/P13 against real migrations in disposable PostGIS.
+"""Run P07/P08/P09/P10/P12/P13/P14 against real migrations in disposable PostGIS.
 
 No host ports, mounts, credentials or external database URLs. Only auth users,
 factors and JWT helpers are emulated; capability functions and RLS are unmodified.
@@ -59,10 +59,12 @@ try:
     }
     migrations = [p for p in sorted((ROOT / 'supabase/migrations').glob('*.sql')) if p.name not in excluded]
     for path in migrations:
+        if path.name == "20260918021340_deterministic_identity.sql":
+            sql((ROOT / "scripts/identity-inventory.sql").read_text())
         sql(path.read_text())
     print(f'Applied {len(migrations)} unmodified portal/access/ingestion migrations.', flush=True)
     for name in ['p2_admin_access_regression.sql', 'platform_administrators.sql',
-                 'operator_access.sql', 'organisation_role_management.sql', 'p1_access_regression.sql', 'ingestion_review.sql', 'ingestion_publication.sql', 'private_raw_retention.sql']:
+                 'operator_access.sql', 'organisation_role_management.sql', 'p1_access_regression.sql', 'ingestion_review.sql', 'ingestion_publication.sql', 'private_raw_retention.sql', 'deterministic_identity.sql']:
         print(sql((ROOT / 'supabase/tests' / name).read_text()).strip(), flush=True)
         print(f'{name}: passed', flush=True)
     print(sql(command(['python3', str(ROOT / 'scripts/build-csv-test-sql.py')])).strip(), flush=True)
@@ -84,6 +86,56 @@ try:
         # successful output concise; command() retains diagnostics on failure.
         sql(fixture_sql + (ROOT / 'supabase/tests' / name).read_text())
         print(f'{name}: passed', flush=True)
+    # P14: two operator transactions contend for the same exact key.
+    sql("""
+      insert into auth.users(id) values('00000000-0000-4000-8000-000000001490');
+      insert into ingestion.operators(user_id) values('00000000-0000-4000-8000-000000001490');
+      insert into community_orgs.organisations(org_id,entity_name,slug,is_public) values
+        ('00000000-0000-4000-8000-000000001491','Concurrent identity one','p14-race-one',false),
+        ('00000000-0000-4000-8000-000000001492','Concurrent identity two','p14-race-two',false);
+      set request.jwt.claims='{"sub":"00000000-0000-4000-8000-000000001490","aal":"aal2"}';
+      select community_orgs.review_entity_identity('00000000-0000-4000-8000-000000001491',1,'legal_entity','{"reference":"fixture"}');
+      select community_orgs.review_entity_identity('00000000-0000-4000-8000-000000001492',1,'legal_entity','{"reference":"fixture"}');
+    """)
+    identity_prefix = """begin; set local role authenticated;
+      set local request.jwt.claims='{"sub":"00000000-0000-4000-8000-000000001490","aal":"aal2"}';
+    """
+    def claim(org, revision):
+        return f"""select community_orgs.review_identifier_identity(
+          '00000000-0000-4000-8000-{org}','abn','AU','51824753556',{revision},'verified',
+          '{{"reference":"synthetic","authority":"fixture","holder_name":"fixture","qualified_registry_review":true,"observed_at":"2026-09-18T00:00:00Z"}}');"""
+    contender = subprocess.Popen(['docker','exec','-i',NAME,'psql','-U','postgres','-d','p07',
+        '-X','-q','-A','-t','-v','ON_ERROR_STOP=1'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, text=True)
+    try:
+        contender.stdin.write(identity_prefix + claim('000000001491', 0) + "select pg_sleep(2); commit;")
+        contender.stdin.close()
+        if 'verified' not in contender.stdout.readline():
+            raise RuntimeError('First identity contender failed')
+        try:
+            sql(identity_prefix + claim('000000001492', 0) + 'commit;')
+        except RuntimeError as exc:
+            if 'Identifier changed; reload' not in str(exc):
+                raise
+        else:
+            raise RuntimeError('Both concurrent identifier holders accepted')
+        contender.wait(timeout=15)
+        if contender.returncode:
+            raise RuntimeError(contender.stderr.read())
+        conflict = sql(identity_prefix + claim('000000001492', 1) + 'commit;')
+        if 'conflict' not in conflict or '000000001491' not in conflict:
+            raise RuntimeError('Conflict retry did not retain original reservation')
+        sql("""do $$ begin
+          if (select count(*) from ingestion.identifier_keys where scheme='abn')<>1
+            or (select state from ingestion.identifier_keys where scheme='abn')<>'disputed' then
+            raise exception 'Concurrent reservation invariant failed'; end if;
+        end $$;""")
+        print('Concurrent identity claims: one holder; stale contender refused; reviewed retry retained as conflict.', flush=True)
+    finally:
+        if contender.poll() is None:
+            contender.kill()
+            contender.wait()
+
     # Two administrators race to revoke the two remaining owners. The second
     # transaction must see the committed first revocation after taking the lock.
     sql("""

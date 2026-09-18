@@ -243,7 +243,7 @@ provide a starting point but must be tested against their current authorization 
 | --- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | P12 | Build approved CSV importer — complete and deployed | [Importer and verification](approved-csv-import.md): validates metadata/rows, retains quarantine reasons, stages replay-safe records for reviewed publication                                            |
 | P13 | Adapt existing Python ACNC extractor — complete | [P13 implementation and validation](acnc-acquisition.md): full resource/schema qualification, versioned staging records/manifests and bounded bulk CSV fallback; six-record live parity and disposable staging/replay checks passed |
-| P14 | Add deterministic matching             | Implement P11 identity schema/constraints and reviewed backfill; existing source link, verified ABN and jurisdiction-scoped incorporation number; conflicting/ambiguous records go to review |
+| P14 | Add deterministic matching — complete and deployed | [Identity implementation and hosted verification](deterministic-matching.md#hosted-completion--18-september-2026): reconciled unverified backfill, canonical matching, conflict holds, approval fencing and production operator/MFA checks passed |
 | P15 | Generate field-level changes           | Preview new, unchanged, changed, conflicting, rejected and missing records, with evidence and prior revisions                 |
 | P16 | Adapt existing Python exact-ABN lookup | Injects credentials, fixes parser/transformer contracts and bounds SOAP calls; unavailable access leaves verification pending |
 | P17 | Add transactional publication service  | Applies an approved immutable change set, checks revisions and records exact before/after values                              |
@@ -1072,3 +1072,48 @@ The existing deployed worker and scheduling are unchanged. Stricter CKAN checks
 require a worker rebuild to take effect there. Bulk source onboarding, full-field
 publication allowlisting, broader snapshot reconciliation and the refresh-cadence
 decision remain separate from completed P13 acquisition/staging.
+
+
+### P14 implemented locally — deterministic identity, 18 September 2026
+
+[Implementation and rollout](deterministic-matching.md) adds private organisation
+classification, identifier claims/reservations, audited operator verification,
+branch-parent evidence and exclusive organisation/service source links. Legacy
+values backfill as unverified evidence without changing UUIDs or public fields.
+The queue shows deterministic matches or holds; source links cannot conceal
+conflicting verified identifiers. Approval/publication recheck identity revisions
+under locks, and manual identifier edits dispute matching evidence.
+
+Validation: 37 migrations, 17 SQL suites, CSV integration, concurrent holder and
+owner checks, Svelte check, review-route regression, targeted ESLint and production
+build passed locally. Reservations survive disputes/withdrawal; checksum-invalid
+synthetic ABNs never verify. Branch/service publication holds remain. Canonical
+verification is an explicit evidenced operator RPC; P16 lookup acquisition remains
+separate. Identity maintenance has RPCs and a private inventory, not a new browser
+editor. Pilot-wide identity revisions conservatively invalidate pending approvals.
+
+The read-only inventory and rollout guide are ready. Hosted inventory, reviewed
+legacy reconciliation and migration/application deployment have not occurred;
+P14 is not marked deployed or fully closed. No live identity, publication or
+schedule changed.
+
+
+### P14 complete and deployed — 18 September 2026
+
+After explicit user approval, applied **20260918021340** to hosted Supabase and
+released production deployment **dpl_B3vfvNpga76joKAEiyK5rery8wwW**. The hosted
+rollback-only P14 suite and real signed-in operator/non-operator/MFA checks passed.
+All temporary accounts, sessions, factors and appointments were removed.
+
+The private inventory and reviewed legacy backfill found seven single-row legal
+records with no ABN collisions or source-assertion mismatches. Six real ABNs are
+checksum-valid but remain unverified; the existing synthetic all-zero ABN is
+invalid. Classifications remain unknown and no canonical holder was fabricated.
+This reconciliation decision is audited privately. Pre/post/final fingerprints
+confirm existing UUIDs, public data, links, permissions, publications and
+suppressions are unchanged. Scheduling remains Off.
+
+[Hosted completion evidence](deterministic-matching.md#hosted-completion--18-september-2026)
+closes the local-only entry above. P14 is complete within the organisation matching
+scope; branch/service publication and P16 registry acquisition retain their own
+gates. No live source publication or registry verification was performed.

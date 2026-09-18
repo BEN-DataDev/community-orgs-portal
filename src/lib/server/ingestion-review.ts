@@ -40,6 +40,13 @@ export const queueSchema = z.object({
 		.object({
 			id,
 			native_id: z.string(),
+			identity_match: z
+				.object({
+					status: z.enum(['match', 'hold', 'review']),
+					organisation_id: z.string().uuid().nullable(),
+					reason: z.string()
+				})
+				.optional(),
 			linked_organisation_id: z.string().uuid().nullable().optional(),
 			payload: z
 				.object({ assertions: z.array(z.object({ field: z.string(), value: z.unknown() })) })

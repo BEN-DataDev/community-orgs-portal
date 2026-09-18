@@ -50,6 +50,7 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 		const target =
 			url.searchParams.get('target') ??
 			parsed.data.detail.review?.organisation_id ??
+			parsed.data.detail.identity_match?.organisation_id ??
 			parsed.data.detail.linked_organisation_id ??
 			'';
 		if (target && !z.string().uuid().safeParse(target).success)

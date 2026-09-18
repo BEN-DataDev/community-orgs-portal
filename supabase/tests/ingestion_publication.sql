@@ -40,9 +40,18 @@ begin
  -- A later human edit invalidates an approval, including a manual clear.
  insert into community_orgs.organisations(org_id,entity_name,slug,is_public)
  values('00000000-0000-4000-8000-000000000077','Another target','another-publication-fixture',false);
- perform community_orgs.save_ingestion_review(r,v,1,'link','00000000-0000-4000-8000-000000000077','Rechecked target');
+ -- P14 now refuses source retargeting at review, before approval/publication.
+ if to_regprocedure('ingestion.match_identity(bigint)') is not null then
+  begin perform community_orgs.save_ingestion_review(r,v,1,'link','00000000-0000-4000-8000-000000000077','Wrong target');
+   raise exception 'Source link retarget accepted'; exception when serialization_failure then null; end;
+ end if;
+ -- Use an independent source to isolate the manual-clear stale-field case.
+ e := jsonb_set(jsonb_set(jsonb_set(e,'{run_id}','"manual-clear"'),'{records,0,run_id}','"manual-clear"'),'{records,0,native_id}','"manual-clear"');
+ r := ingestion.stage_acnc(e)::text;
+ select version_id::text into v from ingestion.run_records where run_id=r::bigint;
+ perform community_orgs.save_ingestion_review(r,v,0,'link','00000000-0000-4000-8000-000000000077','Rechecked target');
  select jsonb_agg(x) into fields from jsonb_array_elements(community_orgs.ingestion_field_preview(r,v,'00000000-0000-4000-8000-000000000077')->'fields') x where x->>'field'='website';
- stale := community_orgs.approve_ingestion_fields(r,v,2,fields,'00000000-0000-4000-8000-000000000077');
+ stale := community_orgs.approve_ingestion_fields(r,v,1,fields,'00000000-0000-4000-8000-000000000077');
  insert into community_orgs.contact_info(org_id,website) values('00000000-0000-4000-8000-000000000077','https://manual.example');
  update community_orgs.contact_info set website=null where org_id='00000000-0000-4000-8000-000000000077';
  begin perform community_orgs.publish_ingestion_fields(stale); raise exception 'Stale field accepted'; exception when serialization_failure then null; end;

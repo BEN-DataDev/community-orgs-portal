@@ -1649,6 +1649,38 @@ export type Database = {
 			};
 			is_platform_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
 			is_ingestion_operator: { Args: Record<PropertyKey, never>; Returns: boolean };
+			ingestion_identity_inventory: { Args: never; Returns: Json };
+			review_entity_identity: {
+				Args: {
+					p_evidence: Json;
+					p_kind: string;
+					p_org: string;
+					p_revision: number;
+				};
+				Returns: undefined;
+			};
+			review_identifier_identity: {
+				Args: {
+					p_evidence: Json;
+					p_jurisdiction: string;
+					p_org: string;
+					p_revision: number;
+					p_scheme: string;
+					p_state: string;
+					p_value: string;
+				};
+				Returns: Json;
+			};
+			review_branch_identity: {
+				Args: {
+					p_branch: string;
+					p_evidence: Json;
+					p_from: string;
+					p_parent: string;
+					p_until: string | null;
+				};
+				Returns: number;
+			};
 			ingestion_review_queue: {
 				Args: { p_run?: string; p_version?: string; p_offset?: number; p_search?: string };
 				Returns: Json;

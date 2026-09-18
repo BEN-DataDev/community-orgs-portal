@@ -39,6 +39,20 @@ try {
 	);
 	operator = true;
 	assert.equal((await load(event)).queue.total, 0);
+	const matchedOrg = '00000000-0000-4000-8000-000000001411';
+	queue.run = '1';
+	queue.detail = {
+		id: '2', native_id: 'fixture', payload: { assertions: [] }, review: null,
+		identity_match: { status: 'match', organisation_id: matchedOrg, reason: 'Verified exact ABN' }
+	};
+	const matched = await load(event);
+	assert.equal(matched.queue.detail.identity_match.organisation_id, matchedOrg);
+	assert.equal(calls.filter(([name]) => name === 'ingestion_field_preview').at(-1)[1].p_organisation, matchedOrg);
+	queue.detail.identity_match = { status: 'hold', organisation_id: null, reason: 'Conflicting identifiers' };
+	assert.equal((await load(event)).queue.detail.identity_match.status, 'hold');
+	queue.run = null;
+	queue.detail = null;
+
 	await assert.rejects(
 		() => load({ ...event, url: new URL('http://localhost/admin/ingestion?offset=-1') }),
 		(e) => e.status === 400
