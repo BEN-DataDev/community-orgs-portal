@@ -152,8 +152,8 @@ organisation candidates, preserving registry status, observation date and source
 attribution. No automatic name-based merge or bulk geographic discovery.” The
 platform owner supplies the applicant/contact details and completes the official
 registration. Record the acceptance date, registered owner/contact and terms
-reference privately; store the GUID in the worker secret store. Proposed setting
-`ABN_LOOKUP_GUID` is a P16 convention, **not an implemented configuration option**.
+reference privately; store the GUID in the worker secret store. Setting
+`ABN_LOOKUP_GUID` is now implemented by the [P16 adapter](exact-abn-lookup.md).
 Do not put it in public Svelte environment variables, committed fixtures or URLs
 that are logged. No database service/admin key is needed to query ABN Lookup.
 

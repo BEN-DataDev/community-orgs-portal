@@ -1,0 +1,8 @@
+{
+	"url": "https://abr.business.gov.au/abrxmlsearch/AbrXmlSearch.asmx?WSDL",
+	"retrieved_on": "2026-09-18",
+	"sha256": "0040009059bf157043adf20b6f6e3efa171e7fa8184fc7ededdfe09a6e2c63f4",
+	"operation": "SearchByABNv202001",
+	"response": "businessEntity202001",
+	"note": "Public unauthenticated contract; fixtures are synthetic, not live verification."
+}

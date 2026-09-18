@@ -3,7 +3,8 @@
 Complete and deployed, 18 September 2026. Hosted inventory, unverified legacy
 backfill reconciliation, migration, production deployment and signed-in access/MFA
 verification passed. No real identifier was promoted to verified ownership by
-this rollout; P16 still supplies exact-ABN registry acquisition.
+this rollout; [P16 implements exact-ABN acquisition](exact-abn-lookup.md);
+authenticated live qualification remains pending.
 
 ## Behavior
 

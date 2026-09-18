@@ -267,3 +267,9 @@ in `../deploy`.
 --output envelope.json --sql-output stage.sql` validates an approved export and emits
 private staging evidence. See [the CSV operation guide](../../../docs/approved-csv-import.md)
 for the qualified manifest, exit codes, staging migration and review workflow.
+
+## Exact-ABN acquisition (P16)
+
+`python3 -m ingestion.exact_abn` supplies bounded private registry evidence.
+See [the runbook](../../../docs/exact-abn-lookup.md) for credentials, limits,
+operator review, retention and pending live qualification.

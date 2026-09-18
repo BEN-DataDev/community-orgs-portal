@@ -45,7 +45,7 @@ automatically acquire other providers.
 | --- | --- | --- |
 | ACNC Register | CKAN worker deployed; [P13 bulk fallback](acnc-acquisition.md) implemented locally and both paths verified live | Choose and verify scheduling; deploy stricter worker checks when ready; broader reconciliation and full-field bulk publication remain separate work |
 | Approved CSV files (P12) | Implemented, deployed and hosted database verification passed; [CLI and verification](approved-csv-import.md) | Deferred until an approved provider CSV is received; P12 remains complete |
-| Exact-ABN Lookup (P16) | Upstream code assessed; adapter not integrated | Correct and test parser contracts, bound requests and configure an access GUID for live verification |
+| Exact-ABN Lookup (P16) | [Bounded adapter implemented](exact-abn-lookup.md); live qualification pending | Provision access GUID and approved exact-ABN set; complete live/withdrawal checks |
 | ABN public bulk extract | Not implemented | Separate streaming XML adapter when scale warrants it |
 | NSW incorporated associations | Upstream scraper assessed; adapter not integrated | CSV onboarding deferred until an approved export is received; automated collection remains separately unqualified |
 | Landcare, neighbourhood houses, sports and arts directories | Expansion backlog | Select pilot providers, qualify access/reuse and implement provider mappings/adapters |
@@ -54,7 +54,7 @@ automatically acquire other providers.
 
 ### Next implementation sequence
 
-1. Adapt **exact-ABN verification (P16)** to strengthen identity checks across sources.
+1. Qualify **exact-ABN verification (P16)** with provisioned access and an approved live set.
    Start with the assessed upstream parser, fixture tests for response shapes and
    mappings, injected credentials, and bounded requests. This work can proceed
    without a live access GUID; live verification waits until access is configured.
@@ -245,7 +245,7 @@ provide a starting point but must be tested against their current authorization 
 | P13 | Adapt existing Python ACNC extractor — complete | [P13 implementation and validation](acnc-acquisition.md): full resource/schema qualification, versioned staging records/manifests and bounded bulk CSV fallback; six-record live parity and disposable staging/replay checks passed |
 | P14 | Add deterministic matching — complete and deployed | [Identity implementation and hosted verification](deterministic-matching.md#hosted-completion--18-september-2026): reconciled unverified backfill, canonical matching, conflict holds, approval fencing and production operator/MFA checks passed |
 | P15 | Generate field-level changes — complete and deployed | [Private dry-run reports](field-level-changes.md): six record categories, field evidence, prior observations/revisions and guarded missing-record comparisons; local and hosted SQL, production download/access and real MFA verification passed |
-| P16 | Adapt existing Python exact-ABN lookup | Injects credentials, fixes parser/transformer contracts and bounds SOAP calls; unavailable access leaves verification pending |
+| P16 | Exact-ABN adapter implemented; live qualification pending | [Pinned SOAP contract, bounded acquisition and private review evidence](exact-abn-lookup.md); unavailable access leaves verification pending |
 | P17 | Add transactional publication service  | Applies an approved immutable change set, checks revisions and records exact before/after values                              |
 
 The first output is a dry-run report against the test cohort. Inspect it before
