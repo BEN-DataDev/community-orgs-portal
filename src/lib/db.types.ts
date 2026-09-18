@@ -1634,6 +1634,10 @@ export type Database = {
 				Returns: Json;
 			};
 			organisation_register_facts: { Args: { p_organisation: string }; Returns: Json };
+			ingestion_change_report: {
+				Args: { p_run: string; p_baseline?: string };
+				Returns: Json;
+			};
 			ingestion_reprocessing_report: { Args: { p_run: string }; Returns: Json };
 			organisation_source_attribution: { Args: { p_organisation: string }; Returns: Json };
 			ingestion_withdrawal_status: { Args: { p_version: string }; Returns: Json };

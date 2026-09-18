@@ -53,6 +53,28 @@
 				Source: {selectedRun.source_id} · Resource: {selectedRun.resource_id} · Completion:
 				<strong>{selectedRun.completion}</strong>
 			</p>{/if}
+		<form
+			method="GET"
+			action={resolve('/admin/ingestion/report')}
+			class="flex flex-wrap items-end gap-3"
+		>
+			<input type="hidden" name="run" value={queue.run ?? ''} />
+			<label class="label"
+				>Baseline run ID (optional)
+				<input
+					class="input"
+					name="baseline"
+					inputmode="numeric"
+					pattern="[1-9][0-9]*"
+					placeholder="Earlier run with the same scope"
+				/>
+			</label>
+			<button class="btn preset-filled-primary-500">Download dry-run report</button>
+			<p class="w-full text-sm">
+				Includes field evidence and prior revisions. Missing records require a complete, comparable
+				baseline and never imply deletion. The report contains private source evidence.
+			</p>
+		</form>
 		<p>{queue.total} staged records. Partial and failed runs remain evidence only.</p>
 		{#if queue.reprocessing}
 			<p>
