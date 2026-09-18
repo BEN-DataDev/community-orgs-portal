@@ -3,7 +3,8 @@
 Prepared: 15 September 2026. Updated: 18 September 2026 after deferring real-provider CSV onboarding.
 Status: full ACNC register field coverage and the F05 release gate are complete,
 with approval/publication and post-publication checks confirmed by the user.
-ACNC acquisition and the approved CSV importer are implemented. Other source adapters remain outstanding.
+ACNC acquisition, its bounded bulk CSV fallback (P13), and the approved CSV importer
+are implemented. Other source adapters remain outstanding.
 
 ## Current priorities: exact-ABN verification and ACNC scheduling
 
@@ -42,7 +43,7 @@ automatically acquire other providers.
 
 | Source | Current status | Remaining work |
 | --- | --- | --- |
-| ACNC Register | Implemented and deployed; six-record pilot and recovery checks passed | Choose and verify scheduling; broader snapshot reconciliation and bulk fallback remain separate work |
+| ACNC Register | CKAN worker deployed; [P13 bulk fallback](acnc-acquisition.md) implemented locally and both paths verified live | Choose and verify scheduling; deploy stricter worker checks when ready; broader reconciliation and full-field bulk publication remain separate work |
 | Approved CSV files (P12) | Implemented, deployed and hosted database verification passed; [CLI and verification](approved-csv-import.md) | Deferred until an approved provider CSV is received; P12 remains complete |
 | Exact-ABN Lookup (P16) | Upstream code assessed; adapter not integrated | Correct and test parser contracts, bound requests and configure an access GUID for live verification |
 | ABN public bulk extract | Not implemented | Separate streaming XML adapter when scale warrants it |
@@ -241,7 +242,7 @@ provide a starting point but must be tested against their current authorization 
 | ID  | Task                                   | Deliverable / acceptance                                                                                                      |
 | --- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | P12 | Build approved CSV importer — complete and deployed | [Importer and verification](approved-csv-import.md): validates metadata/rows, retains quarantine reasons, stages replay-safe records for reviewed publication                                            |
-| P13 | Adapt existing Python ACNC extractor   | Qualifies configured CKAN resource/schema; emits versioned staging records and manifest; supports a bulk-resource fallback    |
+| P13 | Adapt existing Python ACNC extractor — complete | [P13 implementation and validation](acnc-acquisition.md): full resource/schema qualification, versioned staging records/manifests and bounded bulk CSV fallback; six-record live parity and disposable staging/replay checks passed |
 | P14 | Add deterministic matching             | Implement P11 identity schema/constraints and reviewed backfill; existing source link, verified ABN and jurisdiction-scoped incorporation number; conflicting/ambiguous records go to review |
 | P15 | Generate field-level changes           | Preview new, unchanged, changed, conflicting, rejected and missing records, with evidence and prior revisions                 |
 | P16 | Adapt existing Python exact-ABN lookup | Injects credentials, fixes parser/transformer contracts and bounds SOAP calls; unavailable access leaves verification pending |
@@ -1050,3 +1051,24 @@ checked the current schema, importer, source fixtures and publication constraint
 local reference links and diff whitespace. This completes P11's definition scope;
 P14 implements the schema/matcher and P16 provides exact-ABN evidence. No migration,
 hosted data change or deployment was performed; CSV branch/service holds remain.
+
+
+### P13 complete — ACNC acquisition and bulk fallback, 18 September 2026
+
+[Acquisition implementation and validation](acnc-acquisition.md) completes resource/
+schema qualification, versioned records and acquisition manifests, and an explicit
+bounded direct CSV fallback. Live CKAN schema checks now cover all 70 mapped
+columns. Bulk CSV preserves its separate resource identity and never fabricates
+CKAN IDs or automatically merges on ABN.
+
+The live bulk scan read 66,315 rows and selected six postcode-2730 records with no
+quarantine; their typed assertions matched a fresh six-record CKAN acquisition.
+Private outputs retain source hashes and diagnostics. No real data was staged or
+published. Validation: 74 Python tests, mapping coverage, 36 migrations and 16 SQL
+suites plus CSV integration/owner concurrency, and real worker recovery checks in
+disposable environments passed. See the linked contact-free validation summary.
+
+The existing deployed worker and scheduling are unchanged. Stricter CKAN checks
+require a worker rebuild to take effect there. Bulk source onboarding, full-field
+publication allowlisting, broader snapshot reconciliation and the refresh-cadence
+decision remain separate from completed P13 acquisition/staging.

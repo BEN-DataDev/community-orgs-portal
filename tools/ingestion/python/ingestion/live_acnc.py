@@ -1,7 +1,6 @@
 """Bounded ACNC CKAN acquisition. Writes private evidence, never publishes."""
 import argparse
 import json
-import os
 import re
 import time
 import uuid
@@ -13,13 +12,12 @@ from urllib.parse import urlencode
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from ingestion.adapters.acnc import ACNCExtractor, digest
+from ingestion.acnc_transform import CONTRACT, MAPPING_VERSION
+from ingestion.acquisition_output import write_outputs
 from ingestion.staging_sql import validate
 
 BASE = 'https://data.gov.au/data/api/3/action/'
-TEXT_FIELDS = {'ABN', 'Charity_Legal_Name', 'Postcode', 'Address_Type',
-               'Address_Line_1', 'Address_Line_2', 'Address_Line_3', 'Town_City',
-               'State', 'Country', 'Charity_Website', 'Date_Organisation_Established',
-               'Registration_Date', 'Financial_Year_End', 'Other_Organisation_Names'}
+TEXT_FIELDS = {f['source_key'] for f in CONTRACT['fields'] if f['source_key'] != '_id'}
 
 
 def configuration(raw):
@@ -108,7 +106,9 @@ class Transport:
         raise AssertionError('unreachable')
 
 
-def qualify(payload, config):
+def qualify(payload, config, *, require_datastore=True):
+    if not isinstance(payload, dict) or payload.get('success') is not True:
+        raise ValueError('metadata did not report success')
     data = payload.get('result')
     if not isinstance(data, dict) or data.get('name') != 'acnc-register':
         raise ValueError('unexpected dataset identity')
@@ -118,13 +118,14 @@ def qualify(payload, config):
     if not isinstance(all_resources, list) or any(not isinstance(r, dict) for r in all_resources):
         raise ValueError('invalid resource metadata')
     resources = [r for r in all_resources if r.get('id') == config['resource_id']]
-    if len(resources) != 1 or resources[0].get('datastore_active') is not True:
+    if len(resources) != 1 or (require_datastore and resources[0].get('datastore_active') is not True):
         raise ValueError('configured resource is missing or datastore is inactive')
     resource = resources[0]
     return {'dataset_id': data.get('id'), 'metadata_modified': data.get('metadata_modified'),
             'resource_id': resource['id'], 'resource_modified': resource.get('last_modified'),
             'licence_title': data['license_title'], 'licence_url': data.get('license_url'),
-            'metadata_sha256': digest(payload), 'resource_name': resource.get('name')}
+            'metadata_sha256': digest(payload), 'resource_name': resource.get('name'),
+            'resource_url': resource.get('url'), 'resource_format': resource.get('format')}
 
 
 def acquire(config, transport, run_id, observed_at):
@@ -147,7 +148,9 @@ def acquire(config, transport, run_id, observed_at):
         signature = {f['id']: f['type'] for f in fields}
         if len(signature) != len(fields):
             raise ValueError('duplicate schema fields')
-        if signature.get('_id') not in {'int', 'int4', 'integer'} or any(signature.get(k) != 'text' for k in TEXT_FIELDS):
+        if (set(signature) != TEXT_FIELDS | {'_id'}
+                or signature.get('_id') not in {'int', 'int4', 'integer'}
+                or any(signature.get(k) != 'text' for k in TEXT_FIELDS)):
             raise ValueError('ACNC field schema changed; review required')
         if schema is not None and signature != schema:
             raise ValueError('schema changed during pagination')
@@ -171,6 +174,8 @@ def acquire(config, transport, run_id, observed_at):
             envelope['errors'].append({'reason': str(exc)})
     envelope['qualification'] = {'metadata': metadata, 'field_types': schema,
                                  'http_requests': transport.requests, 'limits': config,
+                                 'mode': 'ckan-pages', 'schema_sha256': digest(schema),
+                                 'mapping_version': MAPPING_VERSION,
                                  'snapshot_guaranteed': False}
     envelope['synthetic'] = False
     validate(envelope)
@@ -193,10 +198,8 @@ def main():
     now = datetime.now(timezone.utc).isoformat()
     run_id = 'acnc-' + str(uuid.uuid4())
     envelope = acquire(config, Transport(config), run_id, now)
+    write_outputs(args.output_dir, envelope)
     path = args.output_dir / 'envelope.json'
-    with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'w') as stream:
-        json.dump(envelope, stream, ensure_ascii=False, indent=2)
-        stream.write('\n')
     print(json.dumps({'run_id': run_id, 'completion': envelope['completion'],
                       'counts': envelope['counts'], 'output': str(path), 'errors': envelope['errors']}))
     return 0 if envelope['completion'] == 'complete' else 1

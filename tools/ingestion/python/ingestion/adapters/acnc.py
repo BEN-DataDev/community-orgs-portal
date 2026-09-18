@@ -31,10 +31,10 @@ def text(row: dict, key: str) -> str | None:
     return value.strip() or None
 
 
-def normalise(row: dict) -> dict:
+def normalise(row: dict, *, native_id=None) -> dict:
     if not isinstance(row, dict):
         raise ValueError("record must be an object")
-    native_id = row.get("_id")
+    native_id = row.get("_id") if native_id is None else native_id
     if isinstance(native_id, bool) or not isinstance(native_id, (str, int)):
         raise ValueError("missing or invalid source _id")
     if not str(native_id).strip():

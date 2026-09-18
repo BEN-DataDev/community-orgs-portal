@@ -26,12 +26,12 @@
     "Versioned JSON envelope with raw hashes and provenance; publication disabled",
     "F02 acnc_transform.py adapts the recorded transformer/mappings inventories: all 69 organisation columns, corrected canonical keys, explicit Y/N, strict dates/calendar/count/URL, no truncation or ambiguous splitting; parser v2 quarantines invalid or unknown fields.",
     "F05 reprocess_acnc.py is new local orchestration over the F02 normaliser, not an additional upstream adaptation: preserves retained observation/raw/page evidence, validates resource-scoped identity, quarantines invalid records and emits independent coverage states; no legacy loader writes.",
-    "Parser/mapping v3 qualifies bare ASCII DNS website names with an explicit inferred HTTPS scheme, preserved raw source text and normalisation warning; historical v2 contract remains retained. New local work, not an upstream adaptation."
+    "Parser/mapping v3 qualifies bare ASCII DNS website names with an explicit inferred HTTPS scheme, preserved raw source text and normalisation warning; historical v2 contract remains retained. New local work, not an upstream adaptation.",
+    "P13 local extensions: live_acnc.py now qualifies the full mapped CKAN schema; acquisition_output.py writes private envelope/manifest artifacts; bulk_acnc.py adds bounded direct-resource CSV acquisition with independent resource-scoped identity, full-file scan, selected-record quarantine and raw-file hash. Reuses the adapted normaliser without inventing CKAN IDs; no legacy loader, automatic source switch or publication."
   ],
   "pending": [
-    "Live resource and schema qualification",
     "Code redistribution rights confirmation",
-    "ABN and NSW adapters; scope of this package is ACNC only"
+    "ABN and NSW adapters; ACNC and approved CSV are implemented"
   ],
   "mapping_contract_references": [
     {

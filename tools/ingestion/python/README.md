@@ -1,7 +1,15 @@
 # ACNC acquisition tools
 
 Requires Python 3.10 or later. Uses only the standard library; no installation,
-credentials, database, Flask, Redis or network connection is needed.
+credentials, database, Flask, Redis or network connection is needed for offline
+fixtures. Live acquisition requires network access; staging is a separate operation.
+
+P13 adds an explicit bounded bulk CSV fallback and acquisition manifests. Both
+paths were verified live against the six-record postcode 2730 cohort. See the
+[P13 operation and validation guide](../../../docs/acnc-acquisition.md) for commands,
+resource identity, limits and the separate bulk publication boundary. The example
+configurations remain disabled; the deployed scheduled worker is not switched to
+bulk acquisition.
 
 F05 now provides `python3 -m ingestion.reprocess_acnc` for offline replay of a
 complete retained acquisition using the new parser/mapping. It preserves original
@@ -46,15 +54,15 @@ rejects repeated source IDs, and stops at a configured page budget.
 The normaliser preserves all address lines and address type. Missing ABNs are
 retained for review; matching/deduplication by ABN is deliberately not performed.
 Nested addresses are objects, identifiers are strings, and omitted values do not
-become false or deletion assertions. Source dates remain labelled raw strings until
-a verified source-specific date mapping exists.
+become false or deletion assertions. The current mapping preserves raw source dates
+alongside typed assertions using the qualified source-specific date rules.
 
 ## P04 source qualification
 
 See the [source qualification record](../../../docs/source-sample-qualification.md)
 for retained ACNC evidence, the versioned synthetic CSV fixture under
 `tests/fixtures/csv-pilot-v1`, and ABN access preparation. The CSV schema and manifest
-are a P12 development contract, not an implemented importer or approved real export.
+are a synthetic P12 contract exercised by the implemented importer, not an approved real export.
 Do not pass these CSV records to the ACNC-specific staging commands.
 
 ## Fixture and output

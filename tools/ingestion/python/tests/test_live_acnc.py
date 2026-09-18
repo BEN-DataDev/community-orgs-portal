@@ -42,6 +42,25 @@ class LiveTests(unittest.TestCase):
         result = self.run_extract(Reader(malformed=True))
         self.assertEqual(result['completion'], 'failed')
         self.assertEqual(result['records'], [])
+
+    def test_full_mapping_schema_drift_including_empty_results(self):
+        class Drift(Reader):
+            def get(self, action, params):
+                payload = super().get(action, params)
+                if action == 'datastore_search':
+                    fields = payload['result']['fields']
+                    fields[:] = [f for f in fields if f['id'] != 'Operates_in_ACT']
+                    payload['result']['records'] = []
+                    payload['result']['total'] = 0
+                return payload
+        self.assertEqual(self.run_extract(Drift())['completion'], 'failed')
+        class Extra(Reader):
+            def get(self, action, params):
+                payload = super().get(action, params)
+                if action == 'datastore_search':
+                    payload['result']['fields'].append({'id': 'New_Column', 'type': 'text'})
+                return payload
+        self.assertEqual(self.run_extract(Extra())['completion'], 'failed')
     def test_retry_and_byte_limit(self):
         class Opener:
             count = 0
