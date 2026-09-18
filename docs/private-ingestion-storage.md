@@ -1,6 +1,7 @@
 # P09 — private ingestion storage and raw retention
 
-Implemented locally: 17 September 2026. Hosted migration and verification pending.
+Complete and deployed: recorded in commit `703a903` on 17 September 2026.
+Documentation reconciled: 18 September 2026; see the deployment record below.
 
 P09 builds on the deployed staging/review/publication schema rather than introducing
 another store. Migration
@@ -122,11 +123,13 @@ disposable PostgreSQL 16: interruption before/after checkpoint, manual-edit and
 withdrawal protection, and failed/partial acquisitions. Auth/JWT
 helpers in disposable databases are emulated; these checks are not hosted verification.
 
-For deployment, apply the migration and run the rollback-only
+For deployment to another environment, apply the migration and run the rollback-only
 [`private_raw_retention.sql`](../supabase/tests/private_raw_retention.sql) against the
 selected hosted database. Check the restricted worker can still stage and that no
 retention policy was implicitly seeded. No application deployment is needed for
-these database-only additions. Hosted closure remains pending.
+these database-only additions. The hosted worker smoke check is
+[`private_raw_retention_worker.sql`](../supabase/tests/private_raw_retention_worker.sql);
+it checks staging/replay and permission denials through the restricted worker LOGIN.
 
 Forward repair: leave all policies held while investigating; fix functions in a
 new migration while preserving run IDs and original hashes. The schema migration
@@ -135,3 +138,16 @@ cannot be recovered by rolling back DDL. Restore only from an authorised retaine
 backup into an isolated database, subject to the source policy. Do not restore the
 old staging function after cleanup: it compares full envelopes and cannot recognise
 expired-run replay. Do not drop the retention timestamps, hashes or audit history.
+
+## Deployment record
+
+Commit `703a903` (17 September 2026), **“P09 completed and deployed”**, records P09
+completion and deployment and supersedes the earlier pending status in this document.
+The associated migration is `20260917071152_private_raw_retention.sql`.
+
+Detailed hosted execution output is not retained in the repository. The validation
+results above describe local disposable environments; the hosted SQL scripts describe
+the checks available and are not themselves evidence of execution. This record
+does not infer a retention policy, raw-evidence removal or schedule enablement from
+the deployment status. No database operation or deployment was performed during
+the documentation correction on 18 September 2026.

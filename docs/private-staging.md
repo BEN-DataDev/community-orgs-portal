@@ -2,7 +2,8 @@
 
 For the current P09 storage contract and raw-retention implementation, see
 [private ingestion storage](private-ingestion-storage.md). The historical notes below
-describe earlier increments; P09 adds local retention controls but awaits deployment.
+describe earlier increments; P09 retention controls are recorded as complete and
+deployed in the [deployment record](private-ingestion-storage.md#deployment-record).
 
 Implemented: 16 September 2026. All four ingestion migrations are now applied
 to Supabase project `gqltsfijginclwszrcfj`. Historical test notes below describe

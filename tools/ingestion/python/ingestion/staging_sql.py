@@ -12,7 +12,8 @@ from ingestion.adapters.acnc import digest
 
 
 def validate(envelope: dict) -> None:
-    if envelope.get("contract_version") != "1.0" or envelope.get("source_id") != "acnc-register":
+    csv_source = envelope.get("parser_version") == "approved-csv-v1" and envelope.get("source_id") != "acnc-register"
+    if envelope.get("contract_version") != "1.0" or (envelope.get("source_id") != "acnc-register" and not csv_source):
         raise ValueError("unsupported contract/source")
     if envelope.get("publication_eligible") is not False:
         raise ValueError("staging cannot authorize publication")
@@ -58,8 +59,9 @@ def expression(value: dict) -> str:
 
 def render(envelope: dict) -> str:
     validate(envelope)
+    function = 'stage_csv' if envelope['parser_version'] == 'approved-csv-v1' else 'stage_acnc'
     return ("BEGIN;\nSET LOCAL ROLE ingestion_worker;\n"
-            f"SELECT ingestion.stage_acnc({expression(envelope)});\nCOMMIT;\n")
+            f"SELECT ingestion.{function}({expression(envelope)});\nCOMMIT;\n")
 
 
 def main() -> None:

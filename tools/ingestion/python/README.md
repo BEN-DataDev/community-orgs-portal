@@ -251,3 +251,11 @@ staging and job completion together. No publication is performed. Schedules star
 off and require platform-admin configuration. See [deployment, recovery and
 validation](../../../docs/acquisition-jobs.md) and the optional service/timer files
 in `../deploy`.
+
+
+## Approved CSV files (P12)
+
+`python3 -m ingestion.approved_csv --input organisations.csv --manifest manifest.json
+--output envelope.json --sql-output stage.sql` validates an approved export and emits
+private staging evidence. See [the CSV operation guide](../../../docs/approved-csv-import.md)
+for the qualified manifest, exit codes, staging migration and review workflow.

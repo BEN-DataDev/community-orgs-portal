@@ -1,11 +1,11 @@
 # Portal implementation plan
 
-Prepared: 15 September 2026. Updated: 17 September 2026 after recovery verification and source-status review.
+Prepared: 15 September 2026. Updated: 18 September 2026 after deferring real-provider CSV onboarding.
 Status: full ACNC register field coverage and the F05 release gate are complete,
 with approval/publication and post-publication checks confirmed by the user.
-ACNC is the only implemented acquisition adapter. Other sources remain outstanding.
+ACNC acquisition and the approved CSV importer are implemented. Other source adapters remain outstanding.
 
-## Current priorities: extend source coverage and finish ACNC scheduling
+## Current priorities: exact-ABN verification and ACNC scheduling
 
 [The complete public register field coverage plan](import-field-coverage-plan.md)
 (F01–F05) has passed its release gate. F02–F05 and website-v3 migrations are applied
@@ -43,31 +43,39 @@ automatically acquire other providers.
 | Source | Current status | Remaining work |
 | --- | --- | --- |
 | ACNC Register | Implemented and deployed; six-record pilot and recovery checks passed | Choose and verify scheduling; broader snapshot reconciliation and bulk fallback remain separate work |
-| Approved CSV files (P12) | Planned; importer not implemented | Validate source metadata and rows, retain provenance, quarantine malformed rows and support reviewed publication |
+| Approved CSV files (P12) | Implemented, deployed and hosted database verification passed; [CLI and verification](approved-csv-import.md) | Deferred until an approved provider CSV is received; P12 remains complete |
 | Exact-ABN Lookup (P16) | Upstream code assessed; adapter not integrated | Correct and test parser contracts, bound requests and configure an access GUID for live verification |
 | ABN public bulk extract | Not implemented | Separate streaming XML adapter when scale warrants it |
-| NSW incorporated associations | Upstream scraper assessed; adapter not integrated | Qualify an approved export for CSV import, or establish access/reuse and test current markup before automated collection |
+| NSW incorporated associations | Upstream scraper assessed; adapter not integrated | CSV onboarding deferred until an approved export is received; automated collection remains separately unqualified |
 | Landcare, neighbourhood houses, sports and arts directories | Expansion backlog | Select pilot providers, qualify access/reuse and implement provider mappings/adapters |
 | My Community Directory | Planned; not integrated | Obtain partner agreement and technical documentation before implementing the adapter |
 | ACNC AIS financial history | Deferred beyond the initial release | Separate adapter and reporting-period schema with explicit financial-measure definitions |
 
 ### Next implementation sequence
 
-1. Build the **approved CSV importer (P12)** against the existing staging and review
-   workflow. Verify metadata validation, row quarantine, replay without duplicates
-   and no public changes before approval.
-2. Use it for a **small, approved NSW associations export** to extend coverage beyond
-   charities. Record access/reuse evidence and incorporation-number mappings before
-   importing; route ambiguous matches to review.
-3. Adapt **exact-ABN verification (P16)** to strengthen identity checks across sources.
-   Parser fixtures can proceed before credentials are available; live verification
-   remains pending until access is configured.
+1. Adapt **exact-ABN verification (P16)** to strengthen identity checks across sources.
+   Start with the assessed upstream parser, fixture tests for response shapes and
+   mappings, injected credentials, and bounded requests. This work can proceed
+   without a live access GUID; live verification waits until access is configured.
+2. Finish **ACNC scheduling** once the operator chooses the pilot refresh cadence:
+   configure the schedule and observe the first scheduled job. Scheduling remains
+   Off until that decision; broader snapshot reconciliation is separate work.
+3. Resume **real-provider CSV onboarding** when an approved CSV/spreadsheet arrives
+   with access/reuse evidence. Qualify the export, map and validate its columns,
+   stage it, and use explicit review/publication. The small NSW associations export
+   follows this same resumption gate.
 4. Select further directories from measured coverage gaps and onboard each through
    the same qualification and publication gates.
 
-The ACNC cadence decision can proceed alongside this work. It does not enable any
-additional source. This sequence supersedes the original first-batch instructions
-below; the milestone tables remain the broader backlog, not a completion checklist.
+**Decision — 18 September 2026:** P12 is complete, deployed and verified.
+Real-provider CSV onboarding is deferred at the user's request until approved CSV
+information is available. It is not an active completion blocker for P12 or P16.
+Coverage dependent on those exports waits; the portal and ACNC workflow continue
+unchanged. Retain the deployed importer and synthetic fixtures; no rollback or
+CSV source enablement is needed. See the [CSV deferral record](approved-csv-import.md#real-provider-onboarding-deferred--18-september-2026).
+
+This sequence supersedes the original first-batch instructions below; the milestone
+tables remain the broader backlog, not a completion checklist.
 
 ## Original delivery approach
 
@@ -199,7 +207,7 @@ for access approval or real-format validation.
 | P06 | Define the capability matrix — complete        | [Capability matrix v1.0](capability-matrix.md) separates public/registered readers, organisation roles, ingestion operators and platform administrators; records session, scope and P07/P08 verification rules |
 | P07 | Implement scoped operator access — complete | [Hosted access verification](scoped-operator-access.md): migration and application deployed; server/RPC/role/MFA checks and signed-in production boundaries verified |
 | P08 | Implement minimum organisation role management — complete | [P08 implementation and hosted verification](organisation-role-management.md): scoped assignments, hierarchy/MFA, owner safeguards and signed-in production checks passed                                           |
-| P09 | Add private ingestion storage — complete locally | [P09 storage and retention](private-ingestion-storage.md): existing private schema plus source-policy raw retention, holds, preview/removal and replay-safe audit; hosted verification pending |
+| P09 | Add private ingestion storage — complete and deployed | [P09 storage and retention](private-ingestion-storage.md#deployment-record): private schema, source-policy raw retention, holds, preview/removal and replay-safe audit; completion/deployment recorded in commit `703a903` |
 | P10 | Add publication and edit protection            | Explicit publication state/visibility, revision checks, manual field ownership, publication events and suppression rules                                       |
 | P11 | Define identifier and entity mapping           | Jurisdiction-scoped identifiers, legal-entity versus branch/service rules, duplicate constraints and a migration path for existing records                     |
 
@@ -227,7 +235,7 @@ provide a starting point but must be tested against their current authorization 
 
 | ID  | Task                                   | Deliverable / acceptance                                                                                                      |
 | --- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| P12 | Build approved CSV importer            | Validates source metadata and rows; malformed entries are quarantined with reasons                                            |
+| P12 | Build approved CSV importer — complete and deployed | [Importer and verification](approved-csv-import.md): validates metadata/rows, retains quarantine reasons, stages replay-safe records for reviewed publication                                            |
 | P13 | Adapt existing Python ACNC extractor   | Qualifies configured CKAN resource/schema; emits versioned staging records and manifest; supports a bulk-resource fallback    |
 | P14 | Add deterministic matching             | Existing source link, verified ABN and jurisdiction-scoped incorporation number; conflicting/ambiguous records go to review   |
 | P15 | Generate field-level changes           | Preview new, unchanged, changed, conflicting, rejected and missing records, with evidence and prior revisions                 |
@@ -955,5 +963,46 @@ Validation: 35 real migrations, eight SQL access/publication/storage suites,
 concurrent owner-revocation checks and all 51 Python ingestion tests passed in local
 disposable environments. The full ingestion SQL suites and real worker crash/recovery
 checks also passed on PostgreSQL 16. See the P09 record for deployment and forward repair.
-No hosted migration, raw removal, source enablement or schedule change was performed;
-hosted verification remains pending.
+At this local implementation stage, no hosted migration, raw removal, source
+enablement or schedule change was performed. The deployment record below supersedes
+the pending hosted status from this stage.
+
+
+### P09 completion and deployment recorded — 17 September 2026
+
+Commit `703a903` records **“P09 completed and deployed”**. P09 is therefore recorded
+as complete and deployed, superseding the earlier local-only status. The
+[storage deployment record](private-ingestion-storage.md#deployment-record) identifies
+the migration and available hosted verification scripts. Detailed hosted execution
+output is not retained in the repository; the documented local test results above
+remain distinct from this completion/deployment record.
+
+Documentation reconciled on 18 September 2026; no database operation or deployment
+was performed by this correction. P12, the approved CSV importer, remains the next
+implementation task.
+
+
+### P12 complete locally — approved CSV importer, 18 September 2026
+
+Added a bounded offline CSV command, private qualification-gated staging RPC and
+operator workflow integration through existing review/publication controls. The
+P04 fixture yields two candidates, four holds and three quarantined rows with
+reasons. Source/resource identity, raw evidence, timestamps, hashes and scoped
+incorporation identifiers are retained. Partial and synthetic files cannot publish;
+clean approved files require explicit identity review, field approval and publication.
+
+Validation: 59 Python tests, 36 migrations in disposable PostGIS 17, eight existing
+SQL suites, CSV integration and concurrent owner-revocation checks passed.
+See [P12 implementation and operation](approved-csv-import.md). No hosted migration,
+source enablement, real provider qualification or deployment was performed.
+
+
+### P12 deployed and verified — 18 September 2026
+
+Applied `approved_csv_import` as **20260917230927** to `gqltsfijginclwszrcfj` after
+explicit user approval. Hosted rollback-only staging/review/publication and replay
+checks passed; private function grants and cleanup were verified. Eight retained
+runs, eight publications, seven organisations, existing source registrations and
+scheduling-off state are unchanged. See [hosted evidence](approved-csv-import.md#hosted-deployment-and-verification--18-september-2026)
+for management-connection versus worker-role test coverage. Real export qualification
+awaits a provider file and access/reuse evidence; no real CSV source was enabled.
