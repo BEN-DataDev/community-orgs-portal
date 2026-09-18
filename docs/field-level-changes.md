@@ -1,7 +1,7 @@
 # P15 — field-level change reports
 
-Complete locally, 18 September 2026. Migration, report generation and access
-regressions pass. Hosted deployment and signed-in verification remain pending.
+Complete and deployed, 18 September 2026. Local and hosted SQL verification,
+production downloads, operator access and real MFA checks pass.
 
 The import review page offers **Download dry-run report** for the selected run.
 Optionally enter an earlier baseline run ID. The JSON download contains private
@@ -66,20 +66,16 @@ Local Svelte check, the report endpoint regression, existing review-route tests,
 targeted ESLint and production build pass. The build retains existing Rollup and
 optional Sharp dependency warnings.
 
-Database validation passed with all 38 unmodified migrations, 18 SQL suites,
-CSV integration and concurrent identity/owner tests. Docker was unresponsive,
-so the same repository harness ran through a temporary command adapter against
-PostgreSQL 18.6 / PostGIS 3.6.2 extracted under `/tmp/p15-postgres`, with a private
-Unix socket, no TCP listener and UTC (matching the ordinary test environment).
-No system packages were installed. The adapter is retained at
-`/tmp/p15-pg-bin/docker`; while those temporary files exist, reproduce with
-`PATH=/tmp/p15-pg-bin:$PATH python3 scripts/test-operator-access-db.py`.
-Each database instance was removed by the harness. The ordinary Docker
-PostgreSQL 17 run remains unverified in this session. After Docker was confirmed
-running, two further attempts still timed out during container creation after
-60 seconds, before any migrations ran. The daemon answered version and cached
-PostGIS image queries, but container listing also timed out. This is a container
-startup blocker; the PostgreSQL 18 validation above remains the completed run.
+Database validation passed using the standard Docker PostgreSQL 17 / PostGIS 3.5
+harness: all 38 unmodified migrations, 18 SQL suites, CSV integration and both
+concurrent identity/owner tests passed. Run with
+`python3 scripts/test-operator-access-db.py`. The disposable container was removed
+by the harness; no hosted database was changed.
+
+The same suite also passed on an isolated PostgreSQL 18.6 / PostGIS 3.6.2 instance
+under `/tmp` while Docker container operations were stalled. Docker container
+listing and creation now respond, and the successful standard run closes that
+validation blocker.
 
 The synthetic cohort report contained one new, one unchanged, one changed, two
 conflicting (manual protection and branch identity hold), one rejected and one
@@ -87,11 +83,46 @@ missing record. Repeat reads were identical; after the changed fixture was
 published, its report became unchanged and retained the publication ID and
 approved field revision. All fixture writes rolled back.
 
-Apply
-[`20260918040000_ingestion_change_report.sql`](../supabase/migrations/20260918040000_ingestion_change_report.sql)
-after the existing P14 migration, then deploy the portal route and download
-control. Verify an actual operator download and non-operator denial before pilot
-use. No hosted migration, deployment, real source enablement or publication has
-been performed for P15. Existing approval and publication functions are unchanged.
-On a report defect, remove the download control or revoke the new RPC and apply a
-forward repair; there is no report-owned persistent data to roll back.
+## Hosted completion — 18 September 2026
+
+Applied
+[`20260918061301_ingestion_change_report.sql`](../supabase/migrations/20260918061301_ingestion_change_report.sql)
+to Supabase project `gqltsfijginclwszrcfj`. The local migration filename matches
+the hosted version. The P15 SQL acceptance suite passed on the hosted database
+with rollback. Its auth fixture now supplies email and timestamps required by
+the hosted profile trigger; the full local Docker suite passed again afterward.
+
+Production deployment **dpl_5C1z4Yj78iktWmpsnJnZ3DcvuJua** is READY and aliased to
+[community-orgs-portal.vercel.app](https://community-orgs-portal.vercel.app).
+The [hosted verification script](../scripts/verify-p15-hosted.mjs) used two
+temporary registered accounts to verify:
+
+- Public listing returns 200; signed-out report requests redirect.
+- A signed-in non-operator receives HTTP 403 and RPC SQLSTATE `42501`.
+- An appointed operator can download the report from production, with
+  `private, no-store` caching and the expected attachment filename. HTTP and RPC
+  report contents agree, and the review page displays the download control.
+- Invalid IDs and a same-run baseline return HTTP 400.
+- Real TOTP enrollment/verification denies the retained AAL1 token and allows
+  AAL2 report RPC and production download access.
+
+Run 12 returned six records: one unchanged and five conflicting, with no new,
+changed, rejected or missing records. No baseline was selected, so missing-record
+assessment was explicitly disabled. Conflict reports are previews, not permission
+to overwrite protected values. Private report payloads were not logged or committed.
+
+All temporary accounts, appointments, sessions, MFA factors and the local
+credential file were removed. No SQL fixture run remains. Organisation (7),
+publication (8) and source-link (7) counts match the preflight. Scheduling remains
+off. No real organisation publication, source enablement or identity verification
+was performed. SQL fixture sequences may have advanced despite rollback.
+
+The verification script has explicit `prepare`, `test` and `cleanup` modes.
+`prepare` stores credentials only in a mode-0600 local file; appoint its printed
+operator account before `test`. Always run `cleanup`, including after a failed
+test. These are signed-in HTTP/RPC checks, not interactive browser tests.
+
+The deployment contains the runtime changes. Subsequent local changes align the
+migration filename, verification fixture and completion documentation. On a report
+defect, remove the download control or revoke the new RPC and apply a forward
+repair; there is no report-owned persistent data to roll back.

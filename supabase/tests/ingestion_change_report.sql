@@ -1,5 +1,5 @@
 begin;
-insert into auth.users(id) values ('00000000-0000-4000-8000-000000001501');
+insert into auth.users(id,email,created_at,updated_at) values ('00000000-0000-4000-8000-000000001501','p15-sql-fixture@example.invalid',now(),now());
 insert into ingestion.operators(user_id) values ('00000000-0000-4000-8000-000000001501');
 insert into community_orgs.organisations(org_id,entity_name,slug) values
  ('00000000-0000-4000-8000-000000001511','Same','p15-same'),
