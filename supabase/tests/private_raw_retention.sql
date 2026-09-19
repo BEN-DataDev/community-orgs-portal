@@ -43,8 +43,8 @@ begin
  if ingestion.expire_raw_evidence('acnc-register','p09',true)->>'held'<>'true' then
   raise exception 'Default hold ignored'; end if;
  update ingestion.raw_retention_policies set hold=false where resource_id='p09';
- insert into ingestion.acquisition_configs(source_id,resource_id,postcode,licence_title,updated_by)
-  values('acnc-register','p09','2730','Synthetic',gen_random_uuid());
+ insert into ingestion.acquisition_configs(source_id,resource_id,postcodes,licence_title,updated_by)
+  values('acnc-register','p09',array['2730'],'Synthetic',gen_random_uuid());
  insert into ingestion.acquisition_jobs(source_id,resource_id,config_revision,source_revision,config,origin,
    checkpoint,status,finished_at) values('acnc-register','p09',1,1,'{}','manual',e,'running',null) returning id into j;
  if ingestion.expire_raw_evidence('acnc-register','p09',true)->>'held'<>'true' then

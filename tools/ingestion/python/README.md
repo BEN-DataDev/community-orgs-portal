@@ -102,8 +102,9 @@ bounded retries and response-size limits. No such transport is enabled here.
 
 The standard-library `ingestion.live_acnc` client qualifies the configured CKAN
 resource and produces the same private staging envelope. Configuration is in
-`config/acnc-pilot.json`, disabled by default. The supplied pilot uses postcode
-2730, five records per page and at most two pages (ten fetched records).
+`config/acnc-pilot.json`, disabled by default. The supplied pilot uses the 23-code
+Snowy Valleys discovery cohort, 100 records per page and at most ten pages (1,000
+fetched records).
 
 ```bash
 python3 -m ingestion.live_acnc --config config/acnc-pilot.json --enable --output-dir /tmp/acnc-pilot-new-run
@@ -122,10 +123,11 @@ of records or a complete register snapshot.
 Controls:
 
 - HTTPS endpoint fixed to data.gov.au, two allowlisted CKAN actions, redirects refused.
-- One exact four-digit postcode, explicit resource UUID, licence-title agreement and
-  active resource membership in the `acnc-register` package required.
-- Source schema checked on every page; records outside the postcode rejected.
-- Page size/page count caps, hard ceiling of 500 records per configured run.
+- Between 1 and 50 sorted, unique four-digit postcodes, an explicit resource UUID,
+  licence-title agreement and active resource membership in the `acnc-register`
+  package are required.
+- Source schema checked on every page; records outside the postcode cohort rejected.
+- Page size/page count caps, hard ceiling of 1,000 records per configured run.
 - Byte cap per HTTP response, socket timeouts and a shared request/time budget.
   Deadline checks occur between reads; an in-flight read can last one socket timeout.
 - Three attempts maximum per request, bounded exponential backoff for network errors,

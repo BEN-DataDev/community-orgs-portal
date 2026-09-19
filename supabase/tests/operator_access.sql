@@ -41,7 +41,7 @@ begin
   'select community_orgs.enqueue_acnc_acquisition(''p07'')',
   'select community_orgs.ingestion_source_approvals()',
   'select community_orgs.set_ingestion_source_enabled(''acnc-register'',''p07'',true,''bad'',''P07'')',
-  'select community_orgs.configure_acnc_acquisition(''p07'',''2730'',''P07'',null,''0'')'
+  'select community_orgs.configure_acnc_acquisition(''p07'',array[''2730''],''P07'',null,''0'')'
  ] loop
   perform pg_temp.expect_access_denied(command);
  end loop;
@@ -119,7 +119,7 @@ begin
      if community_orgs.can_view_org(org_a) or community_orgs.can_edit_org(org_a) then raise exception 'Operator obtained ordinary organisation access'; end if;
      perform pg_temp.expect_access_denied('select community_orgs.ingestion_source_approvals()');
      perform pg_temp.expect_access_denied('select community_orgs.set_ingestion_source_enabled(''acnc-register'',''p07'',true,''bad'',''P07'')');
-     perform pg_temp.expect_access_denied('select community_orgs.configure_acnc_acquisition(''p07'',''2730'',''P07'',null,''0'')');
+     perform pg_temp.expect_access_denied('select community_orgs.configure_acnc_acquisition(''p07'',array[''2730''],''P07'',null,''0'')');
     else
      perform community_orgs.ingestion_source_approvals();
      if community_orgs.user_max_role_level(uid,org_b)<>4 or not community_orgs.can_edit_org(org_b) then raise exception 'Administrator lacks effective owner authority'; end if;
@@ -147,7 +147,7 @@ begin
  select x->>'token' into token from jsonb_array_elements(community_orgs.ingestion_source_approvals()) x
  where x->>'resource_id'=resource;
  perform community_orgs.set_ingestion_source_enabled('acnc-register',resource,true,token,'P07 fixture approval');
- perform community_orgs.configure_acnc_acquisition(resource,'2730','P07 fixture licence',null,'0');
+ perform community_orgs.configure_acnc_acquisition(resource,array['2730'],'P07 fixture licence',null,'0');
  reset role;
  perform set_config('request.jwt.claims',jsonb_build_object('sub',operator_id,'aal','aal1')::text,true);
  set local role authenticated;

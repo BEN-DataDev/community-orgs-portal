@@ -26,8 +26,10 @@ class Reader:
         return result
 class LiveTests(unittest.TestCase):
     def test_limits_and_scope(self):
-        self.assertEqual(configuration(CONFIG)['postcode'], '2730')
-        for key, value in [('postcode', 'NSW'), ('max_pages', 11), ('page_size', 0),
+        self.assertIn('2730', configuration(CONFIG)['postcodes'])
+        for key, value in [('postcodes', ['NSW']), ('postcodes', []),
+                           ('postcodes', ['2730', '2730']), ('postcodes', ['2730', '2720']),
+                           ('max_pages', 11), ('page_size', 0),
                            ('timeout_seconds', 100), ('max_response_bytes', 999999999)]:
             with self.assertRaises(ValueError): configuration({**CONFIG, key: value})
     def run_extract(self, reader):
@@ -35,6 +37,7 @@ class LiveTests(unittest.TestCase):
     def test_complete_and_metadata_drift(self):
         result = self.run_extract(Reader())
         self.assertEqual(result['completion'], 'complete')
+        self.assertEqual(result['scope']['filters']['Postcode'], CONFIG['postcodes'])
         self.assertFalse(result['publication_eligible'])
         self.assertFalse(result['qualification']['snapshot_guaranteed'])
         self.assertEqual(self.run_extract(Reader(changed=True))['completion'], 'partial')

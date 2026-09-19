@@ -1,11 +1,18 @@
 # ACNC acquisition jobs
 
-Updated 17 September 2026: the acquisition migration and restricted worker LOGIN
+Updated 19 September 2026: the acquisition migration and restricted worker LOGIN
 are deployed to Supabase project `gqltsfijginclwszrcfj`. The worker is installed
 and running on **AKHOME** in Docker Desktop. Password authentication, verified TLS
 and queue processing succeeded. The first manual live refresh completed as
 **run 9**, with six accepted records and zero quarantine. The postcode 2730 pilot
-is configured with scheduling off. The portal changes are now live on Vercel.
+is configured for a monthly 30-day refresh. The first scheduled enqueue is due
+after `2026-10-19T03:18:23Z`; the daily Vercel cron should pick it up at the next
+check after that due time. The portal changes are now live on Vercel.
+
+The 23-postcode Snowy Valleys expansion is also deployed. Hosted configuration
+revision 3 contains the complete cohort, preserves the monthly schedule and due
+time, and the rebuilt AKHOME worker has successfully resumed idle polling. No
+expanded acquisition has been queued yet.
 
 ## Deployment record
 
@@ -36,8 +43,10 @@ is configured with scheduling off. The portal changes are now live on Vercel.
   Docker Desktop starts, unless explicitly stopped. AKHOME must be awake and
   connected, with Docker Desktop running; this is not an independent cloud host.
 - The postcode 2730 configuration was created with the previously reviewed licence
-  and no schedule. Its audit event identifies a user-authorised management-API
-  operation; no browser session or MFA session was impersonated.
+  and no schedule. On 19 September 2026, the operator decision was monthly refresh:
+  hosted configuration revision 2 set `interval_hours=720` and
+  `next_due_at=2026-10-19T03:18:23Z`. Its audit event preserves the same authorised
+  configuration actor; no browser session or MFA session was impersonated.
 - Manual job `5e68af3a-db56-47a1-ba49-b4166ef94219` completed in one attempt at
   `2026-09-17T02:37:19Z`, staging run **9**: one page, six source records, six
   accepted, zero quarantine, zero errors. The job was enqueued through the
@@ -60,6 +69,15 @@ is configured with scheduling off. The portal changes are now live on Vercel.
   after signing in. No second import or publication was triggered by deployment.
 - This was a working-tree deployment. Git changes remain uncommitted; a future
   Git-triggered deployment must include these changes to preserve this release.
+- Multi-postcode migration `multi_postcode_acquisition` was applied on
+  19 September 2026. Production deployment
+  `dpl_37dYPbzG7FQruYZiJ5MhKG7nCA3a` reached `READY` and was aliased to the
+  production URL. The worker image was rebuilt as
+  `community-orgs-acquisition:local` and its container recreated successfully.
+- Hosted configuration revision 3 contains all 23 reviewed postcodes, retains
+  `interval_hours=720` and keeps `next_due_at=2026-10-19T03:18:23Z`. The change
+  preserved the existing authorised configuration actor and cancelled any active
+  work; no expanded job was queued during deployment.
 
 
 ## Operating the AKHOME worker
@@ -103,9 +121,9 @@ startup settings or unrelated containers were changed.
 ## Operator workflow
 
 Open **Admin → Import review → Acquisition jobs** (`/admin/ingestion/jobs`).
-A platform administrator configures an existing live ACNC resource with one
-four-digit postcode, the exact reviewed CKAN licence title and a schedule. The
-initial schedule is **Off**. Source approval remains managed in `/admin/sources`.
+A platform administrator configures an existing live ACNC resource with 1 to 50
+unique four-digit postcodes, the exact reviewed CKAN licence title and a schedule.
+The initial schedule is **Off**. Source approval remains managed in `/admin/sources`.
 
 An ingestion operator can select **Run acquisition** when the source is enabled
 and configured. Repeated submissions reuse the existing active job. The page
@@ -113,6 +131,18 @@ shows the latest 50 jobs, attempts, availability, lease expiry and completion,
 with a link to the staged import. **Refresh status** reloads these details.
 Complete imports still need the existing match/review/approval/publication steps.
 Partial and failed acquisitions retain their evidence and block publication.
+
+### Snowy Valleys expansion target
+
+The reviewed [postcode discovery scope](snowy-valleys-postcode-scope.md) contains
+23 postcodes: 13 ABS Postal Areas overlapping the Snowy Valleys LGA and 10 directly
+touching its boundary. The local migration, configuration RPC, admin form, CKAN
+worker and bulk fallback accept a canonical list of 1 to 50 postcodes. CKAN applies
+the list as one array-valued filter, preserving one paginated result and the global
+1,000-record cap. The source currently reports 626 matching records, within that
+bound. The migration, portal, rebuilt worker and hosted 23-postcode configuration
+are deployed. Adjacent-postcode results must remain private until evidence shows
+service delivery within Snowy Valleys.
 
 Saving configuration cancels active work for that resource and records the change
 in a private audit table. A paused source cannot enqueue, renew a lease, save an
@@ -173,7 +203,7 @@ retention/pruning remains a separate maintenance task.
    A container/job runner can invoke the same command. No inbound worker HTTP
    endpoint is required. Monitor nonzero exits and jobs remaining queued without
    attempts. Provisioning files are examples, not installed services.
-5. Configure the pilot postcode and licence in the UI, leave scheduling off, and
+5. Configure the pilot postcode cohort and licence in the UI, leave scheduling off, and
    manually queue one import. Verify job completion, retained evidence, import
    review, and source pause recovery before enabling a schedule.
 

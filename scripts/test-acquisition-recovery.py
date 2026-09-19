@@ -88,10 +88,15 @@ try:
     containers.append(DATABASE)
     command(['docker', 'run', '-d', '--name', DATABASE, '--network', NETWORK,
              '--network-alias', 'recovery-db', '-e', 'POSTGRES_HOST_AUTH_METHOD=trust', 'postgres:16'])
+    ready_checks = 0
     for attempt in range(50):
         ready = subprocess.run(['docker', 'exec', DATABASE, 'pg_isready', '-U', 'postgres'], capture_output=True)
         if ready.returncode == 0:
-            break
+            ready_checks += 1
+            if ready_checks == 3:
+                break
+        else:
+            ready_checks = 0
         time.sleep(0.2)
     else:
         raise AssertionError('Disposable database did not start')
@@ -103,8 +108,8 @@ try:
       insert into ingestion.operators(user_id) values('{ACTOR}');
       insert into ingestion.sources(source_id,resource_id,metadata,enabled)
       values('acnc-register','{RESOURCE}','{{"test":"isolated-network-fixtures"}}',true);
-      insert into ingestion.acquisition_configs(resource_id,postcode,licence_title,updated_by)
-      values('{RESOURCE}','2730','Creative Commons Attribution 3.0 Australia','{ACTOR}');""")
+      insert into ingestion.acquisition_configs(resource_id,postcodes,licence_title,updated_by)
+      values('{RESOURCE}',array['2730'],'Creative Commons Attribution 3.0 Australia','{ACTOR}');""")
 
     for mode, marker, resume in [('mid_fetch', 'after_first_page', 'complete'),
                                   ('after_checkpoint', 'checkpoint_committed', 'resume_checkpoint')]:

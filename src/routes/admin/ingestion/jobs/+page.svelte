@@ -12,8 +12,8 @@
 		<a class="anchor" href={resolve('/admin/ingestion')}>Back to import review</a>
 		<h1 class="text-2xl font-bold">Acquisition jobs</h1>
 		<p>
-			Fetch up to 500 ACNC records for one postcode into private staging. Completed imports require
-			review and approval before publication.
+			Fetch up to 1,000 ACNC records for a postcode cohort into private staging. Completed imports
+			require review and approval before publication.
 		</p>
 		<p>
 			Scheduled jobs run when the daily scheduler next checks for due work. A connected acquisition
@@ -32,7 +32,7 @@
 			<h2 class="text-xl font-semibold">{source.title}</h2>
 			<p class="break-all">Resource: {source.resource_id}</p>
 			<p>
-				Source {source.enabled ? 'enabled' : 'paused'} · Postcode {source.postcode ??
+				Source {source.enabled ? 'enabled' : 'paused'} · Postcodes {source.postcodes?.join(', ') ??
 					'not configured'}
 			</p>
 			<p>
@@ -43,8 +43,9 @@
 			</p>
 			<form method="POST" action="?/run" use:enhance>
 				<input type="hidden" name="resource" value={source.resource_id} />
-				<button class="btn preset-filled-primary-500" disabled={!source.enabled || !source.postcode}
-					>Run acquisition</button
+				<button
+					class="btn preset-filled-primary-500"
+					disabled={!source.enabled || !source.postcodes?.length}>Run acquisition</button
 				>
 			</form>
 			{#if data.canConfigure}
@@ -59,15 +60,13 @@
 							<input type="hidden" name="resource" value={source.resource_id} />
 							<input type="hidden" name="revision" value={source.revision} />
 							<label class="label"
-								>Postcode<input
+								>Postcodes (one per line)<textarea
 									class="input"
-									name="postcode"
-									value={source.postcode ?? ''}
+									name="postcodes"
+									rows="5"
 									required
-									pattern="[0-9]{4}"
-									maxlength="4"
-									inputmode="numeric"
-								/></label
+									maxlength="249">{source.postcodes?.join('\n') ?? ''}</textarea
+								></label
 							>
 							<label class="label"
 								>Reviewed licence title<input
@@ -113,7 +112,7 @@
 				{#if job.status === 'running'}<p>Worker lease ends: {job.lease_until}</p>{/if}
 				{#if job.acquired}<p>Acquisition evidence saved.</p>{/if}
 				{#if job.message}<p>{job.message}</p>{/if}
-				{#if job.run_id}<a class="anchor" href={`${resolve('/admin/ingestion')}?run=${job.run_id}`}
+				{#if job.run_id}<a class="anchor" href={resolve('/admin/ingestion') + `?run=${job.run_id}`}
 						>Review import</a
 					>{/if}
 			</article>

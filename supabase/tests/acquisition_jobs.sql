@@ -21,10 +21,12 @@ begin
  begin perform community_orgs.acquisition_dashboard(); raise exception 'Expected denial'; exception when insufficient_privilege then null; end;
  begin perform community_orgs.enqueue_acnc_acquisition(resource); raise exception 'Expected denial'; exception when insufficient_privilege then null; end;
  perform set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000091"}',true);
- begin perform community_orgs.configure_acnc_acquisition(resource,'2730','Reviewed licence',null,'0'); raise exception 'Expected admin denial'; exception when insufficient_privilege then null; end;
+ begin perform community_orgs.configure_acnc_acquisition(resource,array['2720','2730'],'Reviewed licence',null,'0'); raise exception 'Expected admin denial'; exception when insufficient_privilege then null; end;
  perform set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000091","test_admin":true}',true);
- perform community_orgs.configure_acnc_acquisition(resource,'2730','Reviewed licence',null,'0');
- begin perform community_orgs.configure_acnc_acquisition(resource,'2730','Reviewed licence',null,'0'); raise exception 'Expected stale denial'; exception when serialization_failure then null; end;
+ begin perform community_orgs.configure_acnc_acquisition(resource,array['2730','2730'],'Reviewed licence',null,'0'); raise exception 'Expected duplicate postcode denial'; exception when invalid_parameter_value then null; end;
+ begin perform community_orgs.configure_acnc_acquisition(resource,array['2730','2720'],'Reviewed licence',null,'0'); raise exception 'Expected unsorted postcode denial'; exception when invalid_parameter_value then null; end;
+ perform community_orgs.configure_acnc_acquisition(resource,array['2720','2730'],'Reviewed licence',null,'0');
+ begin perform community_orgs.configure_acnc_acquisition(resource,array['2720','2730'],'Reviewed licence',null,'0'); raise exception 'Expected stale denial'; exception when serialization_failure then null; end;
  perform set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000091"}',true);
  v_job:=community_orgs.enqueue_acnc_acquisition(resource)::uuid;
  if community_orgs.enqueue_acnc_acquisition(resource)::uuid<>v_job then raise exception 'Duplicate job'; end if;
@@ -35,7 +37,7 @@ begin
  begin perform ingestion.heartbeat_acquisition(v_job,gen_random_uuid()); raise exception 'Expected token denial'; exception when serialization_failure then null; end;
  e:=jsonb_build_object('contract_version','1.0','source_id','acnc-register','resource_id',resource,'run_id','acnc-job-'||v_job::text,
  'parser_version','acnc-ckan-v3','observed_at',now(),'completion','complete','publication_eligible',false,'synthetic',false,
- 'scope',jsonb_build_object('kind','filtered-resource','filters',jsonb_build_object('Postcode','2730')),
+ 'scope',jsonb_build_object('kind','filtered-resource','filters',jsonb_build_object('Postcode',jsonb_build_array('2720','2730'))),
  'records','[]'::jsonb,'quarantine','[]'::jsonb,'errors','[]'::jsonb,'pages','[]'::jsonb,'qualification',jsonb_build_object('limits',j->'config'));
  begin perform ingestion.checkpoint_acquisition(v_job,token,jsonb_set(e,'{resource_id}','"wrong"')); raise exception 'Expected envelope denial'; exception when invalid_parameter_value then null; end;
  perform ingestion.checkpoint_acquisition(v_job,token,e);
@@ -69,13 +71,13 @@ begin
  -- Scheduling starts off, is bounded, and never stages/publishes in the cron transaction.
  if community_orgs.enqueue_due_acquisitions()<>0 then raise exception 'Schedule enabled by default'; end if;
  perform set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000091","test_admin":true}',true);
- perform community_orgs.configure_acnc_acquisition(resource,'2730','Reviewed licence',24,'1');
+ perform community_orgs.configure_acnc_acquisition(resource,array['2720','2730'],'Reviewed licence',24,'1');
  update ingestion.acquisition_configs set next_due_at=now()-interval '1 day';
  set local role service_role;
  if community_orgs.enqueue_due_acquisitions()<>1 or community_orgs.enqueue_due_acquisitions()<>0 then raise exception 'Schedule duplicate'; end if;
  reset role;
  v_job:=(select acquisition_jobs.id from ingestion.acquisition_jobs where status='queued' and resource_id=resource);
- perform community_orgs.configure_acnc_acquisition(resource,'2731','Reviewed licence',null,'2');
+ perform community_orgs.configure_acnc_acquisition(resource,array['2720','2730','2731'],'Reviewed licence',null,'2');
  if not exists(select 1 from ingestion.acquisition_jobs where acquisition_jobs.id=v_job and status='cancelled') then raise exception 'Config change failed to cancel'; end if;
  if (select count(*) from community_orgs.organisations)<>n then raise exception 'Acquisition published data'; end if;
  if (select count(*) from ingestion.acquisition_config_events where resource_id=resource)<>3 then raise exception 'Configuration audit missing'; end if;

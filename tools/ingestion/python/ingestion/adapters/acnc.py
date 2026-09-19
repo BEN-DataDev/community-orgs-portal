@@ -69,10 +69,14 @@ class ACNCExtractor:
     def extract(self, *, filters: dict, run_id: str, observed_at: str) -> dict:
         if not run_id or not filters or any(
             key not in {"Town_City", "State", "Postcode", "ABN"}
-            or not isinstance(value, str) or not value.strip()
+            or not (
+                isinstance(value, str) and value.strip()
+                or isinstance(value, list) and value
+                and all(isinstance(item, str) and item.strip() for item in value)
+            )
             for key, value in filters.items()
         ):
-            raise ValueError("run_id and explicit nonempty string filters are required")
+            raise ValueError("run_id and explicit nonempty string or string-list filters are required")
         stamp = datetime.fromisoformat(observed_at.replace("Z", "+00:00"))
         if stamp.tzinfo is None:
             raise ValueError("observed_at must include timezone")

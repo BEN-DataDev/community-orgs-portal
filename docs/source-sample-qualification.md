@@ -79,8 +79,11 @@ existing private staging controls; larger-scale retention/deletion and stable
 cross-release identity remain separate qualification work.
 
 Postcode 2730 is a discovery sample, not the Snowy Valleys boundary or proof of
-service delivery. Apply the [P01 policy](pilot-inclusion-policy.md) to each record.
-ACNC scheduling remains a separate operator decision. Existing per-run caps are
+service delivery. The broader [postcode discovery scope](snowy-valleys-postcode-scope.md)
+contains 23 overlapping or directly adjacent Postal Areas, but has not been
+acquired or qualified by this six-record observation. Apply the
+[P01 policy](pilot-inclusion-policy.md) to each record. ACNC scheduling remains a
+separate operator decision. Existing per-run caps are
 five rows/page, two pages, bounded requests and metadata recheck; these are local
 pilot limits, not a provider rate-limit entitlement.
 

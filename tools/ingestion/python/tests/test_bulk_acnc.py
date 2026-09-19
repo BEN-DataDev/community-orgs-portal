@@ -77,6 +77,7 @@ class BulkTests(unittest.TestCase):
         outside = {**ROW, 'ABN': '11111111111', 'Postcode': '0800'}
         result = self.acquire(BulkReader(csv_bytes([outside, ROW])))
         self.assertEqual(result['counts']['accepted'], 1)
+        self.assertEqual(result['scope']['filters']['Postcode'], CONFIG['postcodes'])
         self.assertEqual(result['bulk_scan']['rows_scanned'], 2)
         result = self.acquire(BulkReader(csv_bytes([outside])))
         self.assertEqual(result['completion'], 'complete')
@@ -90,6 +91,12 @@ class BulkTests(unittest.TestCase):
         result = self.acquire(BulkReader(b'\xef\xbb\xbf' + csv_bytes([row])))
         self.assertEqual(result['completion'], 'complete')
         self.assertEqual(result['records'][0]['raw']['Charity_Legal_Name'], row['Charity_Legal_Name'])
+
+    def test_selects_every_configured_postcode(self):
+        rows = [ROW, {**ROW, 'ABN': '11111111111', 'Postcode': '2720'}]
+        result = self.acquire(BulkReader(csv_bytes(rows)))
+        self.assertEqual(result['completion'], 'complete')
+        self.assertEqual(result['counts']['accepted'], 2)
 
     def test_schema_and_encoding_fail_closed(self):
         good = csv_bytes()

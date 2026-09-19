@@ -1612,7 +1612,7 @@ export type Database = {
 			organisation_role_assignments: { Args: { p_organisation_id: string }; Returns: Json };
             acquisition_dashboard: { Args: Record<PropertyKey, never>; Returns: Json };
             enqueue_acnc_acquisition: { Args: { p_resource: string }; Returns: string };
-            configure_acnc_acquisition: { Args: { p_resource: string; p_postcode: string; p_licence: string; p_interval: number | null; p_revision: string }; Returns: undefined };
+            configure_acnc_acquisition: { Args: { p_resource: string; p_postcodes: string[]; p_licence: string; p_interval: number | null; p_revision: string }; Returns: undefined };
             enqueue_due_acquisitions: { Args: Record<PropertyKey, never>; Returns: number };
             ingestion_source_approvals: { Args: Record<PropertyKey, never>; Returns: Json };
             set_ingestion_source_enabled: { Args: { p_source: string; p_resource: string; p_enabled: boolean; p_token: string; p_reason: string }; Returns: undefined };

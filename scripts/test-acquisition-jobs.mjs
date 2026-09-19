@@ -60,15 +60,17 @@ try {
 	admin = true;
 	const values = {
 		resource,
-		postcode: '2730',
+		postcodes: '2730\n2720',
 		licence: 'Reviewed licence',
 		interval: 'off',
 		revision: '0'
 	};
-	assert.equal((await submit('configure', { ...values, postcode: '273' })).status, 400);
+	assert.equal((await submit('configure', { ...values, postcodes: '273' })).status, 400);
+	assert.equal((await submit('configure', { ...values, postcodes: '2730, 2730' })).status, 400);
 	assert.equal((await submit('configure', { ...values, interval: '1' })).status, 400);
 	assert.match((await submit('configure', values)).message, /saved/);
 	assert.equal(writes.at(-1).args.p_interval, null);
+	assert.deepEqual(writes.at(-1).args.p_postcodes, ['2720', '2730']);
 	rpcError = { code: '40001' };
 	assert.equal((await submit('configure', values)).status, 409);
 	const { render } = await server.ssrLoadModule('svelte/server');
@@ -82,7 +84,7 @@ try {
 				resource_id: resource,
 				title: 'ACNC fixture',
 				enabled: true,
-				postcode: '2730',
+				postcodes: ['2720', '2730'],
 				licence_title: 'Reviewed licence',
 				interval_hours: null,
 				next_due_at: null,
@@ -122,13 +124,12 @@ try {
 			await page.setContent(html);
 			assert.ok(await page.getByRole('button', { name: 'Run acquisition' }).isEnabled());
 			await page.getByText('Configure acquisition', { exact: true }).click();
-			assert.equal(await page.getByLabel('Postcode', { exact: true }).inputValue(), '2730');
-			assert.equal(await page.getByRole('combobox', { name: /Schedule/ }).inputValue(), 'off');
-			await page.getByLabel('Postcode', { exact: true }).fill('273');
 			assert.equal(
-				await page.getByLabel('Postcode', { exact: true }).evaluate((el) => el.checkValidity()),
-				false
+				await page.getByLabel('Postcodes (one per line)', { exact: true }).inputValue(),
+				'2720\n2730'
 			);
+			assert.equal(await page.getByRole('combobox', { name: /Schedule/ }).inputValue(), 'off');
+			await page.getByLabel('Postcodes (one per line)', { exact: true }).fill('273');
 			assert.equal(
 				await page.getByRole('link', { name: 'Review import' }).getAttribute('href'),
 				'/admin/ingestion?run=33'

@@ -25,6 +25,7 @@ for name in [
     '20260917020000_acnc_website_normalisation.sql',
     '20260917030000_acquisition_jobs.sql',
     '20260917071152_private_raw_retention.sql',
+    '20260919010000_multi_postcode_acquisition.sql',
 ]:
     print((root / 'supabase/migrations' / name).read_text())
 print((root / 'supabase/tests/support/ingestion_post_migration.sql').read_text())

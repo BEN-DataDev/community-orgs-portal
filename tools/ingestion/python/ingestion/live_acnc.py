@@ -28,15 +28,19 @@ def configuration(raw):
     if not isinstance(raw.get('resource_id'), str):
         raise ValueError('resource_id must be a UUID string')
     uuid.UUID(raw['resource_id'])
-    if not isinstance(raw.get('postcode'), str) or not re.fullmatch(r'[0-9]{4}', raw['postcode']):
-        raise ValueError('one four-digit postcode is required')
+    postcodes = raw.get('postcodes')
+    if (not isinstance(postcodes, list) or not 1 <= len(postcodes) <= 50
+            or any(not isinstance(value, str) or not re.fullmatch(r'[0-9]{4}', value)
+                   for value in postcodes)
+            or postcodes != sorted(set(postcodes))):
+        raise ValueError('1 to 50 sorted, unique four-digit postcodes are required')
     for key, low, high in [('page_size', 1, 100), ('max_pages', 1, 10),
                            ('timeout_seconds', 1, 20), ('deadline_seconds', 1, 120),
                            ('max_response_bytes', 1024, 4 * 1024 * 1024)]:
         if type(raw.get(key)) is not int or not low <= raw[key] <= high:
             raise ValueError(f'{key} must be between {low} and {high}')
-    if raw['page_size'] * raw['max_pages'] > 500:
-        raise ValueError('pilot is limited to 500 records')
+    if raw['page_size'] * raw['max_pages'] > 1000:
+        raise ValueError('pilot is limited to 1000 records')
     if not isinstance(raw.get('expected_licence_title'), str) or not raw['expected_licence_title']:
         raise ValueError('reviewed licence title is required')
     return raw
@@ -140,8 +144,8 @@ def acquire(config, transport, run_id, observed_at):
         rows = page_result.get('records')
         if not isinstance(rows, list):
             raise ValueError('invalid datastore records')
-        if any(isinstance(row, dict) and row.get('Postcode') != config['postcode'] for row in rows):
-            raise ValueError('response contains a record outside the configured postcode')
+        if any(isinstance(row, dict) and row.get('Postcode') not in config['postcodes'] for row in rows):
+            raise ValueError('response contains a record outside the configured postcodes')
         fields = page_result.get('fields', [])
         if not isinstance(fields, list) or any(not isinstance(f, dict) or 'id' not in f or 'type' not in f for f in fields):
             raise ValueError('invalid ACNC field metadata')
@@ -159,7 +163,7 @@ def acquire(config, transport, run_id, observed_at):
     try:
         metadata = qualify(transport.get('package_show', {'id': 'acnc-register'}), config)
         envelope = ACNCExtractor(page, config['resource_id'], config['page_size'], config['max_pages']).extract(
-            filters={'Postcode': config['postcode']}, run_id=run_id, observed_at=observed_at)
+            filters={'Postcode': config['postcodes']}, run_id=run_id, observed_at=observed_at)
         after = qualify(transport.get('package_show', {'id': 'acnc-register'}), config)
         if metadata != after:
             raise ValueError('source metadata changed during acquisition; snapshot is not stable')
@@ -168,7 +172,7 @@ def acquire(config, transport, run_id, observed_at):
             def failed_page(_):
                 raise ValueError(str(exc))
             envelope = ACNCExtractor(failed_page, config['resource_id'], config['page_size'], 1).extract(
-                filters={'Postcode': config['postcode']}, run_id=run_id, observed_at=observed_at)
+                filters={'Postcode': config['postcodes']}, run_id=run_id, observed_at=observed_at)
         else:
             envelope['completion'] = 'partial' if envelope['pages'] else 'failed'
             envelope['errors'].append({'reason': str(exc)})

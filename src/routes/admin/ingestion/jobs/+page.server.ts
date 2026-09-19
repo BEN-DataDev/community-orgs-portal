@@ -10,7 +10,7 @@ const dashboard = z.object({
 			resource_id: z.string(),
 			enabled: z.boolean(),
 			title: z.string(),
-			postcode: z.string().nullable(),
+			postcodes: z.array(z.string().regex(/^[0-9]{4}$/)).nullable(),
 			licence_title: z.string(),
 			interval_hours: z.number().nullable(),
 			next_due_at: z.string().nullable(),
@@ -66,23 +66,33 @@ export const actions: Actions = {
 	configure: async ({ locals, request }) => {
 		if (!(await isSiteAdmin(locals.supabase, locals.user?.id)))
 			error(403, 'Platform administrator required.');
+		const formData = Object.fromEntries(await request.formData());
+		const postcodes = String(formData.postcodes ?? '')
+			.split(/[\s,]+/)
+			.filter(Boolean);
 		const input = z
 			.object({
 				resource: z.string().uuid(),
-				postcode: z.string().regex(/^[0-9]{4}$/),
 				licence: z.string().trim().min(1).max(300),
 				interval: z.enum(['off', '24', '168', '720']),
 				revision: z.string().regex(/^[0-9]{1,19}$/)
 			})
-			.safeParse(Object.fromEntries(await request.formData()));
-		if (!input.success)
+			.safeParse(formData);
+		const canonicalPostcodes = [...new Set(postcodes)].sort();
+		if (
+			!input.success ||
+			postcodes.length !== canonicalPostcodes.length ||
+			canonicalPostcodes.length < 1 ||
+			canonicalPostcodes.length > 50 ||
+			canonicalPostcodes.some((postcode) => !/^[0-9]{4}$/.test(postcode))
+		)
 			return fail(400, {
-				message: 'Enter a four-digit postcode, reviewed licence title and schedule.'
+				message: 'Enter 1 to 50 unique four-digit postcodes, a reviewed licence title and schedule.'
 			});
 		const x = input.data;
 		const result = await locals.supabase.rpc('configure_acnc_acquisition', {
 			p_resource: x.resource,
-			p_postcode: x.postcode,
+			p_postcodes: canonicalPostcodes,
 			p_licence: x.licence,
 			p_interval: x.interval === 'off' ? null : Number(x.interval),
 			p_revision: x.revision

@@ -14,7 +14,7 @@ config.update(resource_id='p13-bulk-fixture', identity_column='ABN', max_bulk_ro
               bulk_url='https://example.org/synthetic.csv')
 row = json.loads((root / 'tests/fixtures/acnc-field-coverage.json').read_text())['populated']
 row.pop('_id')
-row['Postcode'] = config['postcode']
+row['Postcode'] = config['postcodes'][0]
 stream = io.StringIO(newline='')
 writer = csv.DictWriter(stream, fieldnames=sorted(TEXT_FIELDS))
 writer.writeheader()

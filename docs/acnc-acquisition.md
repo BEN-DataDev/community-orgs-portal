@@ -29,10 +29,11 @@ Creative Commons Attribution 3.0 Australia. The runtime rechecks these facts on
 each run. This is the Register, not AIS financial history.
 
 The [disabled example configuration](../tools/ingestion/python/config/acnc-bulk-pilot.json)
-pins that CSV, one postcode (`2730`), a 64 MiB download cap, 100,000 scanned rows,
-90-second overall deadline and 10-second per-request timeout. `page_size * max_pages`
-is the selected-record cap (10 in this configuration, at most 500); in bulk mode
-those settings do not cause pagination. Configuration rejects larger global caps.
+pins that CSV, the [23-postcode Snowy Valleys scope](snowy-valleys-postcode-scope.md),
+a 64 MiB download cap, 100,000 scanned rows, 90-second overall deadline and
+10-second per-request timeout. `page_size * max_pages` is the selected-record cap
+(1,000 in this configuration); in bulk mode those settings do not cause
+pagination. Configuration rejects larger global caps.
 
 Only a pinned HTTPS `data.gov.au` resource-download path is allowed. Redirects,
 unexpected compression, oversized responses and advertised-length mismatches fail.
@@ -48,8 +49,9 @@ It requires exactly the reviewed headers, consistent column counts and no NULs.
 The standard-library CSV field-size limit also bounds individual fields; oversized
 fields fail rather than truncate. Extra/missing columns require mapping review.
 
-Postcode selection compares the trimmed source text to the configured four-digit
-postcode, preserving leading zeros. Rows outside that scope are not portal records.
+Postcode selection compares the trimmed source text to the configured list of
+four-digit postcodes, preserving leading zeros. Rows outside that scope are not
+portal records.
 Missing/invalid identities outside the scope are counted as diagnostics. In-scope
 missing/invalid identities are quarantined, and duplicate identities touching the
 selected cohort make the run partial, even if the other occurrence is outside it.

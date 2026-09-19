@@ -30,6 +30,12 @@ The existing ACNC postcode **2730** query is a bounded discovery sample, not the
 pilot boundary or proof of eligibility. Other postcodes within the LGA may qualify;
 neither this policy nor completion of P01 changes deployed acquisition settings.
 
+The [Snowy Valleys postcode discovery scope](snowy-valleys-postcode-scope.md)
+records 13 Postal Areas that overlap the LGA and 10 that directly touch its
+boundary. These 23 postcodes define a broader candidate-search cohort only.
+Records found through an adjacent postcode remain outside the pilot unless there
+is evidence that the organisation serves Snowy Valleys.
+
 ## Community purpose and categories
 
 Candidates must have an identifiable community purpose in at least one category:

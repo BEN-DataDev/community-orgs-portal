@@ -43,7 +43,7 @@ automatically acquire other providers.
 
 | Source | Current status | Remaining work |
 | --- | --- | --- |
-| ACNC Register | CKAN worker deployed; [P13 bulk fallback](acnc-acquisition.md) implemented locally and both paths verified live | Choose and verify scheduling; deploy stricter worker checks when ready; broader reconciliation and full-field bulk publication remain separate work |
+| ACNC Register | CKAN worker and 23-postcode Snowy Valleys configuration deployed; [P13 bulk fallback](acnc-acquisition.md) implemented locally and both paths verified live; monthly hosted schedule enabled | Observe the first expanded scheduled job after the October 2026 due time; deploy stricter worker checks when ready; broader reconciliation and full-field bulk publication remain separate work |
 | Approved CSV files (P12) | Implemented, deployed and hosted database verification passed; [CLI and verification](approved-csv-import.md) | Deferred until an approved provider CSV is received; P12 remains complete |
 | Exact-ABN Lookup (P16) | [Bounded adapter implemented](exact-abn-lookup.md); live qualification pending | Provision access GUID and approved exact-ABN set; complete live/withdrawal checks |
 | ABN public bulk extract | Not implemented | Separate streaming XML adapter when scale warrants it |
@@ -58,9 +58,9 @@ automatically acquire other providers.
    Start with the assessed upstream parser, fixture tests for response shapes and
    mappings, injected credentials, and bounded requests. This work can proceed
    without a live access GUID; live verification waits until access is configured.
-2. Finish **ACNC scheduling** once the operator chooses the pilot refresh cadence:
-   configure the schedule and observe the first scheduled job. Scheduling remains
-   Off until that decision; broader snapshot reconciliation is separate work.
+2. Finish **ACNC scheduling** by observing the first monthly scheduled job after
+   the hosted due time. The pilot cadence is monthly and the schedule is enabled;
+   broader snapshot reconciliation is separate work.
 3. Resume **real-provider CSV onboarding** when an approved CSV/spreadsheet arrives
    with access/reuse evidence. Qualify the export, map and validate its columns,
    stage it, and use explicit review/publication. The small NSW associations export
@@ -114,6 +114,9 @@ have already happened.
 
 - Pilot: Snowy Valleys LGA, plus organisations elsewhere with evidenced service
   delivery within it, as defined in the completed [P01 inclusion policy](pilot-inclusion-policy.md).
+  Candidate discovery targets the documented [23 postcodes](snowy-valleys-postcode-scope.md)
+  that overlap or directly border the LGA. Multi-postcode configuration and the
+  rebuilt worker are deployed; the expanded acquisition has not yet run.
 - Initial target: approximately 50–100 reviewed records, including existing records,
   duplicate candidates and groups without ABNs. The P01 policy defines the cohort;
   the six-record ACNC sample does not yet fulfil that target.

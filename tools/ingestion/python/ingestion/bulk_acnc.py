@@ -103,7 +103,7 @@ def extract(stream, config, run_id, observed_at, *, clock_check=lambda: None):
                   run_id=run_id, observed_at=observed_at, parser_version=PARSER_VERSION)
     result = dict(common, contract_version='1.0', publication_eligible=False,
                   synthetic=False, scope={'kind': 'filtered-resource',
-                  'filters': {'Postcode': config['postcode']}}, completion='failed',
+                  'filters': {'Postcode': config['postcodes']}}, completion='failed',
                   records=[], quarantine=[], errors=[], pages=[])
     rows = selected = 0
     headers = None
@@ -124,7 +124,7 @@ def extract(stream, config, run_id, observed_at, *, clock_check=lambda: None):
             if len(values) != len(headers) or any('\x00' in v for v in values):
                 raise ValueError(f'invalid CSV column count or NUL at row {rows}')
             row = dict(zip(headers, values))
-            in_scope = row['Postcode'].strip() == config['postcode']
+            in_scope = row['Postcode'].strip() in config['postcodes']
             if in_scope:
                 selected += 1
                 if selected > config['page_size'] * config['max_pages']:
