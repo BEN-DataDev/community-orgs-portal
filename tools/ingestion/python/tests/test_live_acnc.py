@@ -38,6 +38,7 @@ class LiveTests(unittest.TestCase):
         result = self.run_extract(Reader())
         self.assertEqual(result['completion'], 'complete')
         self.assertEqual(result['scope']['filters']['Postcode'], CONFIG['postcodes'])
+        self.assertFalse(result['scope']['complete_snapshot'])
         self.assertFalse(result['publication_eligible'])
         self.assertFalse(result['qualification']['snapshot_guaranteed'])
         self.assertEqual(self.run_extract(Reader(changed=True))['completion'], 'partial')

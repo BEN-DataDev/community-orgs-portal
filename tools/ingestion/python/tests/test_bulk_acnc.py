@@ -78,6 +78,7 @@ class BulkTests(unittest.TestCase):
         result = self.acquire(BulkReader(csv_bytes([outside, ROW])))
         self.assertEqual(result['counts']['accepted'], 1)
         self.assertEqual(result['scope']['filters']['Postcode'], CONFIG['postcodes'])
+        self.assertFalse(result['scope']['complete_snapshot'])
         self.assertEqual(result['bulk_scan']['rows_scanned'], 2)
         result = self.acquire(BulkReader(csv_bytes([outside])))
         self.assertEqual(result['completion'], 'complete')

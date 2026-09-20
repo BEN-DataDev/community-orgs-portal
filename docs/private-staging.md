@@ -335,3 +335,32 @@ Regression: `supabase/tests/attribution_and_suppression.sql` requires an existin
 operator UUID in `test.ingestion_operator`. It creates synthetic records and rolls
 back every change. It passed against the actual deployed schema. The earlier staged
 sample remains untouched and can be used for a signed-in browser walkthrough.
+
+## Retained suppression redaction — 20 September 2026
+
+Apply `20260920020000_retained_suppression_redaction.sql` after complete-snapshot
+reconciliation. Suppression remains the operator-facing withdrawal/correction
+decision; this increment adds targeted private retained-copy cleanup behind that
+decision.
+
+When a field or record is suppressed, the database now redacts matching retained
+source assertions/raw keys from `source_record_versions`, run envelopes, acquisition
+checkpoints and private change-set/publication snapshots. Source identity, content
+hashes, links, publication records and suppression reasons remain private and
+auditable. `retained_evidence_redaction_events` records the affected source identity,
+field, operator, reason and copy counts. Browser roles and the ingestion worker have
+no direct access to the event table or redaction functions.
+
+The staging and checkpoint worker entry points reapply redaction for any already
+suppressed source identity, so a later acquisition or replay cannot rehydrate the
+withdrawn value. Offline reprocessing from a redacted parent fails because the
+retained parent evidence no longer matches the replay envelope; acquire fresh source
+evidence and re-review instead. Whole-record withdrawal redacts retained assertions
+and raw evidence for that source identity while keeping the private suppression
+decision and source linkage.
+
+Validation: `supabase/tests/retained_suppression_redaction.sql` covers source
+versions, run envelopes, checkpoints, approval/publication snapshots, redaction
+events, future staging and whole-record withdrawal. The generated ingestion SQL
+suite, including reprocessing tests updated for the new replay block, passed against
+a disposable PostgreSQL 16 container.

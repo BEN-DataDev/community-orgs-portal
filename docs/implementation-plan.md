@@ -559,6 +559,23 @@ with current metadata/schema validation and disabled-by-default source enablemen
 Keep real publication separate from acquisition until the source terms and mapping
 have been reviewed. Full rollback operations and scheduled refresh remain later work.
 
+## Retained suppression redaction — 20 September 2026
+
+Implemented P28 retained-copy cleanup for suppression and withdrawal. Suppression
+now redacts matching values from retained source versions, run envelopes, acquisition
+checkpoints and private approval/publication snapshots, and records a private
+`ingestion.retained_evidence_redaction_events` audit row with copy counts, reason and
+operator. Staging and worker checkpoint entry points reapply redaction for already
+suppressed source identities, preventing later acquisition or replay from restoring
+withdrawn content. Reprocessing tests now require replay from redacted parent
+evidence to fail instead of proving suppression survives a raw-evidence replay.
+
+Validation: generated ingestion SQL regression passed against disposable PostgreSQL
+16, including retained suppression redaction, complete-snapshot reconciliation,
+retention, acquisition, website normalisation and replay suites. External backups,
+object stores and deployed database verification remain operational rollout checks,
+not local schema behavior.
+
 ## Bounded live ACNC acquisition — 16 September 2026
 
 Implemented `ingestion.live_acnc` and disabled-by-default pilot configuration in

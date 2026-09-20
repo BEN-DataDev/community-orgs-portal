@@ -84,7 +84,7 @@ class ACNCExtractor:
             "contract_version": "1.0", "source_id": SOURCE_ID,
             "resource_id": self.resource_id, "run_id": run_id,
             "observed_at": observed_at, "parser_version": PARSER_VERSION,
-            "scope": {"filters": dict(filters), "kind": "filtered-resource"},
+            "scope": {"filters": dict(filters), "kind": "filtered-resource", "complete_snapshot": False},
             "completion": "failed", "publication_eligible": False,
             "records": [], "quarantine": [], "errors": [], "pages": [],
         }

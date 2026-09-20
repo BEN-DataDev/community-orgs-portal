@@ -19,8 +19,6 @@ begin
  stale:=community_orgs.approve_ingestion_fields(parent::text,ver,1,fields);
  org:=community_orgs.publish_ingestion_fields(approval);
  update community_orgs.organisations set entity_name='Human correction' where org_id=org;
- select x into f from jsonb_array_elements(community_orgs.ingestion_field_preview(parent::text,ver,org)->'fields') x where x->>'field'='website';
- perform community_orgs.suppress_ingestion_content(parent::text,ver,'website','Synthetic withdrawal',jsonb_build_object('organisation_id',org,'field',f));
  snapshot:=to_jsonb((select v from ingestion.source_record_versions v where id=ver::bigint));
  e:=jsonb_set(e,'{reprocessing,parent_run_id}',to_jsonb(parent));
  set local role ingestion_worker;
@@ -38,12 +36,14 @@ begin
  report:=community_orgs.ingestion_review_queue(replay::text,newver);
  if report->'detail'->>'linked_organisation_id'<>org::text or report->'reprocessing'->>'parent_run_id'<>parent::text then raise exception 'Link/lineage missing in review'; end if;
  fields:=community_orgs.ingestion_field_preview(replay::text,newver,org)->'fields';
- if not fields @> '[{"field":"website","status":"suppressed"},{"field":"entity_name","status":"conflict","protected":true},{"field":"abn","status":"unchanged"}]' then
-  raise exception 'Replay lost protection or withdrawal'; end if;
+ if not fields @> '[{"field":"website","status":"unchanged"},{"field":"entity_name","status":"conflict","protected":true},{"field":"abn","status":"unchanged"}]' then
+  raise exception 'Replay lost protection or unchanged values'; end if;
+ select x into f from jsonb_array_elements(fields) x where x->>'field'='website';
+ perform community_orgs.suppress_ingestion_content(replay::text,newver,'website','Synthetic withdrawal',jsonb_build_object('organisation_id',org,'field',f));
  begin perform community_orgs.publish_ingestion_fields(stale); raise exception 'Old approval accepted';
  exception when serialization_failure or insufficient_privilege then null; end;
  perform community_orgs.save_ingestion_review(replay::text,newver,0,'link',org,'Fresh review of replay');
- select jsonb_agg(x) into fields from jsonb_array_elements(fields) x where x->>'status'='new';
+ select jsonb_agg(x) into fields from jsonb_array_elements(community_orgs.ingestion_field_preview(replay::text,newver,org)->'fields') x where x->>'status'='new';
  approval:=community_orgs.approve_ingestion_fields(replay::text,newver,1,fields,org);
  perform community_orgs.publish_ingestion_fields(approval);
  perform community_orgs.publish_ingestion_fields(approval);
@@ -58,7 +58,10 @@ begin
  perform community_orgs.suppress_ingestion_content(replay::text,newver,'*','Synthetic whole withdrawal',jsonb_build_object('organisation_id',org));
  bad:=jsonb_set(e,'{run_id}','"f05-retry"');
  bad:=jsonb_set(bad,'{records}',(select jsonb_agg(jsonb_set(x,'{run_id}','"f05-retry"')) from jsonb_array_elements(e->'records') x));
- perform ingestion.stage_acnc_reprocessing(parent,bad);
+ begin perform ingestion.stage_acnc_reprocessing(parent,bad); raise exception 'Withdrawn evidence replay accepted' using errcode='XX000';
+ exception when raise_exception then
+  if sqlerrm<>'Replay identity or evidence differs from retained version' then raise; end if;
+ end;
  set local role anon;
  if jsonb_array_length(community_orgs.organisation_register_facts(org))<>0 or exists(select 1 from community_orgs.organisations where org_id=org) then raise exception 'Replay restored withdrawn organisation'; end if;
  reset role;

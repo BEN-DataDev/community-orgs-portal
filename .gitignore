@@ -21,6 +21,7 @@ pnpm-debug.log*
 ._*
 Thumbs.db
 desktop.ini
+todo.txt
 
 # Editors
 .idea/

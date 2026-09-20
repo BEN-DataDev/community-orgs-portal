@@ -26,6 +26,8 @@ for name in [
     '20260917030000_acquisition_jobs.sql',
     '20260917071152_private_raw_retention.sql',
     '20260919010000_multi_postcode_acquisition.sql',
+    '20260920010000_complete_snapshot_reconciliation.sql',
+    '20260920020000_retained_suppression_redaction.sql',
 ]:
     print((root / 'supabase/migrations' / name).read_text())
 print((root / 'supabase/tests/support/ingestion_post_migration.sql').read_text())
@@ -34,3 +36,5 @@ runpy.run_path(str(package / 'tests/emit_reprocessing_fixture.py'))
 for name in ['ingestion_staging.sql', 'ingestion_review.sql', 'ingestion_field_preview.sql',
              'ingestion_publication.sql', 'ingestion_complete_fields.sql', 'acnc_register_details.sql', 'public_register_facts.sql', 'acnc_reprocessing.sql', 'acnc_website_normalisation.sql', 'acquisition_jobs.sql', 'private_raw_retention.sql']:
     print((root / 'supabase/tests' / name).read_text())
+print((root / 'supabase/tests/complete_snapshot_reconciliation.sql').read_text())
+print((root / 'supabase/tests/retained_suppression_redaction.sql').read_text())
