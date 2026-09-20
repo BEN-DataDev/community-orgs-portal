@@ -28,6 +28,7 @@ for name in [
     '20260919010000_multi_postcode_acquisition.sql',
     '20260920010000_complete_snapshot_reconciliation.sql',
     '20260920020000_retained_suppression_redaction.sql',
+    '20260920030000_guarded_import_rollback.sql',
 ]:
     print((root / 'supabase/migrations' / name).read_text())
 print((root / 'supabase/tests/support/ingestion_post_migration.sql').read_text())
@@ -38,3 +39,4 @@ for name in ['ingestion_staging.sql', 'ingestion_review.sql', 'ingestion_field_p
     print((root / 'supabase/tests' / name).read_text())
 print((root / 'supabase/tests/complete_snapshot_reconciliation.sql').read_text())
 print((root / 'supabase/tests/retained_suppression_redaction.sql').read_text())
+print((root / 'supabase/tests/guarded_import_rollback.sql').read_text())

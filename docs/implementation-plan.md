@@ -1137,3 +1137,22 @@ suppressions are unchanged. Scheduling remains Off.
 closes the local-only entry above. P14 is complete within the organisation matching
 scope; branch/service publication and P16 registry acquisition retain their own
 gates. No live source publication or registry verification was performed.
+
+
+### P29/P30 implemented locally — guarded rollback and second-cycle validation, 20 September 2026
+
+Added a private rollback ledger, per-field rollback events and operator RPCs for
+guarded import rollback. `community_orgs.rollback_ingestion_publication` restores
+only fields whose current value and `field_state` revision still match the
+publication snapshot; later human edits remain untouched and are queued as
+private conflicts through `community_orgs.ingestion_rollback_queue`. Import-created
+targets are hidden only when every published field still passes its guard.
+
+The rollback-only P29/P30 suite demonstrates unchanged version replay, a legitimate
+second-cycle source change, a manual edit conflict, failed-source non-publication
+and withdrawal replay suppression. It is wired into the disposable ingestion SQL
+runner after P27/P28. Validation: the generated ingestion bundle passed through
+`scripts/test-acquisition-recovery.py`'s `full_ingestion_sql_suites` checkpoint.
+The broader worker-crash portion of that script returned `worker_error` after the
+SQL suites had passed and was not used as P29/P30 evidence. No hosted migration,
+publication, source configuration or deployment was performed.
