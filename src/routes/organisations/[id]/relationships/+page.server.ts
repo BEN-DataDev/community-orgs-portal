@@ -128,5 +128,33 @@ export const actions: Actions = {
 		}
 
 		return actionSuccess();
+	},
+
+	deleteRelationship: async ({ request, locals: { supabase, user }, params }) => {
+		const orgId = orgIdSchema.safeParse(params.id);
+		if (!orgId.success) return fail(400, actionFailure('Not a valid organisation id.'));
+		await requireOrgEditor(supabase, user?.id, orgId.data);
+
+		const relationshipId = recordIdSchema.safeParse(
+			(await request.formData()).get('relationship_id')
+		);
+		if (!relationshipId.success) {
+			return fail(400, actionFailure('Not a valid relationship id.'));
+		}
+
+		const { data: deleted, error: deleteError } = await supabase
+			.from('relationships')
+			.delete()
+			.eq('relationship_id', relationshipId.data)
+			.eq('org_id', orgId.data)
+			.select('relationship_id')
+			.maybeSingle();
+
+		if (deleteError || !deleted) {
+			console.error('Failed to delete relationship:', deleteError);
+			return fail(400, actionFailure('Could not remove that relationship.'));
+		}
+
+		return actionSuccess();
 	}
 };

@@ -132,7 +132,7 @@ const supabase = { from(table) {
  return fetch('/search?'+new URLSearchParams({term,excluded})).then(r=>r.json()).then(resolve,reject);
  }};
 }};
-mount(Page,{target:document.getElementById('app'),props:{data:{organisation:${JSON.stringify(current)},relationships:await fetch('/fixture').then(r=>r.json()),supabase}}});
+mount(Page,{target:document.getElementById('app'),props:{data:{organisation:${JSON.stringify(current)},relationships:await fetch('/fixture').then(r=>r.json()),supabase,roleLevel:3}}});
 </script></body></html>`
 			)
 		);

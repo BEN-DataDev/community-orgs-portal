@@ -6,8 +6,8 @@ deployed. ACNC
 acquisition, reviewed publication, complete-snapshot reconciliation,
 withdrawal/redaction and guarded rollback are implemented. The monthly 23-postcode
 schedule is enabled. Exact-ABN live qualification remains externally gated. The
-next implementation phase broadens discovery through the national ABN bulk extract
-and the public NSW incorporated-associations search interface.
+national ABN bulk adapter is implemented locally. The next implementation phase is
+the public NSW incorporated-associations search adapter, followed by candidate triage.
 
 ## Current priorities: registry seeding and directory usability
 
@@ -45,7 +45,7 @@ automatically acquire other providers.
 | ACNC Register                                               | CKAN worker and 23-postcode Snowy Valleys configuration deployed; [P13 bulk fallback](acnc-acquisition.md) and complete-field reviewed publication implemented; monthly hosted schedule enabled | Observe the first expanded scheduled job after the October 2026 due time and record operational sizing findings                                                                               |
 | Approved CSV files (P12)                                    | Implemented, deployed and hosted database verification passed; [CLI and verification](approved-csv-import.md)                                                                                   | Deferred until an approved provider CSV is received; P12 remains complete                                                                                                                     |
 | Exact-ABN Lookup (P16)                                      | [Bounded adapter implemented](exact-abn-lookup.md); live qualification pending                                                                                                                  | Provision access GUID and approved exact-ABN set; complete live/withdrawal checks                                                                                                             |
-| ABN public bulk extract                                     | Official weekly multipart XML source identified; adapter not implemented                                                                                                                        | Build a streaming, checkpointed importer that inventories every part, retains the configured postcode cohort and known ABNs as private candidates, and rejects incomplete snapshots           |
+| ABN public bulk extract                                     | P33 streaming/checkpointed local-file adapter and synthetic release suite implemented; no real release downloaded or staged                                                                     | Qualify and run one current complete release, inspect private output, register/enable the source resource explicitly, then stage only the verified complete candidate set                     |
 | NSW incorporated associations                               | No bulk feed; upstream scrapers assessed but no current adapter is integrated                                                                                                                   | Build a bounded scraper over the ordinary public postcode/suburb search interface, using conservative request pacing, current markup fixtures and jurisdiction-scoped association identifiers |
 | Landcare, neighbourhood houses, sports and arts directories | Expansion backlog                                                                                                                                                                               | Select pilot providers, qualify access/reuse and implement provider mappings/adapters                                                                                                         |
 | My Community Directory                                      | Planned; not integrated                                                                                                                                                                         | Obtain partner agreement and technical documentation before implementing the adapter                                                                                                          |
@@ -63,14 +63,16 @@ automatically acquire other providers.
    server-side name/alias/exact-ABN search with visibility-preserving pagination,
    plus correction of aliases, locations, document links and relationship dates.
    Hosted migration `20260922052255_directory_readiness` and Vercel production
-   deployment `dpl_EgFjYVd54bVPvR25NwufmR365UhN` are verified. The signed-in
-   regression found missing alias and relationship removal actions. Document
-   records remain URL-only; local file upload is a separate capability gap.
-3. **P33 — Implement the ABN bulk seed adapter.** Stream every part of a single
-   weekly release, verify the release manifest and file hashes, and retain records
-   for configured postcodes plus explicitly known ABNs. Preserve repeated names,
-   native status dates and source attribution. A missing or failed part makes the
-   run partial and prevents reconciliation or publication.
+   deployment `dpl_EgFjYVd54bVPvR25NwufmR365UhN` are verified. Scoped alias and
+   relationship removal actions were added locally after the signed-in regression
+   exposed those gaps; hosted verification remains. Document records remain URL-only;
+   local file upload is a separate capability gap.
+3. **P33 — Implement the ABN bulk seed adapter — complete locally.** The offline
+   standard-library adapter streams every XML member in both official ZIP ranges,
+   verifies file hashes plus XML member sequence/count/extract metadata, checkpoints
+   completed parts and emits the P31 private candidate contract. Missing, changed,
+   malformed, duplicate or incomplete inputs fail closed. No real release has been
+   downloaded or staged; see [the P33 guide](abn-bulk-seed.md).
 4. **P34 — Implement the NSW register scraper.** Use only the ordinary unauthenticated
    postcode/suburb search flow, with conservative pacing, bounded retries,
    pagination checks, duplicate detection and markup-change shutdown. Key records
@@ -85,7 +87,8 @@ automatically acquire other providers.
    then exercise unchanged refresh, status change, withdrawal, partial-run and
    rollback paths before enabling recurring ABN and NSW collection.
 
-P33 and P34 are now the next implementation tracks and may proceed in parallel.
+P34 is the next implementation track. A qualified first P33 release can proceed as
+parallel operational work without blocking the NSW adapter.
 P16 live exact-ABN qualification and the first scheduled ACNC observation continue as parallel
 operational tracks and do not block P31–P36.
 

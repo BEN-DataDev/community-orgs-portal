@@ -105,11 +105,17 @@
 						</p>
 					</div>
 					{#if canEdit}
-						<button
-							type="button"
-							class="btn btn-sm preset-tonal"
-							onclick={() => (editingRelationshipId = relationship.relationship_id)}>Edit</button
-						>
+						<div class="flex gap-2">
+							<button
+								type="button"
+								class="btn btn-sm preset-tonal"
+								onclick={() => (editingRelationshipId = relationship.relationship_id)}>Edit</button
+							>
+							<form method="POST" action="?/deleteRelationship">
+								<input type="hidden" name="relationship_id" value={relationship.relationship_id} />
+								<button type="submit" class="btn btn-sm preset-tonal-error">Remove</button>
+							</form>
+						</div>
 					{/if}
 				</div>
 			{/if}

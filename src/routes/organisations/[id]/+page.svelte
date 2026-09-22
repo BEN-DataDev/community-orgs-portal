@@ -110,11 +110,17 @@
 								<p class="text-surface-600-400 text-sm">{alias.alias_type ?? 'Name'}</p>
 							</div>
 							{#if canEdit}
-								<button
-									type="button"
-									class="btn btn-sm preset-tonal"
-									onclick={() => (editingAliasId = alias.alias_id)}>Edit</button
-								>
+								<div class="flex gap-2">
+									<button
+										type="button"
+										class="btn btn-sm preset-tonal"
+										onclick={() => (editingAliasId = alias.alias_id)}>Edit</button
+									>
+									<form method="POST" action="?/deleteAlias">
+										<input type="hidden" name="alias_id" value={alias.alias_id} />
+										<button type="submit" class="btn btn-sm preset-tonal-error">Remove</button>
+									</form>
+								</div>
 							{/if}
 						</div>
 					{/if}

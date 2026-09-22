@@ -7,6 +7,7 @@
 		"test:operator-access": "node scripts/test-operator-access.mjs",
 		"test:operator-access:db": "python3 scripts/test-operator-access-db.py",
 		"test:relationships": "node scripts/test-relationship-search.mjs",
+		"test:directory-corrections": "node scripts/test-directory-corrections.mjs",
 		"test:cron": "node scripts/test-cron.mjs",
 		"docs:skeleton:sync": "python3 scripts/sync-skeleton-docs.py",
 		"dev": "vite dev",
@@ -49,6 +50,7 @@
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte": "^2.46.0",
 		"globals": "^15.11.0",
+		"playwright": "^1.63.0",
 		"prettier": "^3.3.3",
 		"prettier-plugin-svelte": "^3.2.7",
 		"prettier-plugin-tailwindcss": "^0.8.1",
@@ -60,6 +62,6 @@
 	},
 	"type": "module",
 	"engines": {
-		"node": "^22.20.0"
+		"node": "^22.20.0 || ^24.12.0"
 	}
 }

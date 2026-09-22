@@ -59,16 +59,19 @@ is a separate model decision.
 
 A production editor regression on 22 September 2026 found:
 
-- business/trading names can be added and edited, but cannot be removed, so a
-  newly added name cannot be restored to the original absent state;
+- business/trading names can be added and edited; scoped removal was added locally
+  on 22 September after this hosted regression and awaits deployment verification;
 - locations can be added, edited and removed successfully;
 - documents are URL records only; local file selection and upload are not
   implemented; and
-- relationships can be added and edited, but cannot be removed.
+- relationships can be added and edited; scoped removal was added locally on
+  22 September after this hosted regression and awaits deployment verification.
 
-Missing alias and relationship removal are P32 correction-workflow defects. Local
-document upload is a separate storage, access and retention capability rather than
-a failure of the implemented document-link workflow.
+Alias and relationship removal actions now recheck editor access and scope deletion
+by both record and organisation IDs; the local regression covers success,
+cross-organisation denial and editor authorization. Hosted verification remains.
+Local document upload is a separate storage, access and retention capability rather
+than a failure of the implemented document-link workflow.
 
 ## Validation
 

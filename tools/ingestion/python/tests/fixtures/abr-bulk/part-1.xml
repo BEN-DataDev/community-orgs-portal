@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Transfer error="">
+  <TransferInfo><FileSequenceNumber>1</FileSequenceNumber><RecordCount>2</RecordCount><ExtractTime>2026-09-21T00:00:00Z</ExtractTime></TransferInfo>
+  <ABR recordLastUpdatedDate="20260920" replaced="N">
+    <ABN status="ACT" ABNStatusFromDate="20100102">51824753556</ABN>
+    <EntityType>
+      <EntityTypeInd>OTH</EntityTypeInd>
+      <EntityTypeText>Other Incorporated Entity</EntityTypeText>
+    </EntityType>
+    <MainEntity>
+      <NonIndividualName type="MN">
+        <NonIndividualNameText>Snowy Community Association</NonIndividualNameText>
+      </NonIndividualName>
+      <BusinessAddress>
+        <AddressDetails>
+          <State>NSW</State>
+          <Postcode>2730</Postcode>
+        </AddressDetails>
+      </BusinessAddress>
+    </MainEntity>
+    <ASICNumber ASICNumberType="ACN">123456789</ASICNumber>
+    <GST status="ACT" GSTStatusFromDate="20100203" />
+    <OtherEntity>
+      <NonIndividualName type="BN"><NonIndividualNameText>Snowy Community</NonIndividualNameText></NonIndividualName>
+    </OtherEntity>
+    <OtherEntity>
+      <NonIndividualName type="TRD"><NonIndividualNameText>Snowy Helpers</NonIndividualNameText></NonIndividualName>
+    </OtherEntity>
+    <DGR DGRStatusFromDate="20110405">
+      <NonIndividualName type="DGR"><NonIndividualNameText>Snowy Gift Fund</NonIndividualNameText></NonIndividualName>
+    </DGR>
+    <DGR DGRStatusFromDate="20120607">
+      <NonIndividualName type="DGR"><NonIndividualNameText>Snowy Building Fund</NonIndividualNameText></NonIndividualName>
+    </DGR>
+  </ABR>
+  <ABR recordLastUpdatedDate="20260920" replaced="N">
+    <ABN status="ACT" ABNStatusFromDate="20200101">11000000560</ABN>
+    <EntityType><EntityTypeInd>PRV</EntityTypeInd><EntityTypeText>Private Company</EntityTypeText></EntityType>
+    <MainEntity>
+      <NonIndividualName type="MN"><NonIndividualNameText>Out of Scope Example</NonIndividualNameText></NonIndividualName>
+      <BusinessAddress><AddressDetails><State>NSW</State><Postcode>2000</Postcode></AddressDetails></BusinessAddress>
+    </MainEntity>
+  </ABR>
+</Transfer>

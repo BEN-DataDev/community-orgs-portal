@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Transfer xmlns="http://business" error="">
+  <TransferInfo><FileSequenceNumber>2</FileSequenceNumber><RecordCount>1</RecordCount><ExtractTime>2026-09-21T00:00:00Z</ExtractTime></TransferInfo>
+  <ABR recordLastUpdatedDate="20260921" replaced="N">
+    <ABN status="ACT" ABNStatusFromDate="20150506">22000000280</ABN>
+    <EntityType><EntityTypeInd>IND</EntityTypeInd><EntityTypeText>Individual/Sole Trader</EntityTypeText></EntityType>
+    <LegalEntity>
+      <IndividualName type="LGL"><NameTitle>Dr</NameTitle><GivenName>Casey</GivenName><FamilyName>Example</FamilyName></IndividualName>
+      <BusinessAddress><AddressDetails><State>VIC</State><Postcode>3000</Postcode></AddressDetails></BusinessAddress>
+    </LegalEntity>
+  </ABR>
+</Transfer>

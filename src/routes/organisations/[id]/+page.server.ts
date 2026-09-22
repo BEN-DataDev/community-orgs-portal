@@ -165,5 +165,29 @@ export const actions: Actions = {
 		}
 
 		return actionSuccess();
+	},
+
+	deleteAlias: async ({ request, locals: { supabase, user }, params }) => {
+		const orgId = orgIdSchema.safeParse(params.id);
+		if (!orgId.success) return fail(400, actionFailure('Not a valid organisation id.'));
+		await requireOrgEditor(supabase, user?.id, orgId.data);
+
+		const aliasId = recordIdSchema.safeParse((await request.formData()).get('alias_id'));
+		if (!aliasId.success) return fail(400, actionFailure('Not a valid name id.'));
+
+		const { data: deleted, error: deleteError } = await supabase
+			.from('aliases')
+			.delete()
+			.eq('alias_id', aliasId.data)
+			.eq('org_id', orgId.data)
+			.select('alias_id')
+			.maybeSingle();
+
+		if (deleteError || !deleted) {
+			console.error('Failed to delete alias:', deleteError);
+			return fail(400, actionFailure('Could not remove that name.'));
+		}
+
+		return actionSuccess();
 	}
 };

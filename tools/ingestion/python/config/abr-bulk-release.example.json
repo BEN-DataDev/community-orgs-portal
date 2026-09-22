@@ -1,0 +1,63 @@
+{
+	"config_version": "abr-bulk-local-v1",
+	"source_id": "abr-bulk",
+	"resource_id": "5bd7fcab-e315-42cb-8daf-50b7efc2027e",
+	"release_id": "REPLACE-WITH-RELEASE-ID",
+	"observed_at": "2026-09-22T00:00:00Z",
+	"extract_time": "2026-09-22T00:00:00Z",
+	"expected_member_count": 20,
+	"publisher": "Australian Business Register",
+	"attribution": "Australian Business Register ABN Lookup bulk extract",
+	"resource_list_url": "https://data.gov.au/data/dataset/5bd7fcab-e315-42cb-8daf-50b7efc2027e/resource/469c8c2c-0be5-45b2-90d7-c42f637f3323/download/abn-bulk-extract-resources.csv",
+	"licence": {
+		"name": "Creative Commons Attribution 3.0 Australia",
+		"url": "https://creativecommons.org/licenses/by/3.0/au/"
+	},
+	"scope": {
+		"snapshot_series": "abr-weekly-snowy-valleys",
+		"postcodes": [
+			"2582",
+			"2611",
+			"2620",
+			"2624",
+			"2627",
+			"2628",
+			"2629",
+			"2640",
+			"2642",
+			"2644",
+			"2649",
+			"2650",
+			"2652",
+			"2653",
+			"2720",
+			"2722",
+			"2727",
+			"2729",
+			"2730",
+			"3707",
+			"3708",
+			"3709",
+			"3900"
+		],
+		"known_abns": []
+	},
+	"retention": {
+		"class": "hold",
+		"basis": "Hold private registry evidence pending P35 triage and P36 withdrawal validation"
+	},
+	"parts": [
+		{
+			"part_id": "0ae4d427-6fa8-4d40-8e76-c6909b5a071b",
+			"filename": "public_split_1_10.zip",
+			"ordinal": 1,
+			"sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+		},
+		{
+			"part_id": "635fcb95-7864-4509-9fa7-a62a6e32b62d",
+			"filename": "public_split_11_20.zip",
+			"ordinal": 2,
+			"sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+		}
+	]
+}

@@ -4,6 +4,13 @@ Requires Python 3.10 or later. Uses only the standard library; no installation,
 credentials, database, Flask, Redis or network connection is needed for offline
 fixtures. Live acquisition requires network access; staging is a separate operation.
 
+P33 adds the offline `ingestion.abr_bulk` adapter for separately downloaded national
+ABN bulk releases. It streams every XML member across the inventoried ZIP parts,
+checkpoints completed parts, retains only configured-postcode and known-ABN candidates,
+and emits the private P31 registry-seed contract. See the
+[P33 operation guide](../../../docs/abn-bulk-seed.md). It does not download, stage,
+triage or publish data by itself.
+
 P13 adds an explicit bounded bulk CSV fallback and acquisition manifests. Both
 paths were verified live against the six-record postcode 2730 cohort. See the
 [P13 operation and validation guide](../../../docs/acnc-acquisition.md) for commands,
@@ -246,7 +253,6 @@ checking all 62 review units across five pages and withdrawn-page 404s. It uses
 no hosted credentials. The SQL harness emulates auth helpers; hosted application
 verification and retained-pilot replay remain F05 work.
 
-
 ## Queued acquisition worker
 
 Run `python3 -m ingestion.worker` from this directory with a dedicated libpq
@@ -261,7 +267,6 @@ staging and job completion together. No publication is performed. Schedules star
 off and require platform-admin configuration. See [deployment, recovery and
 validation](../../../docs/acquisition-jobs.md) and the optional service/timer files
 in `../deploy`.
-
 
 ## Approved CSV files (P12)
 
