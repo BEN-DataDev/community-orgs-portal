@@ -1,12 +1,14 @@
 # Portal implementation plan
 
-Prepared: 15 September 2026. Updated: 18 September 2026 after deferring real-provider CSV onboarding.
-Status: full ACNC register field coverage and the F05 release gate are complete,
-with approval/publication and post-publication checks confirmed by the user.
-ACNC acquisition, its bounded bulk CSV fallback (P13), and the approved CSV importer
-are implemented. Other source adapters remain outstanding.
+Prepared: 15 September 2026. Updated: 22 September 2026 for registry seeding.
+Status: P31's private registry candidate boundary is implemented locally. ACNC
+acquisition, reviewed publication, complete-snapshot reconciliation,
+withdrawal/redaction and guarded rollback are implemented. The monthly 23-postcode
+schedule is enabled. Exact-ABN live qualification remains externally gated. The
+next implementation phase broadens discovery through the national ABN bulk extract
+and the public NSW incorporated-associations search interface.
 
-## Current priorities: exact-ABN verification and ACNC scheduling
+## Current priorities: registry seeding and directory usability
 
 [The complete public register field coverage plan](import-field-coverage-plan.md)
 (F01–F05) has passed its release gate. F02–F05 and website-v3 migrations are applied
@@ -16,23 +18,19 @@ checks, including hosted signed-out access, attribution/dates, coverage,
 exclusions/suppression and duplicates. See the
 [v3 validation and closure report](acnc-website-normalisation.md).
 
-Acquisition job controls and scheduling are now deployed: operator
-queue/status UI, bounded Python worker, fenced leases, immutable acquisition
-checkpoints, retry/backoff and cron enqueueing. See the [deployment and validation
-notes](acquisition-jobs.md). The acquisition migration and restricted database LOGIN are now applied to the
-hosted Supabase project. The worker now runs on AKHOME under Docker Desktop,
-with restricted credentials and verified TLS/database connectivity. The first
-manual live refresh completed as run 9 with six accepted records and no quarantine;
-scheduling is off. The production portal is deployed and public/protected-route
-HTTP checks passed. The operator has now verified signed-in queue/restart,
-source-pause and re-enable controls, corroborated by runs 11 and 12 and the
-cancelled job's database state. Controlled active-job interruption (before and
-after checkpoint), manual-edit protection, withdrawal replay, and failed/partial
-source checks have now passed in an isolated disposable database. The remaining
-ACNC scheduling step is to choose the pilot refresh cadence and observe the first
-scheduled job. Scheduling remains
-Off; broader complete-snapshot reconciliation is still separate work.
-Broader sources retain their own qualification gates.
+Acquisition job controls and scheduling are deployed: operator queue/status UI,
+bounded Python worker, fenced leases, immutable checkpoints, retry/backoff and cron
+enqueueing. The restricted worker runs on AKHOME, the monthly Snowy Valleys schedule
+is enabled, and P27–P30 cover reconciliation, withdrawal, rollback and a second
+cycle. The remaining ACNC task is operational observation of the first scheduled
+run after `2026-10-19T03:18:23Z`; it does not block new engineering.
+
+“Fully seeded” means complete, reproducible candidate coverage for the configured
+registry scopes. It does not mean that every ABN becomes a public community
+organisation. Registry records first enter a private candidate layer. Inclusion,
+identity and field decisions still pass through deterministic matching and operator
+review. Registered address/postcode is discovery evidence, not proof of local
+service delivery.
 
 ### Source implementation status
 
@@ -41,39 +39,65 @@ foundation for additional sources. Each source still needs its own adapter,
 qualification, mappings and acceptance tests; the deployed ACNC worker does not
 automatically acquire other providers.
 
-| Source | Current status | Remaining work |
-| --- | --- | --- |
-| ACNC Register | CKAN worker and 23-postcode Snowy Valleys configuration deployed; [P13 bulk fallback](acnc-acquisition.md) implemented locally and both paths verified live; monthly hosted schedule enabled | Observe the first expanded scheduled job after the October 2026 due time; deploy stricter worker checks when ready; broader reconciliation and full-field bulk publication remain separate work |
-| Approved CSV files (P12) | Implemented, deployed and hosted database verification passed; [CLI and verification](approved-csv-import.md) | Deferred until an approved provider CSV is received; P12 remains complete |
-| Exact-ABN Lookup (P16) | [Bounded adapter implemented](exact-abn-lookup.md); live qualification pending | Provision access GUID and approved exact-ABN set; complete live/withdrawal checks |
-| ABN public bulk extract | Not implemented | Separate streaming XML adapter when scale warrants it |
-| NSW incorporated associations | Upstream scraper assessed; adapter not integrated | CSV onboarding deferred until an approved export is received; automated collection remains separately unqualified |
-| Landcare, neighbourhood houses, sports and arts directories | Expansion backlog | Select pilot providers, qualify access/reuse and implement provider mappings/adapters |
-| My Community Directory | Planned; not integrated | Obtain partner agreement and technical documentation before implementing the adapter |
-| ACNC AIS financial history | Deferred beyond the initial release | Separate adapter and reporting-period schema with explicit financial-measure definitions |
+| Source                                                      | Current status                                                                                                                                                                                  | Remaining work                                                                                                                                                                                |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ACNC Register                                               | CKAN worker and 23-postcode Snowy Valleys configuration deployed; [P13 bulk fallback](acnc-acquisition.md) and complete-field reviewed publication implemented; monthly hosted schedule enabled | Observe the first expanded scheduled job after the October 2026 due time and record operational sizing findings                                                                               |
+| Approved CSV files (P12)                                    | Implemented, deployed and hosted database verification passed; [CLI and verification](approved-csv-import.md)                                                                                   | Deferred until an approved provider CSV is received; P12 remains complete                                                                                                                     |
+| Exact-ABN Lookup (P16)                                      | [Bounded adapter implemented](exact-abn-lookup.md); live qualification pending                                                                                                                  | Provision access GUID and approved exact-ABN set; complete live/withdrawal checks                                                                                                             |
+| ABN public bulk extract                                     | Official weekly multipart XML source identified; adapter not implemented                                                                                                                        | Build a streaming, checkpointed importer that inventories every part, retains the configured postcode cohort and known ABNs as private candidates, and rejects incomplete snapshots           |
+| NSW incorporated associations                               | No bulk feed; upstream scrapers assessed but no current adapter is integrated                                                                                                                   | Build a bounded scraper over the ordinary public postcode/suburb search interface, using conservative request pacing, current markup fixtures and jurisdiction-scoped association identifiers |
+| Landcare, neighbourhood houses, sports and arts directories | Expansion backlog                                                                                                                                                                               | Select pilot providers, qualify access/reuse and implement provider mappings/adapters                                                                                                         |
+| My Community Directory                                      | Planned; not integrated                                                                                                                                                                         | Obtain partner agreement and technical documentation before implementing the adapter                                                                                                          |
+| ACNC AIS financial history                                  | Deferred beyond the initial release                                                                                                                                                             | Separate adapter and reporting-period schema with explicit financial-measure definitions                                                                                                      |
 
 ### Next implementation sequence
 
-1. Qualify **exact-ABN verification (P16)** with provisioned access and an approved live set.
-   Start with the assessed upstream parser, fixture tests for response shapes and
-   mappings, injected credentials, and bounded requests. This work can proceed
-   without a live access GUID; live verification waits until access is configured.
-2. Finish **ACNC scheduling** by observing the first monthly scheduled job after
-   the hosted due time. The pilot cadence is monthly and the schedule is enabled;
-   broader snapshot reconciliation is separate work.
-3. Resume **real-provider CSV onboarding** when an approved CSV/spreadsheet arrives
-   with access/reuse evidence. Qualify the export, map and validate its columns,
-   stage it, and use explicit review/publication. The small NSW associations export
-   follows this same resumption gate.
-4. Select further directories from measured coverage gaps and onboard each through
-   the same qualification and publication gates.
+1. **P31 — Registry-seed contract and candidate store — complete locally.** The
+   [P31 contract](registry-seed-contract.md) implements private versioned candidates,
+   immutable release/part manifests, scope/completeness gates, retention, reasoned
+   revision-fenced triage and bounded promotion into existing reviewed staging.
+   The migration is not yet recorded as hosted.
+2. **P32 — Make a larger directory operable.** Add server-side organisation-name,
+   alias and exact-ABN search with RLS-preserving pagination. Complete correction of
+   existing aliases, locations and document links, plus relationship end dates.
+3. **P33 — Implement the ABN bulk seed adapter.** Stream every part of a single
+   weekly release, verify the release manifest and file hashes, and retain records
+   for configured postcodes plus explicitly known ABNs. Preserve repeated names,
+   native status dates and source attribution. A missing or failed part makes the
+   run partial and prevents reconciliation or publication.
+4. **P34 — Implement the NSW register scraper.** Use only the ordinary unauthenticated
+   postcode/suburb search flow, with conservative pacing, bounded retries,
+   pagination checks, duplicate detection and markup-change shutdown. Key records
+   by `(AU-NSW, association number)` and do not merge by name. Document the public
+   access/reuse basis and collect only the defined public register fields.
+5. **P35 — Add candidate triage and cross-source resolution.** Join only on qualified
+   identifiers; present name/address similarities as review candidates. Record why
+   each candidate is included, excluded, deferred or linked, and keep adjacent-area
+   records private until service relevance is evidenced.
+6. **P36 — Publish and maintain the registry seed.** Review a bounded first cohort,
+   publish attributable records, add source/postcode/freshness/failure reporting,
+   then exercise unchanged refresh, status change, withdrawal, partial-run and
+   rollback paths before enabling recurring ABN and NSW collection.
+
+P33 and P34 may now proceed in parallel. P32 must complete before the larger
+cohort is published, but does not block private acquisition. P16 live exact-ABN
+qualification and the first scheduled ACNC observation continue as parallel
+operational tracks and do not block P31–P36.
+
+**Decision — 22 September 2026:** promote national ABN bulk processing and NSW
+register scraping from conditional expansion to the active registry-seeding phase.
+The NSW register has no bulk feed; collection uses its ordinary public postcode or
+suburb searches without bypassing access controls. Public search results and ABN
+bulk records are discovery candidates, not automatic public organisations.
 
 **Decision — 18 September 2026:** P12 is complete, deployed and verified.
 Real-provider CSV onboarding is deferred at the user's request until approved CSV
 information is available. It is not an active completion blocker for P12 or P16.
-Coverage dependent on those exports waits; the portal and ACNC workflow continue
-unchanged. Retain the deployed importer and synthetic fixtures; no rollback or
-CSV source enablement is needed. See the [CSV deferral record](approved-csv-import.md#real-provider-onboarding-deferred--18-september-2026).
+Coverage dependent on those exports waits. Retain the deployed importer and
+synthetic fixtures; no rollback or CSV source enablement is needed. This decision
+still applies to provider CSV files, but it does not defer the ABN bulk or NSW
+public-search work promoted on 22 September. See the
+[CSV deferral record](approved-csv-import.md#real-provider-onboarding-deferred--18-september-2026).
 
 This sequence supersedes the original first-batch instructions below; the milestone
 tables remain the broader backlog, not a completion checklist.
@@ -117,11 +141,13 @@ have already happened.
   Candidate discovery targets the documented [23 postcodes](snowy-valleys-postcode-scope.md)
   that overlap or directly border the LGA. Multi-postcode configuration and the
   rebuilt worker are deployed; the expanded acquisition has not yet run.
-- Initial target: approximately 50–100 reviewed records, including existing records,
-  duplicate candidates and groups without ABNs. The P01 policy defines the cohort;
-  the six-record ACNC sample does not yet fulfil that target.
-- Initial sources: ACNC Register and approved CSV files; ABN verification when access
-  is available. No AIS financial-history import in the first release.
+- First publication target: a bounded, reviewable slice of the registry-derived
+  candidates, including existing records, duplicate candidates and groups without
+  ABNs. Candidate acquisition may be much larger than the publication batch.
+- Active seed sources: ACNC Register, the national ABN bulk extract and the NSW
+  incorporated-associations public search. Approved CSV remains available for later
+  providers; exact-ABN verification proceeds when access is available. No AIS
+  financial-history import is included in this phase.
 - Access: retain current organisation roles; add a distinct platform ingestion role.
 - Publication: operators approve new records and changes during the pilot.
 - UI: extend the current Svelte/Skeleton interface and navigation conventions.
@@ -187,13 +213,13 @@ records with clear source attribution and freshness information.
 
 **Indicative effort: 2–3 engineering days.**
 
-| ID  | Task                                       | Deliverable / acceptance                                                                                                                        |
-| --- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| P01 | Write the pilot inclusion policy — complete | [Policy v1.0](pilot-inclusion-policy.md) defines Snowy Valleys scope, categories, entity/group/service distinctions, exclusions and evidence/review rules |
-| P02 | Fix relationship UUID conversion (gap G01) — complete | Partner search uses string IDs, excludes the current organisation and surfaces failures; browser creation succeeds                              |
-| P03 | Capture a development baseline             | Record check/build results and relevant SQL test results against a disposable/local database; identify hosted migration drift before deployment |
-| P04 | Qualify source samples — complete          | [Qualification record](source-sample-qualification.md): retained six-record ACNC evidence, versioned synthetic CSV/schema/manifest, and ABN access handoff |
-| P05 | Sketch the core journeys — complete        | [Journey sketches v1.0](core-journeys.md): import → match → field review → publish; organisation edit → conflict review; reject/withdraw → suppress, with current/proposed boundaries |
+| ID  | Task                                                  | Deliverable / acceptance                                                                                                                                                              |
+| --- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P01 | Write the pilot inclusion policy — complete           | [Policy v1.0](pilot-inclusion-policy.md) defines Snowy Valleys scope, categories, entity/group/service distinctions, exclusions and evidence/review rules                             |
+| P02 | Fix relationship UUID conversion (gap G01) — complete | Partner search uses string IDs, excludes the current organisation and surfaces failures; browser creation succeeds                                                                    |
+| P03 | Capture a development baseline                        | Record check/build results and relevant SQL test results against a disposable/local database; identify hosted migration drift before deployment                                       |
+| P04 | Qualify source samples — complete                     | [Qualification record](source-sample-qualification.md): retained six-record ACNC evidence, versioned synthetic CSV/schema/manifest, and ABN access handoff                            |
+| P05 | Sketch the core journeys — complete                   | [Journey sketches v1.0](core-journeys.md): import → match → field review → publish; organisation edit → conflict review; reject/withdraw → suppress, with current/proposed boundaries |
 
 **Exit:** a representative sample, agreed working scope and reviewable workflow
 sketches exist. Current application failures are distinguished from proposed work.
@@ -206,14 +232,14 @@ for access approval or real-format validation.
 
 **Indicative effort: 1–2 weeks. Depends on P01, P04 and P05.**
 
-| ID  | Task                                           | Deliverable / acceptance                                                                                                                                       |
-| --- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P06 | Define the capability matrix — complete        | [Capability matrix v1.0](capability-matrix.md) separates public/registered readers, organisation roles, ingestion operators and platform administrators; records session, scope and P07/P08 verification rules |
-| P07 | Implement scoped operator access — complete | [Hosted access verification](scoped-operator-access.md): migration and application deployed; server/RPC/role/MFA checks and signed-in production boundaries verified |
-| P08 | Implement minimum organisation role management — complete | [P08 implementation and hosted verification](organisation-role-management.md): scoped assignments, hierarchy/MFA, owner safeguards and signed-in production checks passed                                           |
-| P09 | Add private ingestion storage — complete and deployed | [P09 storage and retention](private-ingestion-storage.md#deployment-record): private schema, source-policy raw retention, holds, preview/removal and replay-safe audit; completion/deployment recorded in commit `703a903` |
-| P10 | Add publication and edit protection — complete | [P10 acceptance and recovery](publication-edit-protection.md): explicit visibility, revision/manual-edit protection, publication events, suppression and importer ownership checks; local regression and hosted catalog evidence |
-| P11 | Define identifier and entity mapping — complete | [Mapping contract v1.0](identifier-entity-mapping.md): jurisdiction-scoped identifiers, legal-entity/branch/service rules, target duplicate constraints and a UUID-preserving migration path; schema enforcement remains P14 implementation |
+| ID  | Task                                                      | Deliverable / acceptance                                                                                                                                                                                                                    |
+| --- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P06 | Define the capability matrix — complete                   | [Capability matrix v1.0](capability-matrix.md) separates public/registered readers, organisation roles, ingestion operators and platform administrators; records session, scope and P07/P08 verification rules                              |
+| P07 | Implement scoped operator access — complete               | [Hosted access verification](scoped-operator-access.md): migration and application deployed; server/RPC/role/MFA checks and signed-in production boundaries verified                                                                        |
+| P08 | Implement minimum organisation role management — complete | [P08 implementation and hosted verification](organisation-role-management.md): scoped assignments, hierarchy/MFA, owner safeguards and signed-in production checks passed                                                                   |
+| P09 | Add private ingestion storage — complete and deployed     | [P09 storage and retention](private-ingestion-storage.md#deployment-record): private schema, source-policy raw retention, holds, preview/removal and replay-safe audit; completion/deployment recorded in commit `703a903`                  |
+| P10 | Add publication and edit protection — complete            | [P10 acceptance and recovery](publication-edit-protection.md): explicit visibility, revision/manual-edit protection, publication events, suppression and importer ownership checks; local regression and hosted catalog evidence            |
+| P11 | Define identifier and entity mapping — complete           | [Mapping contract v1.0](identifier-entity-mapping.md): jurisdiction-scoped identifiers, legal-entity/branch/service rules, target duplicate constraints and a UUID-preserving migration path; schema enforcement remains P14 implementation |
 
 Before finalising migrations, compare proposed fields with actual source headers and
 existing portal records. Preserve the existing `org_id` UUIDs and relationships.
@@ -242,14 +268,14 @@ provide a starting point but must be tested against their current authorization 
 
 **Indicative effort: 1–2 weeks. Depends on P09–P11.**
 
-| ID  | Task                                   | Deliverable / acceptance                                                                                                      |
-| --- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| P12 | Build approved CSV importer — complete and deployed | [Importer and verification](approved-csv-import.md): validates metadata/rows, retains quarantine reasons, stages replay-safe records for reviewed publication                                            |
-| P13 | Adapt existing Python ACNC extractor — complete | [P13 implementation and validation](acnc-acquisition.md): full resource/schema qualification, versioned staging records/manifests and bounded bulk CSV fallback; six-record live parity and disposable staging/replay checks passed |
-| P14 | Add deterministic matching — complete and deployed | [Identity implementation and hosted verification](deterministic-matching.md#hosted-completion--18-september-2026): reconciled unverified backfill, canonical matching, conflict holds, approval fencing and production operator/MFA checks passed |
-| P15 | Generate field-level changes — complete and deployed | [Private dry-run reports](field-level-changes.md): six record categories, field evidence, prior observations/revisions and guarded missing-record comparisons; local and hosted SQL, production download/access and real MFA verification passed |
-| P16 | Exact-ABN adapter implemented; live qualification pending | [Pinned SOAP contract, bounded acquisition and private review evidence](exact-abn-lookup.md); unavailable access leaves verification pending |
-| P17 | Add transactional publication service  | Applies an approved immutable change set, checks revisions and records exact before/after values                              |
+| ID  | Task                                                      | Deliverable / acceptance                                                                                                                                                                                                                          |
+| --- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P12 | Build approved CSV importer — complete and deployed       | [Importer and verification](approved-csv-import.md): validates metadata/rows, retains quarantine reasons, stages replay-safe records for reviewed publication                                                                                     |
+| P13 | Adapt existing Python ACNC extractor — complete           | [P13 implementation and validation](acnc-acquisition.md): full resource/schema qualification, versioned staging records/manifests and bounded bulk CSV fallback; six-record live parity and disposable staging/replay checks passed               |
+| P14 | Add deterministic matching — complete and deployed        | [Identity implementation and hosted verification](deterministic-matching.md#hosted-completion--18-september-2026): reconciled unverified backfill, canonical matching, conflict holds, approval fencing and production operator/MFA checks passed |
+| P15 | Generate field-level changes — complete and deployed      | [Private dry-run reports](field-level-changes.md): six record categories, field evidence, prior observations/revisions and guarded missing-record comparisons; local and hosted SQL, production download/access and real MFA verification passed  |
+| P16 | Exact-ABN adapter implemented; live qualification pending | [Pinned SOAP contract, bounded acquisition and private review evidence](exact-abn-lookup.md); unavailable access leaves verification pending                                                                                                      |
+| P17 | Add transactional publication service                     | Applies an approved immutable change set, checks revisions and records exact before/after values                                                                                                                                                  |
 
 The first output is a dry-run report against the test cohort. Inspect it before
 enabling publication. An unchanged replay must produce no new entities or public
@@ -301,24 +327,25 @@ runtime, memory and expected volume.
 matches, source freshness, reviewer effort and operating cost. Expand only when the
 team can handle the resulting review queue.
 
-### Milestone 5 — Expand from measured needs
+### Milestone 5 — Registry seeding and measured expansion
 
-Schedule these after the pilot, in the order supported by coverage and user feedback:
+P31–P36 above are the active registry-seeding programme. After it establishes
+candidate coverage and operating cost, schedule further sources and domain work in
+the order supported by measured gaps and user feedback:
 
-| Work                                                                | Dependency / reason                                                                                                             |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| NSW associations feed/import                                        | Adapt reviewed NSW Python scraper after access/markup qualification, or use approved export; broadens coverage beyond charities |
-| Landcare, neighbourhood houses and selected sports/arts directories | Provider-specific terms; supports informal groups and local services                                                            |
-| My Community Directory adapter                                      | Partner agreement and technical documentation                                                                                   |
-| Role requests and representative claims                             | Agreed verification policy and tested request/review permissions                                                                |
-| Social media, insurance and auditor UI (G07)                        | Actual use cases and suitable structured forms                                                                                  |
-| Governance/programs/accreditation/assets/metrics screens (G06)      | Defined domain workflows; prioritise services if directory users need them                                                      |
-| Global relationship list/detail routes (G03)                        | Demonstrated need beyond organisation-specific navigation                                                                       |
-| AIS financial history (G08)                                         | Period-aware schema and explicit financial-measure definitions                                                                  |
-| Geocoding and service-area improvements (G09)                       | Address roles, provider terms and geographic requirements                                                                       |
-| Reports (G12)                                                       | Agreed questions and sufficiently complete data                                                                                 |
-| Broader visual redesign                                             | Evidence from working user journeys and content                                                                                 |
-| ABAC (G11)                                                          | Specific access requirements that current roles cannot reasonably express                                                       |
+| Work                                                                | Dependency / reason                                                        |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Landcare, neighbourhood houses and selected sports/arts directories | Provider-specific terms; supports informal groups and local services       |
+| My Community Directory adapter                                      | Partner agreement and technical documentation                              |
+| Role requests and representative claims                             | Agreed verification policy and tested request/review permissions           |
+| Social media, insurance and auditor UI (G07)                        | Actual use cases and suitable structured forms                             |
+| Governance/programs/accreditation/assets/metrics screens (G06)      | Defined domain workflows; prioritise services if directory users need them |
+| Global relationship list/detail routes (G03)                        | Demonstrated need beyond organisation-specific navigation                  |
+| AIS financial history (G08)                                         | Period-aware schema and explicit financial-measure definitions             |
+| Geocoding and service-area improvements (G09)                       | Address roles, provider terms and geographic requirements                  |
+| Reports (G12)                                                       | Agreed questions and sufficiently complete data                            |
+| Broader visual redesign                                             | Evidence from working user journeys and content                            |
+| ABAC (G11)                                                          | Specific access requirements that current roles cannot reasonably express  |
 
 ## Original first implementation batch
 
@@ -340,6 +367,9 @@ fixes moving while avoiding premature schema expansion or a large redesign.
 | Gate             | Required evidence                                                                                  |
 | ---------------- | -------------------------------------------------------------------------------------------------- |
 | Access           | Cross-organisation and non-operator denial tests; RLS checks; no importer ownership grants         |
+| Seed scope       | Canonical postcode/suburb scope, source release identity and reproducible candidate counts         |
+| Completeness     | Every ABN release part and NSW results page accounted for; partial/failed runs cannot reconcile    |
+| Scraper safety   | Bounded rate/retries, no access-control bypass, fixture-backed parsing and markup-change shutdown  |
 | Matching         | Labelled fixture set covering duplicates, shared ABNs, branches, common names and no identifiers   |
 | Publication      | Transactional revision checks, idempotent replay and explicit visibility                           |
 | Editing          | Manual corrections survive refresh; conflicting proposals require review                           |
@@ -354,16 +384,16 @@ deployment state before applying them to the hosted environment.
 
 ## Decisions and when they matter
 
-| Decision                         | Needed by                     | Proposed default                                                       |
-| -------------------------------- | ----------------------------- | ---------------------------------------------------------------------- |
+| Decision                         | Needed by                     | Proposed default                                                                                                                  |
+| -------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | Pilot geography/categories       | P01 — resolved                | [Policy v1.0](pilot-inclusion-policy.md): Snowy Valleys LGA or evidenced service delivery within it; defined community categories |
-| Legal entity/group/service model | P11                           | Separate identities/scopes; never merge merely because ABNs are shared |
-| Who approves publication         | P06–P07                       | Explicitly appointed platform operators                                |
-| Custom roles or ABAC             | No pilot dependency           | Retain organisation roles and add a narrow platform capability         |
-| Source permissions/credentials   | Each live adapter/publication | Disable sources whose access or reuse remains unresolved               |
-| Financial history                | Expansion                     | Exclude AIS financial import from pilot                                |
-| Hosting and operating budget     | P26                           | Bounded scheduled worker selected after measurements                   |
-| Representative claims            | Claim workflow                | Reviewed claim; imported records confer no account ownership           |
+| Legal entity/group/service model | P11                           | Separate identities/scopes; never merge merely because ABNs are shared                                                            |
+| Who approves publication         | P06–P07                       | Explicitly appointed platform operators                                                                                           |
+| Custom roles or ABAC             | No pilot dependency           | Retain organisation roles and add a narrow platform capability                                                                    |
+| Source permissions/credentials   | Each live adapter/publication | Disable sources whose access or reuse remains unresolved                                                                          |
+| Financial history                | Expansion                     | Exclude AIS financial import from pilot                                                                                           |
+| Hosting and operating budget     | P26                           | Bounded scheduled worker selected after measurements                                                                              |
+| Representative claims            | Claim workflow                | Reviewed claim; imported records confer no account ownership                                                                      |
 
 ## Effort and scope control
 
@@ -718,7 +748,6 @@ job controls before scheduled acquisition.
 - F01–F05 are complete. Acquisition job controls and scheduling are next; no jobs
   are enabled by this documentation update.
 
-
 ### Acquisition job controls and scheduling — 17 September 2026
 
 Implemented the local P26 increment in `/admin/ingestion/jobs`, private database
@@ -736,7 +765,6 @@ See [acquisition jobs](acquisition-jobs.md) for deployment instructions and limi
 P26 awaits hosting and live verification; P27/P30 still require their remaining
 reconciliation and second-cycle release checks. No live jobs or schedules enabled.
 
-
 ### Acquisition database deployment — 17 September 2026
 
 Applied `acquisition_jobs` (`20260917014227`) and `acquisition_worker_login`
@@ -747,7 +775,6 @@ unverified. Jobs/configurations remain empty. Password
 provisioning and service installation await the worker-host selection; application
 deployment and a first manual live refresh remain pending. See the current
 [deployment record](acquisition-jobs.md#deployment-record).
-
 
 ### AKHOME worker provisioning — 17 September 2026
 
@@ -761,7 +788,6 @@ remain empty. Docker Desktop must be running and AKHOME awake/online. See
 
 Next: application deployment, pilot acquisition configuration and the first manual
 live refresh. Acquisition schedules remain off and publication remains explicit.
-
 
 ### First live acquisition and portal deployment attempt — 17 September 2026
 
@@ -777,20 +803,17 @@ production site is unchanged. CLI credentials have expired; approval of a CLI
 deployment and renewed `vercel login` were requested. Application deployment and
 hosted job-form checks remain outstanding. See [deployment record](acquisition-jobs.md#deployment-record).
 
-
 ### Production portal deployment — 17 September 2026
 
 After the user renewed the CLI login, deployed the current portal source to the
 existing production project. Deployment `dpl_9tF1mk7odunPnGwdPXjwjzf4mng3` is READY
 and aliased to `https://community-orgs-portal.vercel.app`. This resolves the earlier
 deployment blocker. Public organisation pages returned 200, protected acquisition
-and review pages redirected to sign-in, and unauthenticated cron access returned
-401. Run 9 remains complete with six accepted records, with scheduling off.
+and review pages redirected to sign-in, and unauthenticated cron access returned 401. Run 9 remains complete with six accepted records, with scheduling off.
 
 The live worker/queue path was tested through the management API. Signed-in browser
 form submission remains an operator check. This was a working-tree CLI deployment;
 the uncommitted changes must be included before any later Git-triggered deployment.
-
 
 ### Operator recovery checks confirmed — 17 September 2026
 
@@ -803,7 +826,6 @@ enabled and scheduling remains Off. See [operator recovery checks](acquisition-j
 These close the signed-in job-control checks. They do not demonstrate recovery
 from interruption of an already running acquisition. Controlled failure/replay
 verification remains the next step; P27/P30 are not marked complete.
-
 
 ### Controlled recovery verification complete — 17 September 2026
 
@@ -823,7 +845,6 @@ was changed. Next is an explicit refresh-cadence decision and first scheduled-jo
 verification; P27 reconciliation/closure semantics remain a distinct implementation
 concern and are not marked complete by these checks.
 
-
 ### P02 complete — relationship partner search, 17 September 2026
 
 Organisation UUIDs now remain strings from the page through the form and search
@@ -841,7 +862,6 @@ RLS or the production SvelteKit enhancement runtime. No deployment or hosted dat
 changes were made. The browser script requires Playwright and installed Chromium;
 use `PLAYWRIGHT_MODULE` to point to an existing Playwright module when it is not
 installed locally, as with the other browser regression scripts.
-
 
 ### P04 complete — source sample qualification, 17 September 2026
 
@@ -875,7 +895,6 @@ the three Mermaid blocks have balanced fences. Documentation-only change; no
 application tests, hosted operations or deployment were needed. P05 completion
 does not mark the later implementation milestones complete.
 
-
 ### P06 complete — capability matrix, 17 September 2026
 
 [Capability matrix v1.0](capability-matrix.md) defines organisation and global
@@ -890,7 +909,6 @@ identified as incomplete rather than implied by role names. Historical role/ABAC
 examples now point to the pilot contract. Validation: local documentation links
 and diff whitespace checked; no runtime changes or application tests required.
 P07/P08 remain separate implementation/verification milestones.
-
 
 ### P07 complete locally — scoped operator access, 17 September 2026
 
@@ -911,7 +929,6 @@ check, targeted ESLint and production build pass. Auth scaffolding is emulated;
 no hosted verification or deployment was performed. Deploy the migration and
 application before claiming hosted closure. P08 remains separate work.
 
-
 ### P07 deployed and verified — 17 September 2026
 
 Applied `scoped_access_expiry` to hosted Supabase as **20260917063242** and aligned
@@ -930,7 +947,6 @@ source, schedule or publication changed. See [hosted verification](scoped-operat
 This closes the deployment/verification work left pending in the local entry
 above. P07 is complete; P08 remains separate. The working-tree deployment must
 be preserved in Git before a later Git-triggered release.
-
 
 ### P08 complete locally — organisation role management, 17 September 2026
 
@@ -953,7 +969,6 @@ See [P08 evidence and deployment steps](organisation-role-management.md).
 No hosted migration or application deployment was performed; signed-in production
 verification remains pending before hosted closure.
 
-
 ### P08 deployed and verified — 17 September 2026
 
 Applied `organisation_role_management` as **20260917065322** and aligned the local
@@ -970,7 +985,6 @@ synthetic role audit rows were removed; no pilot acquisition or publication chan
 [P08 hosted evidence](organisation-role-management.md#hosted-verification--17-september-2026)
 closes the deployment and verification work in the local entry above. P08 is
 complete. Preserve the deployed working-tree changes before a later Git release.
-
 
 ### P09 complete locally — private ingestion storage, 17 September 2026
 
@@ -993,7 +1007,6 @@ At this local implementation stage, no hosted migration, raw removal, source
 enablement or schedule change was performed. The deployment record below supersedes
 the pending hosted status from this stage.
 
-
 ### P09 completion and deployment recorded — 17 September 2026
 
 Commit `703a903` records **“P09 completed and deployed”**. P09 is therefore recorded
@@ -1006,7 +1019,6 @@ remain distinct from this completion/deployment record.
 Documentation reconciled on 18 September 2026; no database operation or deployment
 was performed by this correction. P12, the approved CSV importer, remains the next
 implementation task.
-
 
 ### P12 complete locally — approved CSV importer, 18 September 2026
 
@@ -1021,7 +1033,6 @@ Validation: 59 Python tests, 36 migrations in disposable PostGIS 17, eight exist
 SQL suites, CSV integration and concurrent owner-revocation checks passed.
 See [P12 implementation and operation](approved-csv-import.md). No hosted migration,
 source enablement, real provider qualification or deployment was performed.
-
 
 ### P12 deployed and verified — 18 September 2026
 
@@ -1055,7 +1066,6 @@ no new hosted publication or browser test was performed. No deployment or hosted
 mutation was required. Forward repair is documented; guarded committed-change
 rollback remains P29, and unsuppression/conflict overrides remain separate work.
 
-
 ### P11 complete — identifier and entity mapping, 18 September 2026
 
 [Mapping contract v1.0](identifier-entity-mapping.md) defines jurisdiction-scoped
@@ -1071,7 +1081,6 @@ checked the current schema, importer, source fixtures and publication constraint
 local reference links and diff whitespace. This completes P11's definition scope;
 P14 implements the schema/matcher and P16 provides exact-ABN evidence. No migration,
 hosted data change or deployment was performed; CSV branch/service holds remain.
-
 
 ### P13 complete — ACNC acquisition and bulk fallback, 18 September 2026
 
@@ -1092,7 +1101,6 @@ The existing deployed worker and scheduling are unchanged. Stricter CKAN checks
 require a worker rebuild to take effect there. Bulk source onboarding, full-field
 publication allowlisting, broader snapshot reconciliation and the refresh-cadence
 decision remain separate from completed P13 acquisition/staging.
-
 
 ### P14 implemented locally — deterministic identity, 18 September 2026
 
@@ -1117,7 +1125,6 @@ legacy reconciliation and migration/application deployment have not occurred;
 P14 is not marked deployed or fully closed. No live identity, publication or
 schedule changed.
 
-
 ### P14 complete and deployed — 18 September 2026
 
 After explicit user approval, applied **20260918021340** to hosted Supabase and
@@ -1137,7 +1144,6 @@ suppressions are unchanged. Scheduling remains Off.
 closes the local-only entry above. P14 is complete within the organisation matching
 scope; branch/service publication and P16 registry acquisition retain their own
 gates. No live source publication or registry verification was performed.
-
 
 ### P29/P30 implemented locally — guarded rollback and second-cycle validation, 20 September 2026
 
