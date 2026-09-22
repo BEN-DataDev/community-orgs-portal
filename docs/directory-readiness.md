@@ -5,7 +5,7 @@ Status: implemented and deployed on 22 September 2026. Hosted migration
 Vercel production deployment `dpl_EgFjYVd54bVPvR25NwufmR365UhN` is live.
 
 P32 makes the directory usable before registry-derived publication increases its
-size. It adds server-side search and closes the correction gaps for existing
+size. It adds server-side search and narrows the correction gaps for existing
 aliases, locations, document links and relationships.
 
 ## Directory search
@@ -55,6 +55,21 @@ Relationship end dates cannot precede their start dates. The current text-based
 `partner_org` model is retained; replacing it with a linked organisation identity
 is a separate model decision.
 
+### Hosted signed-in browser findings
+
+A production editor regression on 22 September 2026 found:
+
+- business/trading names can be added and edited, but cannot be removed, so a
+  newly added name cannot be restored to the original absent state;
+- locations can be added, edited and removed successfully;
+- documents are URL records only; local file selection and upload are not
+  implemented; and
+- relationships can be added and edited, but cannot be removed.
+
+Missing alias and relationship removal are P32 correction-workflow defects. Local
+document upload is a separate storage, access and retention capability rather than
+a failure of the implemented document-link workflow.
+
 ## Validation
 
 Validation completed locally:
@@ -77,7 +92,7 @@ Hosted verification confirmed all three indexes, invoker rights, anonymous and
 authenticated execution, anonymous denial of legal/contact child rows, registered
 exact-ABN search and successful public directory/search responses. The production
 build passed with the existing source-map, chunk-size and optional Sharp warnings.
-No disposable production records were created. A signed-in editor browser pass for
-the four correction forms remains useful regression coverage, but is not a
-deployment blocker. With P31 and P32 deployed, P33 and P34 are the next
-implementation tracks.
+The signed-in editor regression passed location add/edit/remove and alias and
+relationship add/edit, while identifying the two missing removal actions and the
+separate document-upload gap recorded above. With P31 and P32 deployed, P33 and
+P34 are the next implementation tracks alongside these P32 follow-ups.

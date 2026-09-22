@@ -63,7 +63,9 @@ automatically acquire other providers.
    server-side name/alias/exact-ABN search with visibility-preserving pagination,
    plus correction of aliases, locations, document links and relationship dates.
    Hosted migration `20260922052255_directory_readiness` and Vercel production
-   deployment `dpl_EgFjYVd54bVPvR25NwufmR365UhN` are verified.
+   deployment `dpl_EgFjYVd54bVPvR25NwufmR365UhN` are verified. The signed-in
+   regression found missing alias and relationship removal actions. Document
+   records remain URL-only; local file upload is a separate capability gap.
 3. **P33 — Implement the ABN bulk seed adapter.** Stream every part of a single
    weekly release, verify the release manifest and file hashes, and retain records
    for configured postcodes plus explicitly known ABNs. Preserve repeated names,
