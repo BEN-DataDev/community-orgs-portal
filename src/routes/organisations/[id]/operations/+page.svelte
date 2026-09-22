@@ -8,6 +8,7 @@
 	let { operationalInfo, locations, organisation, roleLevel } = $derived(data);
 	let canEdit = $derived(roleLevel >= EDITOR_LEVEL);
 	let isEditing = $state(false);
+	let editingLocationId = $state<string | null>(null);
 
 	/** `operating_hours` is a free-form JSON column; read it defensively. */
 	let hours = $derived(
@@ -80,37 +81,119 @@
 			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 				<div class="space-y-3">
 					{#each locations as location (location.location_id)}
-						<div class="card preset-outlined-surface-200-800 p-3">
-							<div class="flex items-start justify-between gap-3">
+						{#if editingLocationId === location.location_id && canEdit}
+							<form
+								method="POST"
+								action="?/updateLocation"
+								class="card preset-outlined-surface-200-800 space-y-2 p-3"
+							>
+								<input type="hidden" name="location_id" value={location.location_id} />
 								<div>
-									<h3 class="font-medium">{location.name}</h3>
-									{#if location.address}
-										<p class="text-surface-600-400 text-sm">{location.address}</p>
-									{/if}
-									{#if location.location_type}
-										<p class="text-surface-600-400 text-sm">{location.location_type}</p>
-									{/if}
-									{#if location.latitude === null || location.longitude === null}
-										<p class="text-surface-600-400 text-sm">
-											No coordinates — not shown on the map
-										</p>
+									<label class="label label-text" for={`location-name-${location.location_id}`}
+										>Name</label
+									>
+									<input
+										class="input"
+										id={`location-name-${location.location_id}`}
+										name="name"
+										value={location.name}
+										required
+									/>
+								</div>
+								<div>
+									<label class="label label-text" for={`location-address-${location.location_id}`}
+										>Address</label
+									>
+									<input
+										class="input"
+										id={`location-address-${location.location_id}`}
+										name="address"
+										value={location.address ?? ''}
+									/>
+								</div>
+								<div>
+									<label class="label label-text" for={`location-type-${location.location_id}`}
+										>Type</label
+									>
+									<select
+										class="select"
+										id={`location-type-${location.location_id}`}
+										name="location_type"
+										value={location.location_type ?? ''}
+									>
+										<option value="">Not recorded</option>
+										<option value="Head Office">Head Office</option>
+										<option value="Branch">Branch</option>
+										<option value="Service Centre">Service Centre</option>
+									</select>
+								</div>
+								<div class="grid grid-cols-2 gap-2">
+									<label class="label"
+										><span class="label-text">Latitude</span><input
+											class="input"
+											name="latitude"
+											inputmode="decimal"
+											value={location.latitude ?? ''}
+										/></label
+									>
+									<label class="label"
+										><span class="label-text">Longitude</span><input
+											class="input"
+											name="longitude"
+											inputmode="decimal"
+											value={location.longitude ?? ''}
+										/></label
+									>
+								</div>
+								<div class="flex gap-2">
+									<button type="submit" class="btn preset-filled">Save</button>
+									<button
+										type="button"
+										class="btn preset-tonal"
+										onclick={() => (editingLocationId = null)}>Cancel</button
+									>
+								</div>
+							</form>
+						{:else}
+							<div class="card preset-outlined-surface-200-800 p-3">
+								<div class="flex items-start justify-between gap-3">
+									<div>
+										<h3 class="font-medium">{location.name}</h3>
+										{#if location.address}
+											<p class="text-surface-600-400 text-sm">{location.address}</p>
+										{/if}
+										{#if location.location_type}
+											<p class="text-surface-600-400 text-sm">{location.location_type}</p>
+										{/if}
+										{#if location.latitude === null || location.longitude === null}
+											<p class="text-surface-600-400 text-sm">
+												No coordinates — not shown on the map
+											</p>
+										{/if}
+									</div>
+									{#if canEdit}
+										<div class="flex gap-2">
+											<button
+												type="button"
+												class="text-sm hover:underline"
+												onclick={() => (editingLocationId = location.location_id)}>Edit</button
+											>
+											<form method="POST" action="?/deleteLocation">
+												<input
+													class="input"
+													type="hidden"
+													name="location_id"
+													value={location.location_id}
+												/>
+												<button type="submit" class="text-error-500 text-sm hover:underline">
+													Remove
+												</button>
+											</form>
+										</div>
 									{/if}
 								</div>
-								{#if canEdit}
-									<form method="POST" action="?/deleteLocation">
-										<input
-											class="input"
-											type="hidden"
-											name="location_id"
-											value={location.location_id}
-										/>
-										<button type="submit" class="text-error-500 text-sm hover:underline">
-											Remove
-										</button>
-									</form>
-								{/if}
 							</div>
-						</div>
+						{/if}
 					{:else}
 						<p class="text-surface-600-400">No locations recorded.</p>
 					{/each}

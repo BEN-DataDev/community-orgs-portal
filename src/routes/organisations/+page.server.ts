@@ -9,6 +9,33 @@ import {
 
 const PAGE_SIZE = 10;
 
+interface DirectoryOrganisation {
+	org_id: string;
+	entity_name: string;
+	slug: string;
+	description: string | null;
+	date_established: string | null;
+	is_public: boolean;
+	search_rank: number;
+	legal_details: Array<{ entity_type: string | null; abn: string | null }>;
+	contact_info: Array<{ phone: unknown; email: string | null }>;
+	aliases: Array<{ alias: string | null; alias_type: string | null }>;
+}
+
+function directoryResult(value: unknown): {
+	total: number;
+	organisations: DirectoryOrganisation[];
+} {
+	if (!value || typeof value !== 'object') return { total: 0, organisations: [] };
+	const result = value as { total?: unknown; organisations?: unknown };
+	return {
+		total: typeof result.total === 'number' ? result.total : 0,
+		organisations: Array.isArray(result.organisations)
+			? (result.organisations as DirectoryOrganisation[])
+			: []
+	};
+}
+
 export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 	/**
 	 * `parseInt` on a non-numeric query string yields NaN, which would reach
@@ -17,47 +44,32 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 	const requestedPage = Number(url.searchParams.get('page'));
 	const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 	const offset = (page - 1) * PAGE_SIZE;
+	const searchQuery = (url.searchParams.get('q') ?? '').trim().slice(0, 100);
 
 	/**
-	 * Row-level security on `organisations` already limits this to public
-	 * organisations plus those the signed-in user holds a role on.
+	 * The invoker-rights RPC applies table RLS while matching and returning rows,
+	 * preserving organisation and sensitive child-table visibility boundaries.
 	 */
-	const {
-		data: organisations,
-		count,
-		error: loadError
-	} = await supabase
-		.from('organisations')
-		.select(
-			`
-            org_id,
-            entity_name,
-            slug,
-            description,
-            date_established,
-            is_public,
-            legal_details ( entity_type, abn ),
-            contact_info ( phone, email ),
-            aliases ( alias, alias_type )
-        `,
-			{ count: 'exact' }
-		)
-		.range(offset, offset + PAGE_SIZE - 1)
-		.order('entity_name');
+	const { data, error: loadError } = await supabase.rpc('search_organisations', {
+		p_query: searchQuery,
+		p_offset: offset,
+		p_limit: PAGE_SIZE
+	});
 
 	if (loadError) {
 		console.error('Failed to load organisations:', loadError);
 		error(500, 'Could not load organisations.');
 	}
 
-	const totalCount = count ?? 0;
+	const { organisations, total: totalCount } = directoryResult(data);
 
 	return {
 		organisations,
 		totalCount,
 		currentPage: page,
 		pageSize: PAGE_SIZE,
-		totalPages: Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+		totalPages: Math.max(1, Math.ceil(totalCount / PAGE_SIZE)),
+		searchQuery
 	};
 };
 

@@ -1,7 +1,8 @@
 # Portal implementation plan
 
 Prepared: 15 September 2026. Updated: 22 September 2026 for registry seeding.
-Status: P31's private registry candidate boundary is implemented locally. ACNC
+Status: P31's private registry candidate boundary and P32 directory readiness are
+deployed. ACNC
 acquisition, reviewed publication, complete-snapshot reconciliation,
 withdrawal/redaction and guarded rollback are implemented. The monthly 23-postcode
 schedule is enabled. Exact-ABN live qualification remains externally gated. The
@@ -52,14 +53,17 @@ automatically acquire other providers.
 
 ### Next implementation sequence
 
-1. **P31 — Registry-seed contract and candidate store — complete locally.** The
+1. **P31 — Registry-seed contract and candidate store — deployed.** The
    [P31 contract](registry-seed-contract.md) implements private versioned candidates,
    immutable release/part manifests, scope/completeness gates, retention, reasoned
    revision-fenced triage and bounded promotion into existing reviewed staging.
-   The migration is not yet recorded as hosted.
-2. **P32 — Make a larger directory operable.** Add server-side organisation-name,
-   alias and exact-ABN search with RLS-preserving pagination. Complete correction of
-   existing aliases, locations and document links, plus relationship end dates.
+   Hosted migration `20260922051805_registry_seed_candidates` is recorded.
+2. **P32 — Make a larger directory operable — deployed.** The
+   [directory-readiness implementation](directory-readiness.md) adds ranked
+   server-side name/alias/exact-ABN search with visibility-preserving pagination,
+   plus correction of aliases, locations, document links and relationship dates.
+   Hosted migration `20260922052255_directory_readiness` and Vercel production
+   deployment `dpl_EgFjYVd54bVPvR25NwufmR365UhN` are verified.
 3. **P33 — Implement the ABN bulk seed adapter.** Stream every part of a single
    weekly release, verify the release manifest and file hashes, and retain records
    for configured postcodes plus explicitly known ABNs. Preserve repeated names,
@@ -79,9 +83,8 @@ automatically acquire other providers.
    then exercise unchanged refresh, status change, withdrawal, partial-run and
    rollback paths before enabling recurring ABN and NSW collection.
 
-P33 and P34 may now proceed in parallel. P32 must complete before the larger
-cohort is published, but does not block private acquisition. P16 live exact-ABN
-qualification and the first scheduled ACNC observation continue as parallel
+P33 and P34 are now the next implementation tracks and may proceed in parallel.
+P16 live exact-ABN qualification and the first scheduled ACNC observation continue as parallel
 operational tracks and do not block P31–P36.
 
 **Decision — 22 September 2026:** promote national ABN bulk processing and NSW

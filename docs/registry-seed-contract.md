@@ -1,7 +1,7 @@
 # Registry seed candidate contract (P31)
 
-Status: implemented locally on 22 September 2026. The migration is not recorded as
-deployed to the hosted database.
+Status: implemented and deployed on 22 September 2026. Hosted migration
+`20260922051805_registry_seed_candidates` is recorded in the linked Supabase project.
 
 P31 separates broad registry discovery from the existing reviewed ingestion and
 publication workflow. An ABN bulk record or NSW search result is a private

@@ -10,12 +10,16 @@
 		pageSize: number;
 		/** An already-resolved path; callers pass `resolve('/some/route')`. */
 		baseUrl: string;
+		/** Query parameters to preserve while changing only the page number. */
+		query?: Record<string, string>;
 	}
 
-	let { currentPage, totalPages, totalCount, pageSize, baseUrl }: Props = $props();
+	let { currentPage, totalPages, totalCount, pageSize, baseUrl, query = {} }: Props = $props();
 
 	function hrefFor(page: number): string {
-		return `${baseUrl}?page=${page}`;
+		const params = new URLSearchParams(query);
+		params.set('page', String(page));
+		return `${baseUrl}?${params.toString()}`;
 	}
 
 	let onFirst = $derived(currentPage <= 1);

@@ -9,6 +9,7 @@ import {
 	auditColumns,
 	organisationSchema,
 	orgIdSchema,
+	recordIdSchema,
 	toColumns
 } from '$lib/server/validation';
 
@@ -127,6 +128,40 @@ export const actions: Actions = {
 		if (insertError) {
 			console.error('Failed to add alias:', insertError);
 			return fail(400, actionFailure('Could not add that name.'));
+		}
+
+		return actionSuccess();
+	},
+
+	updateAlias: async ({ request, locals: { supabase, user }, params }) => {
+		const orgId = orgIdSchema.safeParse(params.id);
+		if (!orgId.success) return fail(400, actionFailure('Not a valid organisation id.'));
+		await requireOrgEditor(supabase, user?.id, orgId.data);
+
+		const form = Object.fromEntries(await request.formData());
+		const aliasId = recordIdSchema.safeParse(form.alias_id);
+		const parsed = aliasSchema.safeParse(form);
+		if (!aliasId.success || !parsed.success) {
+			return fail(
+				400,
+				actionFailure(
+					'Please correct the highlighted fields.',
+					parsed.success ? {} : parsed.error.flatten().fieldErrors
+				)
+			);
+		}
+
+		const { data: updated, error: updateError } = await supabase
+			.from('aliases')
+			.update({ ...parsed.data, ...auditColumns(user?.id) })
+			.eq('alias_id', aliasId.data)
+			.eq('org_id', orgId.data)
+			.select('alias_id')
+			.maybeSingle();
+
+		if (updateError || !updated) {
+			console.error('Failed to update alias:', updateError);
+			return fail(400, actionFailure('Could not update that name.'));
 		}
 
 		return actionSuccess();

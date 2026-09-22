@@ -139,6 +139,45 @@ export const actions: Actions = {
 		return actionSuccess();
 	},
 
+	updateDocument: async ({ request, locals: { supabase, user }, params }) => {
+		const orgId = orgIdSchema.safeParse(params.id);
+		if (!orgId.success) return fail(400, actionFailure('Not a valid organisation id.'));
+		await requireOrgEditor(supabase, user?.id, orgId.data);
+
+		const form = Object.fromEntries(await request.formData());
+		const documentId = recordIdSchema.safeParse(form.document_id);
+		const parsed = documentSchema.safeParse(form);
+		if (!documentId.success || !parsed.success) {
+			return fail(
+				400,
+				actionFailure(
+					'Please correct the highlighted fields.',
+					parsed.success ? {} : parsed.error.flatten().fieldErrors
+				)
+			);
+		}
+
+		const { data: updated, error: updateError } = await supabase
+			.from('documents')
+			.update({
+				name: parsed.data.name,
+				url: parsed.data.url,
+				category: parsed.data.category ?? 'legal',
+				...auditColumns(user?.id)
+			})
+			.eq('document_id', documentId.data)
+			.eq('org_id', orgId.data)
+			.select('document_id')
+			.maybeSingle();
+
+		if (updateError || !updated) {
+			console.error('Failed to update document:', updateError);
+			return fail(400, actionFailure('Could not update that document.'));
+		}
+
+		return actionSuccess();
+	},
+
 	deleteDocument: async ({ request, locals: { supabase, user }, params }) => {
 		const orgId = orgIdSchema.safeParse(params.id);
 		if (!orgId.success) {

@@ -180,12 +180,17 @@ export const locationSchema = z.object({
 	longitude: optionalCoordinate.optional()
 });
 
-export const relationshipSchema = z.object({
-	partner_org: requiredText,
-	relationship_type: requiredText,
-	start_date: requiredDate,
-	end_date: optionalDate.optional()
-});
+export const relationshipSchema = z
+	.object({
+		partner_org: requiredText,
+		relationship_type: requiredText,
+		start_date: requiredDate,
+		end_date: optionalDate.optional()
+	})
+	.refine((value) => !value.end_date || new Date(value.end_date) >= new Date(value.start_date), {
+		path: ['end_date'],
+		message: 'End date cannot be before the start date'
+	});
 
 export const historySchema = z.object({
 	founding_members: optionalTextArray.optional(),

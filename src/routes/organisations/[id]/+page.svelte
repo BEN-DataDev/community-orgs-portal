@@ -10,6 +10,7 @@
 	let { organisation, relationships, roleLevel } = $derived(data);
 	let canEdit = $derived(roleLevel >= EDITOR_LEVEL);
 	let isEditing = $state(false);
+	let editingAliasId = $state<string | null>(null);
 
 	let tradingNames = $derived(
 		(organisation.aliases ?? []).filter((alias) => alias.alias_type === 'Trading Name')
@@ -58,6 +59,69 @@
 					<div><span class="font-medium">Description:</span> {organisation.description ?? '—'}</div>
 				</div>
 			{/if}
+
+			<div class="card preset-outlined-surface-200-800 mt-4 space-y-3 p-4">
+				<h2 class="font-medium">Business and trading names</h2>
+				{#each organisation.aliases ?? [] as alias (alias.alias_id)}
+					{#if editingAliasId === alias.alias_id && canEdit}
+						<form
+							method="POST"
+							action="?/updateAlias"
+							class="grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end"
+						>
+							<input type="hidden" name="alias_id" value={alias.alias_id} />
+							<div>
+								<label class="label label-text" for={`alias-${alias.alias_id}`}>Name</label>
+								<input
+									class="input"
+									id={`alias-${alias.alias_id}`}
+									name="alias"
+									value={alias.alias ?? ''}
+									required
+								/>
+							</div>
+							<div>
+								<label class="label label-text" for={`alias-type-${alias.alias_id}`}>Type</label>
+								<select
+									class="select"
+									id={`alias-type-${alias.alias_id}`}
+									name="alias_type"
+									value={alias.alias_type ?? 'Trading Name'}
+								>
+									<option value="Trading Name">Trading Name</option>
+									<option value="Business Name">Business Name</option>
+								</select>
+							</div>
+							<div class="flex gap-2">
+								<button type="submit" class="btn preset-filled">Save</button>
+								<button
+									type="button"
+									class="btn preset-tonal"
+									onclick={() => (editingAliasId = null)}>Cancel</button
+								>
+							</div>
+						</form>
+					{:else}
+						<div
+							class="border-surface-200-800 flex items-center justify-between gap-3 border-b pb-2 last:border-0"
+						>
+							<div>
+								<p>{alias.alias ?? '—'}</p>
+								<p class="text-surface-600-400 text-sm">{alias.alias_type ?? 'Name'}</p>
+							</div>
+							{#if canEdit}
+								<button
+									type="button"
+									class="btn btn-sm preset-tonal"
+									onclick={() => (editingAliasId = alias.alias_id)}>Edit</button
+								>
+							{/if}
+						</div>
+					{/if}
+				{:else}
+					<p class="text-surface-600-400">No alternate names recorded.</p>
+				{/each}
+			</div>
 
 			{#if canEdit}
 				<form

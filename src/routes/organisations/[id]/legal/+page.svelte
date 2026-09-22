@@ -8,6 +8,7 @@
 	let { legalInfo, documents, organisation, roleLevel } = $derived(data);
 	let canEdit = $derived(roleLevel >= EDITOR_LEVEL);
 	let isEditing = $state(false);
+	let editingDocumentId = $state<string | null>(null);
 
 	const yesNo = (value: boolean | null) => (value === null ? '—' : value ? 'Yes' : 'No');
 	const orDash = (value: string | null) => (value ? formatDate(value) : '—');
@@ -79,24 +80,69 @@
 			<div class="card preset-outlined-surface-200-800 space-y-3 p-4">
 				<h2 class="font-medium">Documents</h2>
 				{#each documents as document (document.document_id)}
-					<div
-						class="border-surface-200-800 flex flex-wrap items-center justify-between gap-3 border-b pb-2 last:border-0"
-					>
-						<a href={document.url} rel="noopener noreferrer" target="_blank" class="anchor">
-							{document.name}
-						</a>
-						{#if canEdit}
-							<form method="POST" action="?/deleteDocument">
-								<input
+					{#if editingDocumentId === document.document_id && canEdit}
+						<form
+							method="POST"
+							action="?/updateDocument"
+							class="border-surface-200-800 space-y-2 border-b pb-3"
+						>
+							<input type="hidden" name="document_id" value={document.document_id} />
+							<label class="label"
+								><span class="label-text">Document name</span><input
 									class="input"
-									type="hidden"
-									name="document_id"
-									value={document.document_id}
-								/>
-								<button type="submit" class="text-error-500 text-sm hover:underline">Remove</button>
-							</form>
-						{/if}
-					</div>
+									name="name"
+									value={document.name}
+									required
+								/></label
+							>
+							<label class="label"
+								><span class="label-text">Document URL</span><input
+									class="input"
+									name="url"
+									type="url"
+									value={document.url}
+									required
+								/></label
+							>
+							<input type="hidden" name="category" value={document.category} />
+							<div class="flex gap-2">
+								<button type="submit" class="btn preset-filled">Save</button>
+								<button
+									type="button"
+									class="btn preset-tonal"
+									onclick={() => (editingDocumentId = null)}>Cancel</button
+								>
+							</div>
+						</form>
+					{:else}
+						<div
+							class="border-surface-200-800 flex flex-wrap items-center justify-between gap-3 border-b pb-2 last:border-0"
+						>
+							<a href={document.url} rel="noopener noreferrer" target="_blank" class="anchor">
+								{document.name}
+							</a>
+							{#if canEdit}
+								<div class="flex gap-2">
+									<button
+										type="button"
+										class="text-sm hover:underline"
+										onclick={() => (editingDocumentId = document.document_id)}>Edit</button
+									>
+									<form method="POST" action="?/deleteDocument">
+										<input
+											class="input"
+											type="hidden"
+											name="document_id"
+											value={document.document_id}
+										/>
+										<button type="submit" class="text-error-500 text-sm hover:underline"
+											>Remove</button
+										>
+									</form>
+								</div>
+							{/if}
+						</div>
+					{/if}
 				{:else}
 					<p class="text-surface-600-400">No documents recorded.</p>
 				{/each}

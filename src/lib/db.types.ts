@@ -1610,6 +1610,10 @@ export type Database = {
 		};
 		Functions: {
 			organisation_role_assignments: { Args: { p_organisation_id: string }; Returns: Json };
+			search_organisations: {
+				Args: { p_query?: string; p_offset?: number; p_limit?: number };
+				Returns: Json;
+			};
             acquisition_dashboard: { Args: Record<PropertyKey, never>; Returns: Json };
             enqueue_acnc_acquisition: { Args: { p_resource: string }; Returns: string };
             configure_acnc_acquisition: { Args: { p_resource: string; p_postcodes: string[]; p_licence: string; p_interval: number | null; p_revision: string }; Returns: undefined };

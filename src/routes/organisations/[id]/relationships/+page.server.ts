@@ -5,7 +5,9 @@ import {
 	actionFailure,
 	actionSuccess,
 	creationColumns,
+	auditColumns,
 	orgIdSchema,
+	recordIdSchema,
 	relationshipSchema,
 	toColumns
 } from '$lib/server/validation';
@@ -89,6 +91,40 @@ export const actions: Actions = {
 		if (insertError) {
 			console.error('Failed to create relationship:', insertError);
 			return fail(400, actionFailure('Could not add the relationship.'));
+		}
+
+		return actionSuccess();
+	},
+
+	updateRelationship: async ({ request, locals: { supabase, user }, params }) => {
+		const orgId = orgIdSchema.safeParse(params.id);
+		if (!orgId.success) return fail(400, actionFailure('Not a valid organisation id.'));
+		await requireOrgEditor(supabase, user?.id, orgId.data);
+
+		const form = Object.fromEntries(await request.formData());
+		const relationshipId = recordIdSchema.safeParse(form.relationship_id);
+		const parsed = relationshipSchema.safeParse(form);
+		if (!relationshipId.success || !parsed.success) {
+			return fail(
+				400,
+				actionFailure(
+					'Please correct the highlighted fields.',
+					parsed.success ? {} : parsed.error.flatten().fieldErrors
+				)
+			);
+		}
+
+		const { data: updated, error: updateError } = await supabase
+			.from('relationships')
+			.update({ ...toColumns(parsed.data), ...auditColumns(user?.id) })
+			.eq('relationship_id', relationshipId.data)
+			.eq('org_id', orgId.data)
+			.select('relationship_id')
+			.maybeSingle();
+
+		if (updateError || !updated) {
+			console.error('Failed to update relationship:', updateError);
+			return fail(400, actionFailure('Could not update that relationship.'));
 		}
 
 		return actionSuccess();

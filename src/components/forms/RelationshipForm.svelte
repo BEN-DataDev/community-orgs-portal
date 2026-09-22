@@ -68,16 +68,25 @@
 				<option value={type}>{type}</option>
 			{/each}
 		</select>
+		{#if errors?.relationship_type}
+			<p class="text-error-500 text-sm">{errors.relationship_type[0]}</p>
+		{/if}
 	</div>
 
 	<div class="grid grid-cols-2 gap-4">
 		<div>
 			<label class="label label-text" for="start-date">Start Date</label>
 			<input class="input" type="date" name="start_date" required id="start-date" />
+			{#if errors?.start_date}
+				<p class="text-error-500 text-sm">{errors.start_date[0]}</p>
+			{/if}
 		</div>
 		<div>
 			<label class="label label-text" for="end-date">End Date</label>
 			<input class="input" type="date" name="end_date" id="end-date" />
+			{#if errors?.end_date}
+				<p class="text-error-500 text-sm">{errors.end_date[0]}</p>
+			{/if}
 		</div>
 	</div>
 
