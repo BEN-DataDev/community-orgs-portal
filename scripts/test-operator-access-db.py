@@ -64,7 +64,7 @@ try:
         sql(path.read_text())
     print(f'Applied {len(migrations)} unmodified portal/access/ingestion migrations.', flush=True)
     for name in ['p2_admin_access_regression.sql', 'platform_administrators.sql',
-                 'operator_access.sql', 'organisation_role_management.sql', 'p1_access_regression.sql', 'ingestion_review.sql', 'ingestion_publication.sql', 'private_raw_retention.sql', 'deterministic_identity.sql', 'ingestion_change_report.sql']:
+                 'operator_access.sql', 'organisation_role_management.sql', 'p1_access_regression.sql', 'ingestion_review.sql', 'ingestion_publication.sql', 'private_raw_retention.sql', 'deterministic_identity.sql', 'ingestion_change_report.sql', 'registry_seed_candidates.sql']:
         print(sql((ROOT / 'supabase/tests' / name).read_text()).strip(), flush=True)
         print(f'{name}: passed', flush=True)
     print(sql(command(['python3', str(ROOT / 'scripts/build-csv-test-sql.py')])).strip(), flush=True)

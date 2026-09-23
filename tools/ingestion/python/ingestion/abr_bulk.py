@@ -68,8 +68,9 @@ def _xml_timestamp(value):
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError as exc:
         raise ValueError("extract time must be an ISO 8601 timestamp") from exc
-    if parsed.tzinfo is None:
-        raise ValueError("extract time must include a timezone")
+    # The published XSD uses xsd:dateTime, whose timezone is optional, and the
+    # qualified real release omits it. Preserve and compare the provider literal;
+    # never invent a timezone for source evidence.
     return parsed
 
 
@@ -425,7 +426,11 @@ def _parse_stream(stream, common, postcodes, known_abns):
         raise ValueError(f"invalid XML: {exc}") from exc
     if root is None or record_count == 0:
         raise ValueError("XML part contains no ABR records")
-    if _local_name(root.tag) != "Transfer" or not root_has_error_attribute or root_error:
+    if (
+        _local_name(root.tag) != "Transfer"
+        or not root_has_error_attribute
+        or root_error not in {"", "none"}
+    ):
         raise ValueError("invalid Transfer envelope or source-reported error")
     if (
         transfer_info_count != 1

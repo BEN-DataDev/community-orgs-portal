@@ -1,14 +1,15 @@
 # Portal implementation plan
 
-Prepared: 15 September 2026. Updated: 23 September 2026 for the P33 execution
-environment decision.
+Prepared: 15 September 2026. Updated: 23 September 2026 for the completed P33
+qualification and private staging release.
 Status: P31's private registry candidate boundary and P32 directory readiness are
 deployed. ACNC
 acquisition, reviewed publication, complete-snapshot reconciliation,
 withdrawal/redaction and guarded rollback are implemented. The monthly 23-postcode
 schedule is enabled. Exact-ABN live qualification remains externally gated. The
-national ABN bulk adapter is implemented locally. The next implementation phase is
-the public NSW incorporated-associations search adapter, followed by candidate triage.
+national ABN bulk adapter is implemented and its first qualified release is held in
+private production staging. The next implementation phase is the public NSW
+incorporated-associations search adapter, followed by candidate triage.
 
 ## Current priorities: registry seeding and directory usability
 
@@ -41,16 +42,16 @@ foundation for additional sources. Each source still needs its own adapter,
 qualification, mappings and acceptance tests; the deployed ACNC worker does not
 automatically acquire other providers.
 
-| Source                                                      | Current status                                                                                                                                                                                                   | Remaining work                                                                                                                                                                                                                      |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ACNC Register                                               | CKAN worker and 23-postcode Snowy Valleys configuration deployed; [P13 bulk fallback](acnc-acquisition.md) and complete-field reviewed publication implemented; monthly hosted schedule enabled                  | Observe the first expanded scheduled job after the October 2026 due time and record operational sizing findings                                                                                                                     |
-| Approved CSV files (P12)                                    | Implemented, deployed and hosted database verification passed; [CLI and verification](approved-csv-import.md)                                                                                                    | Deferred until an approved provider CSV is received; P12 remains complete                                                                                                                                                           |
-| Exact-ABN Lookup (P16)                                      | [Bounded adapter implemented](exact-abn-lookup.md); live qualification pending                                                                                                                                   | Provision access GUID and approved exact-ABN set; complete live/withdrawal checks                                                                                                                                                   |
-| ABN public bulk extract                                     | P33 streaming/checkpointed local-file adapter and synthetic release suite implemented; the first release will run from the approved local operator workstation, not Vercel; no real release downloaded or staged | Approve acquisition and the workstation storage boundary, qualify and run one current complete release, inspect private output, register/enable the source resource explicitly, then stage only the verified complete candidate set |
-| NSW incorporated associations                               | No bulk feed; upstream scrapers assessed but no current adapter is integrated                                                                                                                                    | Build a bounded scraper over the ordinary public postcode/suburb search interface, using conservative request pacing, current markup fixtures and jurisdiction-scoped association identifiers                                       |
-| Landcare, neighbourhood houses, sports and arts directories | Expansion backlog                                                                                                                                                                                                | Select pilot providers, qualify access/reuse and implement provider mappings/adapters                                                                                                                                               |
-| My Community Directory                                      | Planned; not integrated                                                                                                                                                                                          | Obtain partner agreement and technical documentation before implementing the adapter                                                                                                                                                |
-| ACNC AIS financial history                                  | Deferred beyond the initial release                                                                                                                                                                              | Separate adapter and reporting-period schema with explicit financial-measure definitions                                                                                                                                            |
+| Source                                                      | Current status                                                                                                                                                                                                                | Remaining work                                                                                                                                                                                |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ACNC Register                                               | CKAN worker and 23-postcode Snowy Valleys configuration deployed; [P13 bulk fallback](acnc-acquisition.md) and complete-field reviewed publication implemented; monthly hosted schedule enabled                               | Observe the first expanded scheduled job after the October 2026 due time and record operational sizing findings                                                                               |
+| Approved CSV files (P12)                                    | Implemented, deployed and hosted database verification passed; [CLI and verification](approved-csv-import.md)                                                                                                                 | Deferred until an approved provider CSV is received; P12 remains complete                                                                                                                     |
+| Exact-ABN Lookup (P16)                                      | [Bounded adapter implemented](exact-abn-lookup.md); live qualification pending                                                                                                                                                | Provision access GUID and approved exact-ABN set; complete live/withdrawal checks                                                                                                             |
+| ABN public bulk extract                                     | P33 complete: approved workstation release `2026-09-23` validated 20,545,089 records; 157,156 scoped candidates finalized as private hosted release `2`; source enabled at revision 1; nothing triaged, promoted or published | Retain evidence under hold; P35 defines reviewed candidate triage and cross-source resolution before any separately authorised promotion                                                      |
+| NSW incorporated associations                               | No bulk feed; upstream scrapers assessed but no current adapter is integrated                                                                                                                                                 | Build a bounded scraper over the ordinary public postcode/suburb search interface, using conservative request pacing, current markup fixtures and jurisdiction-scoped association identifiers |
+| Landcare, neighbourhood houses, sports and arts directories | Expansion backlog                                                                                                                                                                                                             | Select pilot providers, qualify access/reuse and implement provider mappings/adapters                                                                                                         |
+| My Community Directory                                      | Planned; not integrated                                                                                                                                                                                                       | Obtain partner agreement and technical documentation before implementing the adapter                                                                                                          |
+| ACNC AIS financial history                                  | Deferred beyond the initial release                                                                                                                                                                                           | Separate adapter and reporting-period schema with explicit financial-measure definitions                                                                                                      |
 
 ### Next implementation sequence
 
@@ -68,15 +69,19 @@ automatically acquire other providers.
    relationship removal actions were added locally after the signed-in regression
    exposed those gaps; hosted verification remains. Document records remain URL-only;
    local file upload is a separate capability gap.
-3. **P33 — Implement the ABN bulk seed adapter — complete locally.** The offline
+3. **P33 — Implement, qualify and privately stage the ABN bulk seed adapter — complete.** The offline
    standard-library adapter streams every XML member in both official ZIP ranges,
    verifies file hashes plus XML member sequence/count/extract metadata, checkpoints
    completed parts and emits the P31 private candidate contract. Missing, changed,
-   malformed, duplicate or incomplete inputs fail closed. No real release has been
-   downloaded or staged. The first qualified run will execute manually on the local
-   operator workstation using an approved path outside the repository; Vercel remains
-   the application/review host and is not the batch runner or artifact store. See
-   [the P33 guide](abn-bulk-seed.md).
+   malformed, duplicate or incomplete inputs fail closed. The approved local
+   workstation run validated the complete `2026-09-23` release and retained 157,156
+   private scoped candidates from 20,545,089 source records. Vercel remains the
+   application/review host and is not the batch runner or artifact store. The hosted
+   source is enabled at approval revision 1. The explicitly approved chunked upload
+   finalized all 157,156 candidates as private registry-seed release `2`, with no
+   triage, promotion or publication; see [the P33 guide](abn-bulk-seed.md). Hosted
+   migrations `20260923010117_register_abr_bulk_source` and
+   `20260923014057_chunked_registry_seed_staging` are recorded.
 4. **P34 — Implement the NSW register scraper.** Use only the ordinary unauthenticated
    postcode/suburb search flow, with conservative pacing, bounded retries,
    pagination checks, duplicate detection and markup-change shutdown. Key records
@@ -91,8 +96,9 @@ automatically acquire other providers.
    then exercise unchanged refresh, status change, withdrawal, partial-run and
    rollback paths before enabling recurring ABN and NSW collection.
 
-P34 is the next implementation track. A qualified first P33 release can proceed as
-parallel operational work without blocking the NSW adapter.
+P34 is the next implementation track. P33 acquisition and private staging are
+complete; retained evidence remains on hold for P35/P36 and does not block the NSW
+adapter.
 P16 live exact-ABN qualification and the first scheduled ACNC observation continue as parallel
 operational tracks and do not block P31–P36.
 
@@ -107,7 +113,12 @@ object-store integration is not required for the first release and may be recons
 before unattended recurring acquisition. This execution-environment decision does
 not itself approve source acquisition, the proposed filesystem path, retention or
 database source enablement; record those gates before downloading or staging real
-data.
+data. The workstation's Windows volume is not BitLocker-protected and the owner has
+decided not to enable BitLocker. The published ABN bulk materials do not establish
+at-rest encryption as a source-access condition, so encryption is not a P33 release
+gate. Record the unencrypted-volume risk explicitly and rely on the separately
+approved account access, physical security, synchronisation, backup and retention
+controls.
 
 **Decision — 22 September 2026:** promote national ABN bulk processing and NSW
 register scraping from conditional expansion to the active registry-seeding phase.

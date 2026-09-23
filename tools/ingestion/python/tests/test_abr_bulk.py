@@ -75,6 +75,35 @@ class ABRBulkTests(unittest.TestCase):
         self.assertIn("ingestion.stage_registry_seed", sql)
         self.assertNotIn("Snowy Community Association", sql)
 
+    def test_official_none_sentinel_and_timezone_less_extract_time(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = copy.deepcopy(self.config)
+            config["extract_time"] = "2026-09-21T00:00:00"
+            for index, part in enumerate(config["parts"]):
+                source = FIXTURE / part["filename"]
+                target = root / part["filename"]
+                target.write_text(
+                    source.read_text()
+                    .replace('<Transfer error="">', '<Transfer error="none">')
+                    .replace("2026-09-21T00:00:00Z", config["extract_time"])
+                )
+                config["parts"][index]["sha256"] = hashlib.sha256(
+                    target.read_bytes()
+                ).hexdigest()
+
+            manifest, candidates = abr_bulk.extract_release(config, root)
+
+            self.assertEqual(manifest["completion"], "complete")
+            self.assertEqual(len(candidates), 2)
+            self.assertTrue(
+                all(
+                    member["extract_time"] == config["extract_time"]
+                    for part in manifest["parts"]
+                    for member in part["detail"]["members"]
+                )
+            )
+
     def test_missing_changed_and_malformed_parts_fail_closed(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

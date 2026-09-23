@@ -27,6 +27,7 @@ declare
  v_release bigint; replay bigint; included_version bigint; adjacent_version bigint; staged_run text;
  partial_manifest jsonb; partial_release bigint; expired_manifest jsonb; expired_release bigint;
  expired_candidates jsonb; before_orgs bigint; result jsonb;
+ chunk_manifest jsonb; chunk_candidates jsonb; upload bigint; chunk_release bigint; cleared integer;
 begin
  if has_table_privilege('anon','ingestion.registry_seed_candidates','SELECT')
   or has_table_privilege('authenticated','ingestion.registry_seed_releases','SELECT')
@@ -50,6 +51,34 @@ begin
   raise exception 'Changed release replay accepted';
  exception when unique_violation then null; end;
  reset role;
+
+ chunk_manifest:=jsonb_set(manifest,'{release_id}','"2026-09-21-chunked"');
+ select jsonb_agg(jsonb_set(value,'{release_id}','"2026-09-21-chunked"') order by ordinality)
+  into chunk_candidates from jsonb_array_elements(candidates) with ordinality;
+ set local role ingestion_worker;
+ select upload_id into upload from ingestion.begin_registry_seed_upload(chunk_manifest,2);
+ if ingestion.append_registry_seed_upload(upload,0,jsonb_build_array(chunk_candidates->0))<>1
+  or ingestion.append_registry_seed_upload(upload,0,jsonb_build_array(chunk_candidates->0))<>1
+  or ingestion.append_registry_seed_upload(upload,1,jsonb_build_array(chunk_candidates->1))<>2 then
+  raise exception 'Chunked upload append/replay count failed'; end if;
+ begin
+  perform ingestion.append_registry_seed_upload(upload,0,
+   jsonb_build_array(jsonb_set(chunk_candidates->0,'{raw,name}','"Changed chunk"')));
+  raise exception 'Changed chunk replay accepted';
+ exception when unique_violation then null; end;
+ chunk_release:=ingestion.finalize_registry_seed_upload(upload);
+ if ingestion.finalize_registry_seed_upload(upload)<>chunk_release then
+  raise exception 'Chunked finalization replay changed release'; end if;
+ cleared:=ingestion.clear_finalized_registry_seed_upload(upload);
+ reset role;
+ if cleared<>2
+  or exists(select 1 from ingestion.registry_seed_upload_candidates where upload_id=upload)
+  or not exists(select 1 from ingestion.registry_seed_uploads
+    where id=upload and status='finalized' and release_id=chunk_release
+     and received_candidate_count=2)
+  or (select candidate_count from ingestion.registry_seed_releases where id=chunk_release)<>2
+  or (select count(*) from ingestion.registry_seed_release_candidates where release_id=chunk_release)<>2 then
+  raise exception 'Chunked finalization or cleanup invariant failed'; end if;
 
  select cv.id into included_version from ingestion.registry_seed_candidate_versions cv
   join ingestion.registry_seed_candidates c on c.id=cv.candidate_id where c.native_id='51824753556';

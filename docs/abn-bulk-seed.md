@@ -1,10 +1,10 @@
 # National ABN bulk registry seed (P33)
 
-Status: implemented locally on 22 September 2026. No national bulk file was
-downloaded, no candidate was staged, and no source was enabled by this change.
-The first real release remains an explicit operator acquisition and private-staging
-step. On 23 September 2026 the local operator workstation was selected for that
-first run; this does not by itself approve acquisition or its private storage path.
+Status: implemented locally on 22 September 2026 and qualified against the complete
+23 September 2026 national release on the local operator workstation. The hosted
+source is enabled at approval revision 1 and the qualified release is finalized as
+private registry-seed release `2`. No candidate has been triaged, promoted or
+published.
 
 ## Boundary
 
@@ -32,6 +32,14 @@ Any failure produces a partial manifest with `complete_snapshot=false`. P31 reje
 partial releases from promotion. Checksum mismatches retain the observed hash only
 inside failure detail because the P31 part contract intentionally rejects a claimed
 expected/observed match when the values differ.
+
+The official XSD declares `ExtractTime` as `xsd:dateTime`, for which a timezone is
+optional. The qualified 23 September release uses a timezone-less source value.
+P33 preserves and compares that provider value exactly; it does not invent a
+timezone. `observed_at` remains a separate RFC 3339 UTC timestamp recorded by the
+operator run. The release also uses the literal `none` in the required `Transfer`
+`error` attribute to report success; P33 accepts only the empty synthetic-fixture
+sentinel or the qualified `none` sentinel and continues to reject every other value.
 
 ## Selection and mapping
 
@@ -65,7 +73,9 @@ the checkpoint.
 
 The output directory must not already exist and is created with mode `0700`.
 `manifest.json`, `candidates.json` and `stage.sql` are created once with mode `0600`.
-Store the source files, checkpoints and outputs outside Git.
+For a large real release, render the separately tested resumable chunked SQL and
+apply that instead of the one-shot `stage.sql`. Store the source files, checkpoints
+and outputs outside Git.
 
 ## First-release execution environment
 
@@ -86,11 +96,15 @@ The proposed workstation base path is:
 ```
 
 The base path and its parent must remain outside the repository, be accessible only
-to the operator account, reside on approved encrypted storage and be excluded from
-unapproved synchronisation, indexing and backup destinations. When the workstation
-uses WSL, prefer its Linux filesystem over `/mnt/c` unless the Windows storage and
-copy lifecycle have also been approved. Prevent sleep, restart and loss of network
-connectivity during the run.
+to the operator account and be excluded from unapproved synchronisation, indexing
+and backup destinations. At-rest encryption is recommended as defence in depth but
+is not a documented ABN bulk-extract access condition or a P33 completeness
+requirement. For the first release, the owner has accepted use of a Windows volume
+without BitLocker and does not intend to enable it. The storage approval must record
+that risk and the compensating account-access, physical-security, copy and retention
+controls. When the workstation uses WSL, prefer its Linux filesystem over `/mnt/c`
+unless the Windows storage and copy lifecycle have also been approved. Prevent
+sleep, restart and loss of network connectivity during the run.
 
 Before downloading a real release, record both the source-acquisition approval and
 approval of this filesystem location, including retention, backup and deletion
@@ -98,6 +112,11 @@ responsibilities. A directory existing with restrictive permissions is necessary
 but is not approval. A VM or object store is not required for the first release;
 reassess central execution and durable artifact storage before enabling unattended
 recurring acquisition.
+
+The first-release decision and qualification result are recorded under approval reference
+[`P33-WS-2026-09-23`](operations/p33-first-release-approval.md). Acquisition, scope,
+path, unencrypted-volume risk, absence of backup and retention hold are approved for
+one qualified acquisition.
 
 ## Running a qualified release
 
@@ -123,8 +142,23 @@ it. Do not place database passwords in the command, configuration or shell histo
 Exit code `0` means the configured scoped snapshot is complete. Exit code `1` means
 private partial evidence was emitted and must not be staged as complete. Configuration,
 filesystem and output-collision failures exit `2`. Inspect the manifest before
-applying `stage.sql` to an explicitly selected database with an enabled
+staging it in an explicitly selected database with an enabled
 `(abr-bulk, resource_id)` source registration.
+
+For the qualified release, render bounded transactions from the inspected artifacts:
+
+```sh
+python3 -m ingestion.registry_seed_chunked_sql \
+  --manifest /home/akeown/private/community-orgs/abr/outputs/<release-id>/manifest.json \
+  --candidates /home/akeown/private/community-orgs/abr/outputs/<release-id>/candidates.json \
+  --output /home/akeown/private/community-orgs/abr/outputs/<release-id>/stage-chunked.sql \
+  --batch-size 250
+```
+
+The chunked protocol validates exact batch replays, rejects changed replays, and
+atomically finalizes only after candidate count and aggregate hash checks pass.
+Temporary upload rows cannot be triaged, promoted or published and are removed only
+after successful finalization and replay verification.
 
 ## Validation
 
@@ -138,7 +172,48 @@ python3 -m unittest tests.test_abr_bulk -v
 python3 -m unittest discover -s tests -v
 ```
 
-The complete ingestion suite passes 95 tests.
+The complete ingestion suite passes 99 tests.
+
+## First real release qualification
+
+The approved workstation run completed on 23 September 2026:
+
+- release ID `2026-09-23` and provider extract value
+  `2026-09-23T12:33:03`;
+- both configured ZIP resources matched their independently calculated SHA-256;
+- all 20 XML members appeared exactly once in sequence;
+- 20,545,089 source records matched the member and part counts;
+- 157,156 unique candidates matched the configured 23-postcode scope;
+- both checkpoint files replayed without reparsing;
+- `completion=complete`, `complete_snapshot=true` and no errors; and
+- source, checkpoint and output files use owner-only permissions.
+
+The first attempt failed closed with zero candidates because the real source uses
+the XSD-valid timezone-less `ExtractTime` and `Transfer error="none"` conventions
+that were absent from the synthetic fixtures. The parser now preserves the source
+timestamp without inventing a timezone and accepts only `none` or the existing
+empty fixture sentinel as successful transfer states. The new real-format regression
+and all 99 ingestion tests pass. The retained partial attempt is not eligible for
+staging.
+
+The complete one-shot `stage.sql` is approximately 422 MB. It exceeded the restricted
+worker/container and hosted statement limits without committing a release. The
+replacement `stage-chunked.sql` contains 629 resumable batches of 250 candidates,
+is mode `0600`, and has SHA-256
+`92b09b044eff04f592925ab3dc0b6f79bb65a72b01bf7736cc5aca2dcc5eef80`.
+
+After the platform administrator enabled the source, the owner explicitly approved
+upload to hosted Supabase private staging and atomic finalization. Hosted migration
+`20260923014057_chunked_registry_seed_staging` supplied the restricted upload
+protocol. All 157,156 candidates were committed to upload `1`; the first finalizer
+transaction timed out and rolled back cleanly, then a restricted-role retry with a
+bounded ten-minute timeout finalized release `2`. Idempotent replay returned the
+same release, and exactly 157,156 redundant temporary rows were cleared.
+
+The hosted audit records 2 complete parts, 20,545,089 source records, 157,156
+in-scope release memberships and zero triage or promotion rows. Organisation counts
+remained 7 total and 6 public. Staging is private and does not authorise promotion
+or publication.
 
 ## Source qualification
 
