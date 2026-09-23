@@ -3,7 +3,8 @@
 Status: implemented locally on 22 September 2026. No national bulk file was
 downloaded, no candidate was staged, and no source was enabled by this change.
 The first real release remains an explicit operator acquisition and private-staging
-step.
+step. On 23 September 2026 the local operator workstation was selected for that
+first run; this does not by itself approve acquisition or its private storage path.
 
 ## Boundary
 
@@ -66,6 +67,38 @@ The output directory must not already exist and is created with mode `0700`.
 `manifest.json`, `candidates.json` and `stage.sql` are created once with mode `0600`.
 Store the source files, checkpoints and outputs outside Git.
 
+## First-release execution environment
+
+Run the first qualified release manually on the local operator workstation, not in
+a Vercel build or function. Vercel remains the portal and review host; it has no
+role in downloading, parsing or retaining the bulk files. Supabase receives only
+the separately inspected private staging result through the restricted ingestion
+identity.
+
+The proposed workstation base path is:
+
+```text
+/home/akeown/private/community-orgs/abr/
+├── config/
+├── releases/<release-id>/
+├── checkpoints/<release-id>/
+└── outputs/
+```
+
+The base path and its parent must remain outside the repository, be accessible only
+to the operator account, reside on approved encrypted storage and be excluded from
+unapproved synchronisation, indexing and backup destinations. When the workstation
+uses WSL, prefer its Linux filesystem over `/mnt/c` unless the Windows storage and
+copy lifecycle have also been approved. Prevent sleep, restart and loss of network
+connectivity during the run.
+
+Before downloading a real release, record both the source-acquisition approval and
+approval of this filesystem location, including retention, backup and deletion
+responsibilities. A directory existing with restrictive permissions is necessary
+but is not approval. A VM or object store is not required for the first release;
+reassess central execution and durable artifact storage before enabling unattended
+recurring acquisition.
+
 ## Running a qualified release
 
 Start from
@@ -79,12 +112,14 @@ From `tools/ingestion/python`:
 
 ```sh
 python3 -m ingestion.abr_bulk \
-  --config /private/abr-release.json \
-  --input-dir /private/abr-release \
-  --checkpoint-dir /private/abr-checkpoints \
-  --output-dir /private/abr-output
+  --config /home/akeown/private/community-orgs/abr/config/<release-id>.json \
+  --input-dir /home/akeown/private/community-orgs/abr/releases/<release-id> \
+  --checkpoint-dir /home/akeown/private/community-orgs/abr/checkpoints/<release-id> \
+  --output-dir /home/akeown/private/community-orgs/abr/outputs/<release-id>
 ```
 
+The release-specific output directory must not already exist; the command creates
+it. Do not place database passwords in the command, configuration or shell history.
 Exit code `0` means the configured scoped snapshot is complete. Exit code `1` means
 private partial evidence was emitted and must not be staged as complete. Configuration,
 filesystem and output-collision failures exit `2`. Inspect the manifest before

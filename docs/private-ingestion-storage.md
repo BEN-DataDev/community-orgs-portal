@@ -11,23 +11,26 @@ It seeds no policy, removes no evidence and changes no source, schedule or publi
 
 ## Storage contract
 
-| Requirement | Implementation |
-| --- | --- |
-| Qualified sources | `ingestion.sources`, source approval revisions/events; disabled by default |
-| Runs and observations | `ingestion_runs`, `run_records`; complete/partial/failed status, original observation and staging times |
+| Requirement                    | Implementation                                                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Qualified sources              | `ingestion.sources`, source approval revisions/events; disabled by default                                                                 |
+| Runs and observations          | `ingestion_runs`, `run_records`; complete/partial/failed status, original observation and staging times                                    |
 | Source identities and versions | `source_records`, `source_record_versions`; identity is scoped to source **and resource** and native ID; parser/content hash deduplication |
-| Links and assertions | `source_links`, `field_assertions`; reviewed target links and typed values |
-| Review/change sets | `reviews`, `review_events`, immutable `change_sets`, `publications` |
-| Private raw objects | JSONB run envelopes, version payload `raw` objects and acquisition checkpoints |
-| Source retention | `raw_retention_policies`, `raw_retention_events`, removal timestamps and original envelope hashes |
+| Links and assertions           | `source_links`, `field_assertions`; reviewed target links and typed values                                                                 |
+| Review/change sets             | `reviews`, `review_events`, immutable `change_sets`, `publications`                                                                        |
+| Private raw objects            | JSONB run envelopes, version payload `raw` objects and acquisition checkpoints                                                             |
+| Source retention               | `raw_retention_policies`, `raw_retention_events`, removal timestamps and original envelope hashes                                          |
 
 For the bounded pilot, raw objects remain in PostgreSQL JSONB. This is a deliberate
 implementation choice in place of the strategy's proposed external object bucket:
 it keeps acquisition, checkpoint recovery and retention transactional. No public
 bucket, URL or download credential is introduced. A separate private object-store
-adapter remains a scaling option before bulk/national ingestion, not a prerequisite
-for the bounded pilot. Existing Python/offline JSON files are outside this database
-retention boundary and must be managed separately.
+adapter remains a scaling option, not a prerequisite for the bounded pilot or the
+first P33 national ABN acquisition. That first P33 release will use an approved
+absolute path on the local operator workstation, outside Git, as documented in the
+[P33 operation guide](abn-bulk-seed.md). Existing Python/offline files are outside
+this database retention boundary and must be inventoried and managed separately,
+including their workstation backups and copies.
 
 The ingestion schema remains outside PostgREST's exposed schemas. Every private
 table has RLS and no browser policies. Anonymous, authenticated, service and worker

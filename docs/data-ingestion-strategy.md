@@ -186,12 +186,16 @@ It lacks the provenance, source identity and review structures needed for ingest
 | `suppression_rules`      | Source/record/field restrictions preventing republishing withdrawn data                                                    |
 
 Enforce uniqueness on `(source_id, source_native_id)` and idempotent version hashes.
-For bulk ingestion, keep raw payloads in private object storage, with paths/hashes
-in Postgres. The bounded pilot uses transactional private JSONB objects and
-[source-specific retention controls](private-ingestion-storage.md); an external
-object store remains a scaling option. Version
-history is subject to withdrawal and retention rules; it is not an immutable archive
-of information the provider requires deleted.
+For recurring bulk ingestion, keep raw payloads in an approved private artifact
+store, with paths/hashes in Postgres where required. The bounded pilot uses
+transactional private JSONB objects and
+[source-specific retention controls](private-ingestion-storage.md). The first P33
+national ABN release instead uses an approved absolute path outside Git on the local
+operator workstation, with private candidates staged separately into Supabase; see
+the [P33 operation guide](abn-bulk-seed.md). An external object store remains a
+scaling option before unattended recurring acquisition. Version history and every
+workstation, backup or object-store copy are subject to withdrawal and retention
+rules; they are not immutable archives of information the provider requires deleted.
 
 ### Extend the public domain model
 

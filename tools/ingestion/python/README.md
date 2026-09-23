@@ -9,7 +9,9 @@ ABN bulk releases. It streams every XML member across the inventoried ZIP parts,
 checkpoints completed parts, retains only configured-postcode and known-ABN candidates,
 and emits the private P31 registry-seed contract. See the
 [P33 operation guide](../../../docs/abn-bulk-seed.md). It does not download, stage,
-triage or publish data by itself.
+triage or publish data by itself. The first qualified release is assigned to the
+local operator workstation using an approved absolute path outside Git; Vercel is
+not the P33 runner or artifact store.
 
 P13 adds an explicit bounded bulk CSV fallback and acquisition manifests. Both
 paths were verified live against the six-record postcode 2730 cohort. See the
