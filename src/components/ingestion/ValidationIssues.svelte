@@ -36,6 +36,34 @@
 			return null;
 		}
 	}
+	function decisionLabel(decision: string) {
+		switch (decision) {
+			case 'correct':
+				return 'Resolved · Corrected';
+			case 'omit':
+				return 'Resolved · Omitted';
+			case 'defer':
+				return 'Deferred';
+			case 'reject_record':
+				return 'Resolved · Record rejected';
+			default:
+				return 'Unresolved';
+		}
+	}
+	function decisionPreset(decision: string) {
+		switch (decision) {
+			case 'correct':
+				return 'preset-tonal-success';
+			case 'omit':
+				return 'preset-tonal-surface';
+			case 'defer':
+				return 'preset-tonal-secondary';
+			case 'reject_record':
+				return 'preset-tonal-error';
+			default:
+				return 'preset-tonal-warning';
+		}
+	}
 </script>
 
 <section aria-labelledby="validation-heading" class="space-y-4">
@@ -117,8 +145,13 @@
 							class="card border-surface-200-800 hover:preset-tonal block border p-3"
 							aria-current={queue.detail?.id === issue.id ? 'page' : undefined}
 							href={issueHref(issue.id)}
-							><strong>{issue.code}</strong><span class="block text-sm"
-								>{issue.subject_native_id ?? `Row ${issue.source_row ?? 'unknown'}`} · {issue.decision}</span
+							><span class="flex items-start justify-between gap-3"
+								><strong class="min-w-0 break-words">{issue.code}</strong><span
+									class={`badge shrink-0 ${decisionPreset(issue.decision)}`}
+									>{decisionLabel(issue.decision)}</span
+								></span
+							><span class="block text-sm"
+								>{issue.subject_native_id ?? `Row ${issue.source_row ?? 'unknown'}`}</span
 							><span class="block text-sm">{issue.category} · {issue.severity}</span></a
 						>
 					</li>
@@ -139,7 +172,13 @@
 			{#if queue.detail}
 				{@const issue = queue.detail}
 				<div class="card preset-tonal space-y-2 p-4">
-					<h3 class="font-semibold">{issue.code}</h3>
+					<div class="flex items-start justify-between gap-3">
+						<h3 class="min-w-0 font-semibold break-words">{issue.code}</h3>
+						<span
+							class={`badge shrink-0 ${decisionPreset(issue.resolution?.decision ?? 'unresolved')}`}
+							>{decisionLabel(issue.resolution?.decision ?? 'unresolved')}</span
+						>
+					</div>
 					<p>{issue.detail}</p>
 					<p class="text-sm">
 						{issue.category} · {issue.severity} · validator {issue.validator_name}
