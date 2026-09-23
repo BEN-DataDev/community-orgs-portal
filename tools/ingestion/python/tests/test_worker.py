@@ -2,7 +2,7 @@ import copy
 import unittest
 from unittest.mock import patch
 
-from ingestion.worker import Database, run_one
+from ingestion.worker import Database, run_one, run_validation_one
 from ingestion.live_acnc import acquire
 from test_live_acnc import CONFIG, Reader
 
@@ -70,6 +70,37 @@ class WorkerTests(unittest.TestCase):
 
     def test_idle(self):
         self.assertEqual(run_one(DB(None)), {'status': 'idle'})
+
+    def test_validation_replay_is_staged_separately(self):
+        class ReplayDB:
+            def __init__(self):
+                self.calls = []
+            def call(self, function, *args):
+                self.calls.append((function, args))
+                if function == 'claim_validation_replay':
+                    return {'id': JOB['id'], 'lease_token': JOB['lease_token']}
+                if function == 'finish_validation_replay':
+                    return 101
+        envelope = {'completion': 'complete', 'quarantine': [], 'errors': []}
+        db = ReplayDB()
+        with patch('ingestion.worker.validate'):
+            result = run_validation_one(db, lambda _: envelope)
+        self.assertEqual(result, {'replay': JOB['id'], 'status': 'complete', 'run_id': 101})
+        self.assertEqual(db.calls[-1][0], 'finish_validation_replay')
+
+    def test_failed_validation_replay_is_fenced(self):
+        class ReplayDB:
+            def __init__(self):
+                self.calls = []
+            def call(self, function, *args):
+                self.calls.append((function, args))
+                if function == 'claim_validation_replay':
+                    return {'id': JOB['id'], 'lease_token': JOB['lease_token']}
+        db = ReplayDB()
+        result = run_validation_one(db, lambda _: (_ for _ in ()).throw(ValueError('private evidence')))
+        self.assertEqual(result['status'], 'worker_error')
+        self.assertNotIn('private evidence', str(result))
+        self.assertEqual(db.calls[-1][0], 'fail_validation_replay')
 
     @patch('ingestion.worker.subprocess.run')
     def test_database_uses_stdin_and_no_credentials_in_arguments(self, run):

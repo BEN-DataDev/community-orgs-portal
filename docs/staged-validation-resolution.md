@@ -2,7 +2,8 @@
 
 Decision date: 23 September 2026
 
-Status: approved design; implementation pending as P34a
+Status: implemented and verified locally on 23 September 2026; hosted migration,
+worker rollout and run 30 production replay remain pending
 
 ## Decision and scope
 
@@ -163,6 +164,27 @@ P34a is implemented in these increments:
 6. Update ACNC, approved CSV, ABN/registry seed and future NSW adapters to emit
    structured issues directly.
 7. Apply retention, suppression, access, concurrency and browser regression suites.
+
+## Local implementation
+
+Migration `20260924010000_staged_validation_resolution` implements the five-table
+private model, structured-issue staging for ordinary and registry-seed artifacts,
+revision-fenced validation/resolution RPCs, promotion gates, retention/suppression
+redaction and a fenced corrected-run queue. The migration materialises retained
+legacy diagnostics and recognises retained ACNC `Charity_Website` failures as
+field-addressable `website.format` issues; this is the path that will backfill run
+30 when the migration is applied to the hosted database.
+
+**Admin → Import review → Validation issues** provides filters, immutable evidence,
+server validation, permitted decisions, history and **Create corrected run**. The
+acquisition worker claims replay requests, verifies the exact issue revisions and
+raw-evidence hashes, re-runs the source adapter across every retained record, and
+can stage only a separate complete private run with no errors or quarantine.
+
+Local verification covers database access denial, structured staging, stale
+revision rejection, immutable history, non-overridable failures, fenced replay,
+parent/derived lineage, publication isolation and retention redaction. The Python
+suite covers ACNC and approved-CSV structured issues and full-record replay.
 
 ## Acceptance
 

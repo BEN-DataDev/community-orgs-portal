@@ -14,6 +14,12 @@ try {
 	let previewError = null;
 	const preview = { organisation_id: null, organisation_name: null, fields: [] };
 	const queue = { runs: [], run: null, total: 0, records: [], detail: null, candidates: [] };
+	const validation = {
+		total: 0,
+		counts: { total: 0, blocking: 0, unresolved: 0, deferred: 0, non_resolvable: 0 },
+		issues: [],
+		detail: null
+	};
 	const locals = {
 		supabase: {
 			rpc: async (name, args) => {
@@ -24,6 +30,7 @@ try {
 				if (name === 'ingestion_field_preview') return { data: preview, error: previewError };
 				if (name === 'approve_ingestion_fields')
 					return { data: '00000000-0000-4000-8000-000000000003', error: saveError };
+				if (name === 'validation_issue_queue') return { data: validation, error: null };
 				return name === 'is_ingestion_operator'
 					? { data: operator, error: null }
 					: name === 'ingestion_review_queue'
@@ -42,13 +49,23 @@ try {
 	const matchedOrg = '00000000-0000-4000-8000-000000001411';
 	queue.run = '1';
 	queue.detail = {
-		id: '2', native_id: 'fixture', payload: { assertions: [] }, review: null,
+		id: '2',
+		native_id: 'fixture',
+		payload: { assertions: [] },
+		review: null,
 		identity_match: { status: 'match', organisation_id: matchedOrg, reason: 'Verified exact ABN' }
 	};
 	const matched = await load(event);
 	assert.equal(matched.queue.detail.identity_match.organisation_id, matchedOrg);
-	assert.equal(calls.filter(([name]) => name === 'ingestion_field_preview').at(-1)[1].p_organisation, matchedOrg);
-	queue.detail.identity_match = { status: 'hold', organisation_id: null, reason: 'Conflicting identifiers' };
+	assert.equal(
+		calls.filter(([name]) => name === 'ingestion_field_preview').at(-1)[1].p_organisation,
+		matchedOrg
+	);
+	queue.detail.identity_match = {
+		status: 'hold',
+		organisation_id: null,
+		reason: 'Conflicting identifiers'
+	};
 	assert.equal((await load(event)).queue.detail.identity_match.status, 'hold');
 	queue.run = null;
 	queue.detail = null;

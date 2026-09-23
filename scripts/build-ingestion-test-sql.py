@@ -25,10 +25,15 @@ for name in [
     '20260917020000_acnc_website_normalisation.sql',
     '20260917030000_acquisition_jobs.sql',
     '20260917071152_private_raw_retention.sql',
+    '20260917230927_approved_csv_import.sql',
     '20260919010000_multi_postcode_acquisition.sql',
     '20260920010000_complete_snapshot_reconciliation.sql',
     '20260920020000_retained_suppression_redaction.sql',
     '20260920030000_guarded_import_rollback.sql',
+    '20260922010000_registry_seed_candidates.sql',
+    '20260923010000_register_abr_bulk_source.sql',
+    '20260923020000_chunked_registry_seed_staging.sql',
+    '20260924010000_staged_validation_resolution.sql',
 ]:
     print((root / 'supabase/migrations' / name).read_text())
 print((root / 'supabase/tests/support/ingestion_post_migration.sql').read_text())
@@ -40,3 +45,4 @@ for name in ['ingestion_staging.sql', 'ingestion_review.sql', 'ingestion_field_p
 print((root / 'supabase/tests/complete_snapshot_reconciliation.sql').read_text())
 print((root / 'supabase/tests/retained_suppression_redaction.sql').read_text())
 print((root / 'supabase/tests/guarded_import_rollback.sql').read_text())
+print((root / 'supabase/tests/staged_validation_resolution.sql').read_text())

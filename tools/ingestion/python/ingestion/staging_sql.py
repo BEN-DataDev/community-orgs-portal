@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 
 from ingestion.adapters.acnc import digest
+from ingestion.validation_issues import validate_contract
 
 
 def validate(envelope: dict) -> None:
@@ -22,6 +23,10 @@ def validate(envelope: dict) -> None:
     for key in ["records", "quarantine", "errors", "pages"]:
         if not isinstance(envelope.get(key), list):
             raise ValueError(f"invalid {key}")
+    if not isinstance(envelope.get('issues', []), list):
+        raise ValueError('invalid issues')
+    for item in envelope.get('issues', []):
+        validate_contract(item)
     for key in ["run_id", "resource_id", "parser_version", "observed_at"]:
         if not isinstance(envelope.get(key), str) or not envelope[key]:
             raise ValueError(f"missing {key}")

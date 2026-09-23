@@ -2,7 +2,8 @@
 
 Prepared: 15 September 2026. Updated: 23 September 2026 for the approved
 cross-source staged-validation model.
-Status: active strategy; P34a validation resolution is approved but not implemented.
+Status: active strategy; P34a validation resolution is implemented locally and
+awaits hosted migration, worker rollout and run 30 validation.
 
 ## 1. Recommended approach
 

@@ -10,10 +10,40 @@ from datetime import datetime
 from typing import Callable
 
 from ingestion.acnc_transform import assertions, MAPPING_VERSION
+from ingestion.acnc_transform import CONTRACT
+from ingestion.validation_issues import issue
 
 SOURCE_ID = "acnc-register"
 PARSER_VERSION = "acnc-ckan-v3"
 ENDPOINT = "https://data.gov.au/data/api/3/action/datastore_search"
+
+
+def validation_issue(row, index, reason):
+    native_id = str(row.get('_id')) if isinstance(row, dict) and row.get('_id') is not None else None
+    key = reason.split(':', 1)[0] if ':' in reason else None
+    field = next((item for item in CONTRACT['fields'] if item['source_key'] == key), None)
+    if reason == 'missing Charity_Legal_Name':
+        key = 'Charity_Legal_Name'
+        field = next(item for item in CONTRACT['fields'] if item['source_key'] == key)
+        category, code, validator = 'missing_required_field', 'record.entity_name_missing', 'required_text'
+        allowed = ('correct', 'defer', 'reject_record')
+    elif field:
+        category = 'field_format'
+        code = ('website.format' if key == 'Charity_Website'
+                else 'field.' + field['transform_rule'] + '_invalid')
+        validator = 'http_url' if key == 'Charity_Website' else field['transform_rule']
+        allowed = ('correct', 'omit', 'defer', 'reject_record')
+    elif 'Unmapped source columns' in reason:
+        category, code, validator, allowed = 'mapping_unknown', 'source.mapping_unknown', 'schema_mapping', ()
+    elif 'duplicate source _id' in reason:
+        category, code, validator, allowed = 'duplicate_identity', 'record.duplicate_identity', 'source_identity', ('defer', 'reject_record')
+    else:
+        category, code, validator, allowed = 'record_integrity', 'record.invalid', 'acnc_record', ('defer', 'reject_record')
+    value = row.get(key) if key and isinstance(row, dict) else row
+    return issue(code=code, category=category, detail=reason, validator=validator,
+                 version=PARSER_VERSION, source_value=value, native_id=native_id, row=index,
+                 source_key=key, canonical_key=field['canonical_key'] if field else None,
+                 allowed=allowed)
 
 
 def digest(value: object) -> str:
@@ -86,7 +116,7 @@ class ACNCExtractor:
             "observed_at": observed_at, "parser_version": PARSER_VERSION,
             "scope": {"filters": dict(filters), "kind": "filtered-resource", "complete_snapshot": False},
             "completion": "failed", "publication_eligible": False,
-            "records": [], "quarantine": [], "errors": [], "pages": [],
+            "records": [], "quarantine": [], "errors": [], "issues": [], "pages": [],
         }
         seen = set()
         offset = 0
@@ -131,18 +161,30 @@ class ACNCExtractor:
                         })
                         result["records"].append(record)
                     except ValueError as exc:
+                        problem = validation_issue(row, offset + index, str(exc))
                         result["quarantine"].append({"row": offset + index,
-                                                     "reason": str(exc), "raw": row})
+                                                     "native_id": problem['subject']['native_id'],
+                                                     "reason": str(exc), "raw": row,
+                                                     "raw_sha256": digest(row), "issues": [problem]})
+                        result["issues"].append(problem)
                 offset += len(rows)
                 if offset == total:
                     result["completion"] = "partial" if result["quarantine"] else "complete"
                     break
             except (OSError, ValueError, TypeError) as exc:
                 result["errors"].append({"offset": offset, "reason": str(exc)})
+                result["issues"].append(issue(
+                    code='acquisition.failed', category='acquisition_error', detail=str(exc),
+                    validator='acnc_acquisition', version=PARSER_VERSION,
+                    source_value={'offset': offset, 'reason': str(exc)}, row=offset, allowed=()))
                 result["completion"] = "partial" if result["pages"] else "failed"
                 break
         else:
             result["errors"].append({"offset": offset, "reason": "page budget exhausted"})
+            result["issues"].append(issue(
+                code='acquisition.page_budget_exhausted', category='acquisition_error',
+                detail='page budget exhausted', validator='acnc_acquisition', version=PARSER_VERSION,
+                source_value={'offset': offset, 'reason': 'page budget exhausted'}, row=offset, allowed=()))
             result["completion"] = "partial" if result["pages"] else "failed"
         result["counts"] = {"accepted": len(result["records"]),
                             "quarantined": len(result["quarantine"]),

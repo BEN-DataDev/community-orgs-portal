@@ -4,6 +4,13 @@ Requires Python 3.10 or later. Uses only the standard library; no installation,
 credentials, database, Flask, Redis or network connection is needed for offline
 fixtures. Live acquisition requires network access; staging is a separate operation.
 
+P34a adds structured validation issues and worker-backed corrected-run replay.
+ACNC and approved-CSV adapters emit field/record issues with stable codes, evidence
+hashes and permitted decisions. `ingestion.worker` checks the validation replay
+queue before the acquisition queue, re-runs the qualified adapter over every
+retained record, and stages only a separate complete private run. It never changes
+the parent run, approves fields or publishes an organisation.
+
 P33 adds the offline `ingestion.abr_bulk` adapter for separately downloaded national
 ABN bulk releases. It streams every XML member across the inventoried ZIP parts,
 checkpoints completed parts, retains only configured-postcode and known-ABN candidates,

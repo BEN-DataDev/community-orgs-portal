@@ -8,7 +8,11 @@ import {
 	approvalsSchema,
 	approvalInput,
 	withdrawalSchema,
-	suppressionInput
+	suppressionInput,
+	validationQueueSchema,
+	validationFilterInput,
+	validationAttemptInput,
+	validationResolutionInput
 } from '$lib/server/ingestion-review';
 import type { Json } from '$lib/db.types';
 import type { Actions, PageServerLoad } from './$types';
@@ -21,6 +25,15 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	const version = url.searchParams.get('version') || undefined;
 	const offset = Number(url.searchParams.get('offset') || 0);
 	const search = url.searchParams.get('search') || '';
+	const validationFilter = validationFilterInput.safeParse({
+		issue: url.searchParams.get('issue') || '',
+		run: url.searchParams.get('issue_run') || '',
+		release: url.searchParams.get('release') || '',
+		category: url.searchParams.get('category') || '',
+		decision: url.searchParams.get('issue_decision') || '',
+		offset: url.searchParams.get('issue_offset') || 0
+	});
+	if (!validationFilter.success) error(400, 'Invalid validation issue filter.');
 	if (
 		[run, version].some((x) => x && !/^[1-9][0-9]{0,18}$/.test(x)) ||
 		!Number.isInteger(offset) ||
@@ -95,7 +108,36 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 			}
 		}
 	}
-	return { queue: parsed.data, offset, search, preview, approvals, withdrawal, withdrawalFields };
+	const vf = validationFilter.data;
+	const validationResult = await locals.supabase.rpc('validation_issue_queue', {
+		p_issue: vf.issue || undefined,
+		p_run: vf.run || undefined,
+		p_release: vf.release || undefined,
+		p_category: vf.category,
+		p_decision: vf.decision,
+		p_offset: vf.offset
+	});
+	const validation = validationQueueSchema.safeParse(validationResult.data);
+	if (validationResult.error || !validation.success)
+		error(
+			validationResult.error?.code === '42501'
+				? 403
+				: validationResult.error?.code === 'P0002'
+					? 404
+					: 500,
+			'Could not load validation issues.'
+		);
+	return {
+		queue: parsed.data,
+		offset,
+		search,
+		preview,
+		approvals,
+		withdrawal,
+		withdrawalFields,
+		validation: validation.data,
+		validationFilter: vf
+	};
 };
 export const actions: Actions = {
 	default: async ({ locals, request }) => {
@@ -103,6 +145,81 @@ export const actions: Actions = {
 			error(403, 'Ingestion operator access required.');
 		const form = await request.formData();
 		const intent = form.get('intent');
+		if (intent === 'validate_issue') {
+			const input = validationAttemptInput.safeParse(Object.fromEntries(form));
+			if (!input.success)
+				return fail(400, { intent, message: 'Enter a proposed value to validate.' });
+			const result = await locals.supabase.rpc('validate_issue_value', {
+				p_issue: input.data.issue,
+				p_value: input.data.proposed as Json
+			});
+			if (result.error)
+				return fail(result.error.code === '42501' ? 403 : 400, {
+					intent,
+					message: 'The proposed value could not be validated.'
+				});
+			const checked = z
+				.object({ valid: z.boolean(), message: z.string() })
+				.passthrough()
+				.safeParse(result.data);
+			if (!checked.success)
+				return fail(500, { intent, message: 'Unexpected validation response.' });
+			return { intent, validationPassed: checked.data.valid, message: checked.data.message };
+		}
+		if (intent === 'save_resolution') {
+			const input = validationResolutionInput.safeParse(Object.fromEntries(form));
+			if (!input.success)
+				return fail(400, { intent, message: 'Choose an allowed decision and provide a note.' });
+			const x = input.data;
+			const result = await locals.supabase.rpc('save_validation_resolution', {
+				p_issue: x.issue,
+				p_revision: x.revision,
+				p_decision: x.decision,
+				p_proposed_value: x.decision === 'correct' ? (x.proposed as Json) : undefined,
+				p_note: x.note,
+				p_evidence_reference: x.evidence || undefined
+			});
+			if (result.error)
+				return fail(
+					result.error.code === '40001' ? 409 : result.error.code === '42501' ? 403 : 400,
+					{
+						intent,
+						message:
+							result.error.code === '40001'
+								? 'Another operator changed this resolution. Reload and compare before saving.'
+								: 'Resolution was not saved. Validate the value and check the permitted actions.'
+					}
+				);
+			return {
+				intent,
+				message: 'Resolution saved. The source evidence and original run are unchanged.'
+			};
+		}
+		if (intent === 'create_corrected_run') {
+			const run = z
+				.string()
+				.regex(/^[1-9][0-9]*$/)
+				.safeParse(form.get('run'));
+			if (!run.success) return fail(400, { intent, message: 'Invalid parent run.' });
+			const result = await locals.supabase.rpc('create_corrected_run', { p_run: run.data });
+			if (result.error)
+				return fail(
+					result.error.code === '40001' ? 409 : result.error.code === '42501' ? 403 : 400,
+					{
+						intent,
+						message:
+							result.error.code === '40001'
+								? 'A corrected run is already queued.'
+								: 'Corrected run was not queued. Resolve every eligible blocking issue first; acquisition and qualification failures require a new acquisition.'
+					}
+				);
+			return {
+				intent,
+				replayId: result.data,
+				message:
+					'Corrected run queued. The worker will revalidate all retained records into a separate private run.'
+			};
+		}
 		if (intent === 'suppress') {
 			let expected: unknown;
 			try {

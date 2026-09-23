@@ -1657,6 +1657,16 @@ export type Database = {
 			};
 			is_platform_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
 			is_ingestion_operator: { Args: Record<PropertyKey, never>; Returns: boolean };
+			validation_issue_queue: {
+				Args: { p_issue?: string; p_run?: string; p_release?: string; p_category?: string; p_decision?: string; p_offset?: number };
+				Returns: Json;
+			};
+			validate_issue_value: { Args: { p_issue: string; p_value: Json }; Returns: Json };
+			save_validation_resolution: {
+				Args: { p_issue: string; p_revision: number; p_decision: string; p_proposed_value?: Json; p_note: string; p_evidence_reference?: string };
+				Returns: undefined;
+			};
+			create_corrected_run: { Args: { p_run: string }; Returns: string };
 			ingestion_identity_inventory: { Args: never; Returns: Json };
 			review_entity_identity: {
 				Args: {

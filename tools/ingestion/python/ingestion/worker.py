@@ -11,12 +11,15 @@ from datetime import datetime, timezone
 
 from ingestion.live_acnc import Transport, acquire, configuration
 from ingestion.staging_sql import expression, validate
+from ingestion.validation_replay import replay
 
 
 class Database:
     def call(self, function, *args):
         if function not in {'claim_acquisition', 'heartbeat_acquisition',
-                            'checkpoint_acquisition', 'finish_acquisition', 'fail_acquisition'}:
+                            'checkpoint_acquisition', 'finish_acquisition', 'fail_acquisition',
+                            'claim_validation_replay', 'finish_validation_replay',
+                            'fail_validation_replay'}:
             raise ValueError('unsupported worker operation')
         encoded = []
         for value in args:
@@ -71,9 +74,32 @@ def run_one(db, transport_factory=Transport, acquire_fn=acquire):
         return {'job': job_id, 'status': 'worker_error', 'error_type': type(exc).__name__}
 
 
+def run_validation_one(db, replay_fn=replay):
+    job = db.call('claim_validation_replay')
+    if job is None:
+        return {'status': 'idle'}
+    replay_id, token = job['id'], job['lease_token']
+    try:
+        envelope = replay_fn(job)
+        validate(envelope)
+        if envelope['completion'] != 'complete' or envelope['quarantine'] or envelope['errors']:
+            raise ValueError('corrected run did not pass every validation gate')
+        run_id = db.call('finish_validation_replay', replay_id, token, envelope)
+        return {'replay': replay_id, 'status': 'complete', 'run_id': run_id}
+    except (ValueError, TypeError, KeyError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
+        try:
+            db.call('fail_validation_replay', replay_id, token)
+        except (ValueError, OSError, RuntimeError, subprocess.SubprocessError):
+            pass
+        return {'replay': replay_id, 'status': 'worker_error', 'error_type': type(exc).__name__}
+
+
 def main():
     try:
-        result = run_one(Database())
+        database = Database()
+        result = run_validation_one(database)
+        if result['status'] == 'idle':
+            result = run_one(database)
     except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
         result = {'status': 'worker_error', 'error_type': type(exc).__name__}
     print(json.dumps(result))

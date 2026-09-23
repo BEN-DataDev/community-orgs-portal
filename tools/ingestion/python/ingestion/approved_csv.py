@@ -11,6 +11,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from ingestion.adapters.acnc import digest
+from ingestion.validation_issues import issue
 
 COLUMNS = ('source_record_id entity_name entity_kind abn incorporation_jurisdiction '
            'incorporation_number website locality state postcode scope_basis service_area '
@@ -93,6 +94,23 @@ def row_errors(row):
     return errors
 
 
+def row_issue(row, index, message):
+    key = next((name for name in COLUMNS if name in message), None)
+    canonical = key if key in {'entity_name', 'abn', 'website'} else ('csv_' + key if key else None)
+    category, code, validator = 'field_format', 'csv.field_invalid', 'approved_csv_field'
+    allowed = ('correct', 'omit', 'defer', 'reject_record')
+    if message.startswith('missing '):
+        category, code, validator = 'missing_required_field', 'csv.required_field_missing', 'required_text'
+        allowed = ('correct', 'defer', 'reject_record')
+    elif message == 'duplicate source_record_id in file':
+        category, code, validator = 'duplicate_identity', 'csv.duplicate_identity', 'source_identity'
+        allowed = ('defer', 'reject_record')
+    return issue(code=code, category=category, detail=message, validator=validator,
+                 version=PARSER, source_value=row.get(key) if key else row,
+                 native_id=row.get('source_record_id') or None, row=index,
+                 source_key=key, canonical_key=canonical, allowed=allowed)
+
+
 def extract(data: bytes, manifest: dict, filename='organisations.csv') -> dict:
     if len(data) > MAX_BYTES:
         raise ValueError('CSV exceeds 5 MiB limit')
@@ -120,7 +138,7 @@ def extract(data: bytes, manifest: dict, filename='organisations.csv') -> dict:
     common.update(parser_version=PARSER, run_id='csv-' + digest({'manifest': manifest, 'parser': PARSER}))
     result = dict(common, contract_version='1.0', publication_eligible=False,
                   synthetic=manifest['synthetic'], qualification=manifest,
-                  scope=manifest['scope'], records=[], quarantine=[], errors=[], pages=[])
+                  scope=manifest['scope'], records=[], quarantine=[], errors=[], issues=[], pages=[])
     ids = Counter(row['source_record_id'].strip() for row in rows)
     seen_names = set()
     for index, raw in enumerate(rows, 1):
@@ -129,7 +147,11 @@ def extract(data: bytes, manifest: dict, filename='organisations.csv') -> dict:
         if ids[row['source_record_id']] > 1:
             errors.append('duplicate source_record_id in file')
         if errors:
-            result['quarantine'].append({'row': index, 'reason': '; '.join(errors), 'raw': raw})
+            problems = [row_issue(row, index, message) for message in errors]
+            result['quarantine'].append({'row': index, 'native_id': row['source_record_id'] or None,
+                                         'reason': '; '.join(errors), 'raw': raw,
+                                         'raw_sha256': digest(raw), 'issues': problems})
+            result['issues'].extend(problems)
             continue
         holds = []
         if row['entity_kind'] in {'branch', 'service'}:
@@ -153,6 +175,11 @@ def extract(data: bytes, manifest: dict, filename='organisations.csv') -> dict:
             disposition='hold' if holds else 'candidate', warnings=holds + ['Identity, scope and fields require review; ABN is unverified']))
     if manifest['synthetic']:
         result['errors'].append({'reason': 'Development fixture only; publication prohibited'})
+        result['issues'].append(issue(
+            code='qualification.synthetic_fixture', category='licence_or_qualification',
+            detail='Development fixture only; publication prohibited',
+            validator='csv_qualification', version=PARSER,
+            source_value={'synthetic': True}, allowed=()))
     result['completion'] = 'partial' if result['quarantine'] or result['errors'] else 'complete'
     result['counts'] = {'accepted': len(result['records']), 'quarantined': len(result['quarantine']),
                         'source_total': len(rows), 'pages': 0}

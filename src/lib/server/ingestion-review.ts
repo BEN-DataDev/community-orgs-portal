@@ -161,3 +161,107 @@ export const suppressionInput = z.object({
 	}),
 	confirmed: z.literal('yes')
 });
+
+const validationDecision = z.enum(['correct', 'omit', 'defer', 'reject_record']);
+const validationIssueSummary = z.object({
+	id: id,
+	run_id: id.nullable(),
+	release_id: id.nullable(),
+	subject_native_id: z.string().nullable(),
+	source_row: z.number().nullable(),
+	source_key: z.string().nullable(),
+	canonical_key: z.string().nullable(),
+	code: z.string(),
+	category: z.string(),
+	severity: z.enum(['warning', 'blocking']),
+	detail: z.string(),
+	decision: z.union([validationDecision, z.literal('unresolved')]),
+	revision: z.number()
+});
+export const validationQueueSchema = z.object({
+	total: z.number(),
+	counts: z.object({
+		total: z.number(),
+		blocking: z.number(),
+		unresolved: z.number(),
+		deferred: z.number(),
+		non_resolvable: z.number()
+	}),
+	issues: z.array(validationIssueSummary),
+	detail: z
+		.object({
+			id,
+			run_id: id.nullable(),
+			release_id: id.nullable(),
+			subject_native_id: z.string().nullable(),
+			source_row: z.number().nullable(),
+			source_key: z.string().nullable(),
+			canonical_key: z.string().nullable(),
+			code: z.string(),
+			category: z.string(),
+			severity: z.enum(['warning', 'blocking']),
+			source_value: z.unknown(),
+			raw_evidence_hash: z.string(),
+			validator_name: z.string(),
+			validator_version: z.string(),
+			allowed_resolutions: z.array(validationDecision),
+			detail: z.string(),
+			created_at: z.string(),
+			resolution: z
+				.object({
+					revision: z.number(),
+					decision: validationDecision,
+					proposed_value: z.unknown().nullable(),
+					canonical_value: z.unknown().nullable(),
+					note: z.string(),
+					resolved_at: z.string()
+				})
+				.passthrough()
+				.nullable(),
+			history: z.array(
+				z
+					.object({
+						revision: z.number(),
+						decision: validationDecision,
+						note: z.string(),
+						resolved_at: z.string()
+					})
+					.passthrough()
+			),
+			attempts: z.array(
+				z
+					.object({ valid: z.boolean(), message: z.string(), attempted_at: z.string() })
+					.passthrough()
+			)
+		})
+		.nullable()
+});
+
+export const validationFilterInput = z.object({
+	issue: z.union([id, z.literal('')]),
+	run: z.union([id, z.literal('')]),
+	release: z.union([id, z.literal('')]),
+	category: z.enum([
+		'',
+		'field_format',
+		'missing_required_field',
+		'duplicate_identity',
+		'record_integrity',
+		'record_scope',
+		'source_schema',
+		'mapping_unknown',
+		'acquisition_error',
+		'licence_or_qualification'
+	]),
+	decision: z.enum(['', 'unresolved', 'correct', 'omit', 'defer', 'reject_record']),
+	offset: z.coerce.number().int().min(0).max(1000000)
+});
+export const validationAttemptInput = z.object({ issue: id, proposed: z.string().max(10000) });
+export const validationResolutionInput = z.object({
+	issue: id,
+	revision: z.coerce.number().int().min(0).max(2147483646),
+	decision: validationDecision,
+	proposed: z.string().max(10000).optional().default(''),
+	note: z.string().trim().min(1).max(2000),
+	evidence: z.string().trim().max(2000).optional().default('')
+});

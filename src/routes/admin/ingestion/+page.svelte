@@ -2,6 +2,7 @@
 	import SavedApprovals from '$components/ingestion/SavedApprovals.svelte';
 	import FieldGroups from '../../../components/ingestion/FieldGroups.svelte';
 	import WithdrawalControls from '$components/ingestion/WithdrawalControls.svelte';
+	import ValidationIssues from '$components/ingestion/ValidationIssues.svelte';
 	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
@@ -38,6 +39,8 @@
 		</p>
 	</header>
 	{#if form?.message}<p role="status" class="card preset-tonal p-4">{form.message}</p>{/if}
+	<ValidationIssues queue={data.validation} filter={data.validationFilter} {form} />
+	<hr class="hr" />
 	<form method="GET" class="flex flex-wrap items-end gap-3">
 		<label class="label flex-1"
 			>Import run<select class="select" name="run" value={queue.run ?? ''} required>
