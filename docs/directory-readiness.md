@@ -97,5 +97,6 @@ exact-ABN search and successful public directory/search responses. The productio
 build passed with the existing source-map, chunk-size and optional Sharp warnings.
 The signed-in editor regression passed location add/edit/remove and alias and
 relationship add/edit, while identifying the two missing removal actions and the
-separate document-upload gap recorded above. With P31 and P32 deployed, P33 and
-P34 are the next implementation tracks alongside these P32 follow-ups.
+separate document-upload gap recorded above. With P31 and P32 deployed, P33 is
+complete; P34a staged-validation resolution and the P34b NSW adapter are the next
+implementation tracks alongside these P32 follow-ups.

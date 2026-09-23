@@ -109,6 +109,7 @@ passed against PostgreSQL 17 in a disposable database. It covers:
 - rejection of excluded/out-of-scope and partial-release promotion; and
 - administrator-only, audited raw-evidence expiry.
 
-P33 and P34 can now implement their adapters against this boundary. P32 remains
-required before the larger cohort is published, but it does not block private
-candidate acquisition.
+P33 and P34b can implement their adapters against this boundary. P34a adds the
+shared field/record validation-resolution workflow before another staged source is
+onboarded. P32 remains required before the larger cohort is published, but it does
+not block private candidate acquisition.

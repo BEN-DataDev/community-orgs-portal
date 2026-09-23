@@ -57,6 +57,20 @@ The function does not publish, create portal organisations, grant ownership or
 interpret missing records as closed organisations. Complete, partial and failed
 runs can all be stored as evidence. Completion does not confer publication approval.
 
+## Approved validation-resolution extension
+
+The current staging contract retains quarantine and error evidence but exposes only
+accepted record versions through Import review. The approved
+[P34a cross-source validation model](staged-validation-resolution.md) closes that
+gap for every staged source and every failed field/record.
+
+P34a keeps the original envelope and completion state immutable. It adds structured
+issues, revision-fenced operator resolutions, authoritative server validation and
+separately versioned derived runs. A correction never changes a partial run to
+complete, and scope/schema/licence/acquisition failures cannot be manually
+overridden. Publication remains behind the existing complete-run, identity,
+selected-field approval and suppression gates.
+
 Raw evidence is currently stored privately as JSONB, including the run envelope.
 Before larger scheduled imports, add retention/removal operations covering both
 copies and consider private object storage. The follow-up review migration adds review queues and candidate suggestions. The third migration adds mapped-field protection
@@ -293,12 +307,12 @@ no public attribution to unauthorised callers. Organisation overview responses u
 Populate these **reviewed public fields** in `ingestion.sources.metadata` when
 qualifying a real source (the private raw metadata can retain additional keys):
 
-| Key | Purpose |
-| --- | --- |
-| `public_title` | Public source/publisher label |
-| `public_url` | HTTP(S) dataset/register page |
-| `public_licence` | Reviewed licence/attribution text |
-| `public_licence_url` | HTTP(S) licence page |
+| Key                  | Purpose                           |
+| -------------------- | --------------------------------- |
+| `public_title`       | Public source/publisher label     |
+| `public_url`         | HTTP(S) dataset/register page     |
+| `public_licence`     | Reviewed licence/attribution text |
+| `public_licence_url` | HTTP(S) licence page              |
 
 Missing titles fall back to the source ID; missing licence/link fields are omitted.
 Synthetic sources are always labelled **Synthetic test data**. Public URL rendering

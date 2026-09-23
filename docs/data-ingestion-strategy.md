@@ -1,7 +1,8 @@
 # Public-source data ingestion and maintenance strategy
 
-Prepared: 15 September 2026. Updated: 16 September 2026 after acquisition-code review.
-Status: proposed implementation plan.
+Prepared: 15 September 2026. Updated: 23 September 2026 for the approved
+cross-source staged-validation model.
+Status: active strategy; P34a validation resolution is approved but not implemented.
 
 ## 1. Recommended approach
 
@@ -97,7 +98,13 @@ flowchart TD
     A[Approved datasets, APIs and exports] --> B[Source adapters]
     B --> C[Private raw snapshots and run manifest]
     C --> D[Normalise and validate]
-    D --> E[Match identities and detect changes]
+    D -->|Valid| E[Match identities and detect changes]
+    D -->|Failed fields or records| J[Private validation issues]
+    J --> K{Operator-resolvable?}
+    K -->|Yes| L[Validate correction and create derived run]
+    K -->|No| M[Requalify source/mapping or reacquire]
+    L --> D
+    M --> B
     E --> F[Review queue]
     F --> G[Transactional publication]
     G --> H[Portal tables and source attribution]
@@ -149,6 +156,7 @@ These paths and commands are proposed, not existing tools:
 | `ingest fetch --source acnc-register`                            | Fetch one version and write a manifest/checksum                |
 | `ingest import-file --source nsw-associations --file export.csv` | Stage an approved file with provenance                         |
 | `ingest normalise --run RUN_ID`                                  | Parse, validate and quarantine malformed records               |
+| `ingest revalidate --run RUN_ID --resolutions REVISION_SET`      | Revalidate approved corrections and create a derived run       |
 | `ingest match --run RUN_ID`                                      | Generate candidate matches with reasons                        |
 | `ingest diff --run RUN_ID`                                       | Produce a reviewable create/update/conflict/withdrawal report  |
 | `ingest publish --batch BATCH_ID`                                | Apply only approved changes with revision checks               |
@@ -181,11 +189,21 @@ It lacks the provenance, source identity and review structures needed for ingest
 | `source_record_versions` | Versioned permitted snapshots, schema version and retention deadline                                                       |
 | `record_links`           | Mapping of source record to legal entity/group/service/location; decision and reviewer                                     |
 | `field_assertions`       | Field/value, source version, effective/reporting period, confidence, supersession and publication eligibility              |
+| `validation_issues`      | Immutable field/record/source failures, validator version, raw-evidence hash and permitted resolution modes                |
+| `validation_resolutions` | Revision-fenced current correction/omit/defer/reject decision and canonical validated value                                |
+| `validation_events`      | Append-only operator decision history                                                                                      |
+| `validation_attempts`    | Versioned server-validator results for proposed values                                                                     |
+| `validation_replays`     | Parent artifact, exact resolution revisions and separately versioned derived run                                           |
 | `change_sets`            | Proposed values, previous values/revisions, reasons, approval state and reviewer                                           |
 | `publication_events`     | Exact applied changes, actor/job, batch ID and reversible history                                                          |
 | `suppression_rules`      | Source/record/field restrictions preventing republishing withdrawn data                                                    |
 
 Enforce uniqueness on `(source_id, source_native_id)` and idempotent version hashes.
+Use the shared [cross-source validation model](staged-validation-resolution.md) for
+every adapter. Never update a partial run in place or allow an operator decision to
+override scope, schema, licence/qualification or acquisition completeness. Only a
+separate derived run that passes complete revalidation can continue to identity and
+field review.
 For recurring bulk ingestion, keep raw payloads in an approved private artifact
 store, with paths/hashes in Postgres where required. The bounded pilot uses
 transactional private JSONB objects and

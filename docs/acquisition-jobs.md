@@ -1,6 +1,6 @@
 # ACNC acquisition jobs
 
-Updated 19 September 2026: the acquisition migration and restricted worker LOGIN
+Updated 23 September 2026: the acquisition migration and restricted worker LOGIN
 are deployed to Supabase project `gqltsfijginclwszrcfj`. The worker is installed
 and running on **AKHOME** in Docker Desktop. Password authentication, verified TLS
 and queue processing succeeded. The first manual live refresh completed as
@@ -11,8 +11,18 @@ check after that due time. The portal changes are now live on Vercel.
 
 The 23-postcode Snowy Valleys expansion is also deployed. Hosted configuration
 revision 3 contains the complete cohort, preserves the monthly schedule and due
-time, and the rebuilt AKHOME worker has successfully resumed idle polling. No
-expanded acquisition has been queued yet.
+time, and the rebuilt AKHOME worker is polling. The first expanded manual job,
+`226f831f-ad14-40e1-8dec-f24bf2fb46c6`, finished as private run **30** on
+23 September 2026. It retrieved 625 rows across seven pages, accepted 618 and
+quarantined seven schemeless website values containing paths or queries. It had
+zero acquisition errors and zero out-of-scope rows. The run is partial and
+publication-blocked; it created no reviews, approvals, promotions, publications or
+organisations.
+
+The owner approved [P34a cross-source staged validation](staged-validation-resolution.md)
+in response. P34a will expose all failed fields/records in the operator UI, retain
+revision-fenced decisions and create a separately revalidated derived run. Run 30
+and its raw quarantine evidence remain immutable and private.
 
 ## Deployment record
 
@@ -78,7 +88,6 @@ expanded acquisition has been queued yet.
   `interval_hours=720` and keeps `next_due_at=2026-10-19T03:18:23Z`. The change
   preserved the existing authorised configuration actor and cancelled any active
   work; no expanded job was queued during deployment.
-
 
 ## Operating the AKHOME worker
 
@@ -253,11 +262,11 @@ in the disposable database; see the controlled recovery results below.
 Tested on: 2026-09-17
 Acquisition scheduling: Off
 
-| Check | Job ID / Run ID | Observed result | Pass / Fail |
-| --- | --- | --- | --- |
-| Worker stopped, then restarted | d19e3c07-867b-40ef-b0e0-ec28d57674bd | Same job completed, with one staged import and no duplicate organisations. | Pass |
-| Source paused with a queued job | d04b0c07-2d28-4482-a346-b25de104c7ea | The queued job was  cancelled, and new acquisition requests are blocked. | Pass |
-| Fresh job after source re-enabled | 1aa2064f-bbe2-40fe-8472-7433e92ba442 | Fresh job completes; the cancelled job stays cancelled. | Pass |
+| Check                             | Job ID / Run ID                      | Observed result                                                            | Pass / Fail |
+| --------------------------------- | ------------------------------------ | -------------------------------------------------------------------------- | ----------- |
+| Worker stopped, then restarted    | d19e3c07-867b-40ef-b0e0-ec28d57674bd | Same job completed, with one staged import and no duplicate organisations. | Pass        |
+| Source paused with a queued job   | d04b0c07-2d28-4482-a346-b25de104c7ea | The queued job was cancelled, and new acquisition requests are blocked.    | Pass        |
+| Fresh job after source re-enabled | 1aa2064f-bbe2-40fe-8472-7433e92ba442 | Fresh job completes; the cancelled job stays cancelled.                    | Pass        |
 
 Notes:
 
@@ -282,7 +291,6 @@ jobs completed on their first attempt. The separate disposable-database tests
 below now supply that evidence. The operator's notes above remain unchanged;
 no unrecorded observations have been inferred.
 
-
 ## Controlled recovery results — 17 September 2026
 
 **All four requested recovery scenarios passed.** Results are also recorded in
@@ -292,13 +300,13 @@ Docker network. HTTP responses were synthetic fixtures, the worker used the
 restricted LOGIN migration, and no live credentials or production containers were
 used. The existing ingestion SQL suites ran successfully in the same database.
 
-| Scenario | Observed result | Outcome |
-| --- | --- | --- |
-| Process killed during pagination | Worker reached the second-page request after processing page one, then received SIGKILL (exit 137). Replacement was idle while the original lease was valid. After test-only lease expiry, attempt 2 fetched a complete fresh acquisition and staged exactly one run. Old token rejected. | Pass |
-| Process killed after checkpoint | Worker received SIGKILL after its checkpoint transaction committed. Attempt 2 reused the identical envelope and observation time, made no source requests, and staged exactly one run. Old token rejected. | Pass |
-| Protected human edit | Published synthetic records, corrected a name manually, then acquired changed source data through the worker. Review showed a protected conflict; the human correction and original identity links remained intact. | Pass |
-| Withdrawal survives refresh/replay | Suppressed a website and withdrew the second organisation before a changed-data refresh. Anonymous reads did not return the website or withdrawn organisation. Existing reprocessing suites also passed suppression/whole-record withdrawal replay checks. | Pass |
-| Failed and partial source | A pre-acquisition failure retained a failed run with zero records. A page-two failure retained a partial run with one new record. Public state and previous versions were preserved. An otherwise eligible name approval was rejected specifically with `Complete enabled source required`; neither incomplete run gained an approval. | Pass |
+| Scenario                           | Observed result                                                                                                                                                                                                                                                                                                                        | Outcome |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| Process killed during pagination   | Worker reached the second-page request after processing page one, then received SIGKILL (exit 137). Replacement was idle while the original lease was valid. After test-only lease expiry, attempt 2 fetched a complete fresh acquisition and staged exactly one run. Old token rejected.                                              | Pass    |
+| Process killed after checkpoint    | Worker received SIGKILL after its checkpoint transaction committed. Attempt 2 reused the identical envelope and observation time, made no source requests, and staged exactly one run. Old token rejected.                                                                                                                             | Pass    |
+| Protected human edit               | Published synthetic records, corrected a name manually, then acquired changed source data through the worker. Review showed a protected conflict; the human correction and original identity links remained intact.                                                                                                                    | Pass    |
+| Withdrawal survives refresh/replay | Suppressed a website and withdrew the second organisation before a changed-data refresh. Anonymous reads did not return the website or withdrawn organisation. Existing reprocessing suites also passed suppression/whole-record withdrawal replay checks.                                                                             | Pass    |
+| Failed and partial source          | A pre-acquisition failure retained a failed run with zero records. A page-two failure retained a partial run with one new record. Public state and previous versions were preserved. An otherwise eligible name approval was rejected specifically with `Complete enabled source required`; neither incomplete run gained an approval. | Pass    |
 
 Lease expiry was advanced **only in the disposable database** after killing the
 processes. The tests exercise actual process death, PostgreSQL transactions,

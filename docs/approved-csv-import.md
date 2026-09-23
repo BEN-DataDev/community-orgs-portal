@@ -89,7 +89,12 @@ geographic eligibility. Incorporation-number matching and publication are deferr
 to the identifier-mapping work; this importer does not merge on name or ABN.
 
 A run containing any quarantined row is partial: **none of its rows can be
-approved for publication**. Correct the source export and qualify/import a new file.
+approved for publication**. Today, correct the source export and qualify/import a
+new file. Approved P34a work will also permit eligible field/record issues to be
+resolved through the shared
+[staged-validation workflow](staged-validation-resolution.md), followed by full
+revalidation into a separate derived run. It will not mutate the partial parent or
+permit source/file/scope/qualification failures to be overridden.
 Clean approved exports still require identity review, selected-field approval and
 explicit publication. Blank fields emit no assertions and never delete values.
 Existing manual-edit, suppression, revision and publication replay guards apply.
@@ -121,7 +126,6 @@ provider export before live staging. Forward repair: disable the CSV source
 to stop staging/publication; retain runs and audit history. The migration changes no
 ACNC functions or public tables.
 
-
 ## Hosted deployment preflight — 18 September 2026
 
 Confirmed destination: Supabase project `gqltsfijginclwszrcfj`
@@ -150,7 +154,6 @@ is required for this CLI/database increment.
 No real CSV export or provider approval evidence is present in the repository or
 registered source metadata. A provider file/path/URL and its access/reuse evidence
 are still needed to complete real-export qualification.
-
 
 ## Hosted deployment and verification — 18 September 2026
 
@@ -182,7 +185,6 @@ Identity sequences may have advanced during rollback-only verification.
 P12 deployment and hosted database verification are complete. Real-provider CSV
 qualification remains pending receipt of a provider export/path/URL and its reuse
 approval or licence evidence. No real CSV source has been enabled or published.
-
 
 ## Real-provider onboarding deferred — 18 September 2026
 

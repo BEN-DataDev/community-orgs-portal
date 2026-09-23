@@ -1,23 +1,24 @@
 # P05 core journey sketches
 
-Version: 1.0. Completed: 17 September 2026. Scope: reviewable workflow sketches
+Version: 1.1. Updated: 23 September 2026. Scope: reviewable workflow sketches
 for import, correction and removal. These are low-fidelity screen contracts,
 not a UI implementation or a claim that every later milestone is complete.
 
-The sketches follow the [P01 inclusion policy](pilot-inclusion-policy.md) and
+The sketches follow the [P01 inclusion policy](pilot-inclusion-policy.md), the
+[P34a staged-validation decision](staged-validation-resolution.md) and
 [P04 qualified samples](source-sample-qualification.md). **Existing** means a path
 is present in the repository; **proposed** means follow-up implementation. Screen
 blocks simplify existing layouts; illustrative values below are invented.
 
 ## Actors and entry points
 
-| Actor | Entry and responsibility | Boundary |
-| --- | --- | --- |
-| Public reader | Organisation pages: read published facts, sources and dates | Cannot see raw evidence, review notes or removal reasons |
-| Organisation member | Read records permitted by their organisation role | Membership alone does not permit editing or import review |
-| Organisation admin/owner | Existing organisation section forms: correct permitted facts; platform administrators have effective owner access | Organisation authority alone does not grant global ingestion access |
-| Ingestion operator | Admin → Acquisition jobs / Import review: acquire, match, approve, publish and suppress | Server/database capability checks apply; an import does not grant organisation ownership |
-| Platform administrator | Admin → Source approvals and acquisition configuration | Source enablement and scheduling are separate from record approval/publication |
+| Actor                    | Entry and responsibility                                                                                          | Boundary                                                                                 |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Public reader            | Organisation pages: read published facts, sources and dates                                                       | Cannot see raw evidence, review notes or removal reasons                                 |
+| Organisation member      | Read records permitted by their organisation role                                                                 | Membership alone does not permit editing or import review                                |
+| Organisation admin/owner | Existing organisation section forms: correct permitted facts; platform administrators have effective owner access | Organisation authority alone does not grant global ingestion access                      |
+| Ingestion operator       | Admin → Acquisition jobs / Import review: acquire, match, approve, publish and suppress                           | Server/database capability checks apply; an import does not grant organisation ownership |
+| Platform administrator   | Admin → Source approvals and acquisition configuration                                                            | Source enablement and scheduling are separate from record approval/publication           |
 
 The [P06 capability matrix](capability-matrix.md) expands these task boundaries
 and records the remaining P07/P08 implementation and verification requirements. Existing operator checks include
@@ -34,7 +35,12 @@ and an organisation link. Everything before publication stays in private staging
 flowchart TD
     A[Qualified source] --> B[Acquire and stage privately]
     B --> C{Complete run and enabled source?}
-    C -->|No| D[Inspect failure or quarantine; resolve and import again]
+    C -->|No| D[Inspect structured validation issues]
+    D --> O{Issue is operator-resolvable?}
+    O -->|Yes| P[Validate correction and create a derived run]
+    O -->|No| Q[Requalify mapping/source or acquire again]
+    P --> C
+    Q --> B
     C -->|Yes| E[Check inclusion evidence and identity]
     E --> F{Review decision}
     F -->|Link or create| G[Save review and compare fields]
@@ -71,8 +77,10 @@ incomplete runs cannot approve or publish. A paused source requires administrato
 review; enabling it does not repair an incomplete run. Preserve the run/record
 context when returning from Source approvals.
 
-**Proposed, P12/P18:** approved CSV input and a run summary with accepted, held and
-quarantined counts plus row-level reasons. The input sketch is:
+**Approved follow-up, P34a:** every staged source exposes accepted, held and
+quarantined counts plus structured field/record issues through the shared
+[validation-resolution workflow](staged-validation-resolution.md). The input sketch
+is:
 
 ```text
 Approved CSV import
@@ -80,13 +88,38 @@ Source / resource / export version / observation date
 Permission evidence / attribution / scope / mapping version
 [Choose CSV] [Validate and stage privately]
 Result: candidates | held | quarantined | file errors
-[Inspect reasons] [Open staged run]
+[Inspect validation issues] [Open staged run]
 ```
 
 Reject invalid file metadata/headers before staging. Retain recoverable malformed
 rows with reasons; unrecoverable record boundaries fail the file. Quarantine is a
 validation outcome, distinct from an operator's rejection. The P04 CSV fixture is
 development-only and cannot be published. A real provider needs qualification.
+
+The validation view shows the immutable raw value and record context, issue code,
+category, validator and permitted decisions. An operator may correct a value, omit
+a mapping-declared optional field, defer it or reject the record. Proposed values
+must pass the authoritative server validator. Scope, schema, licence, mapping and
+acquisition failures are diagnostic only and cannot be manually accepted.
+
+```text
+Import review / Validation issues
+Source + run/release | blocking/deferred/non-resolvable counts | filters
+Record and field | raw value | failure reason | validator/version
+[Open safe candidate] [Enter correction] [Validate proposed value]
+Decision: [Correct / Omit optional field / Defer / Reject record]
+Evidence note: [required]
+[Save decision] [View decision history]
+
+All blocking issues resolved and raw hashes unchanged
+[Create corrected run]
+Result: new derived run; original partial run remains unchanged
+```
+
+Creating a corrected run revalidates every affected record and field. It preserves
+the original observation and lineage, cannot manufacture complete-snapshot absence,
+and enters identity/field review only if the new run has zero quarantine and zero
+acquisition errors. Resolution and replay never approve or publish data.
 
 ### B. Check inclusion and matching
 
@@ -244,10 +277,10 @@ decision, not a delete or a persistent suppression. A changed source version nee
 fresh review; rejection does not withdraw earlier published content. If exclusion
 must survive later versions, apply suppression explicitly with the correct scope.
 
-| Removal scope | Result and review requirement |
-| --- | --- |
-| Unpublished source record or field | Block future publication of the selected scope; no public organisation is created |
-| Field on a linked organisation | Clear the current fact, including human corrections; inspect the displayed value first. Suppression covers that target fact across source projections |
+| Removal scope                          | Result and review requirement                                                                                                                                |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Unpublished source record or field     | Block future publication of the selected scope; no public organisation is created                                                                            |
+| Field on a linked organisation         | Clear the current fact, including human corrections; inspect the displayed value first. Suppression covers that target fact across source projections        |
 | Entire record, or required Entity name | Withdraw the whole linked organisation from public view, even if it existed before import; do not describe this as removing only one provider's contribution |
 
 The suppression target comes from the source record's link, not an arbitrary
@@ -268,19 +301,19 @@ provider-required all-copy deletion needs its own retention/removal workflow.
 These are review scenarios for the sketches and future UI work, not newly executed
 browser/database tests. Use synthetic records for destructive scenarios.
 
-| Walkthrough | Expected stopping point or result |
-| --- | --- |
-| Eligible no-ABN group, such as P04 csv-001 | Check evidence, propose create, require name approval, publish only after all gates; fixture itself stays development-only |
-| Shared-ABN branch or same-name candidate, csv-003/csv-005 | Defer ambiguous identity; no automatic merge or duplicate creation |
-| Malformed CSV row, csv-006–008 | P12 quarantine with a reason; no public change |
-| Paused source or incomplete run | Explain the blocked approval and route to source review or a new complete import |
-| Only website selected | Saved approval and publication include only that eligible fact |
-| Editor changes a field after approval | Publication fails atomically; reload, show protected conflict, retain correction |
-| Same approval submitted again | Return recorded publication without duplicate entities or writes |
-| Reject a previously published version | Earlier publication remains; persistent removal requires explicit suppression |
-| Suppress corrected field, then replay source | Clear the confirmed value and block restoration |
-| Withdraw pre-existing linked organisation | Hide whole organisation; later import cannot make it public |
-| Unauthorised visitor opens review or submits an action | Deny private read/mutation; show no raw evidence or private reason |
+| Walkthrough                                               | Expected stopping point or result                                                                                          |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Eligible no-ABN group, such as P04 csv-001                | Check evidence, propose create, require name approval, publish only after all gates; fixture itself stays development-only |
+| Shared-ABN branch or same-name candidate, csv-003/csv-005 | Defer ambiguous identity; no automatic merge or duplicate creation                                                         |
+| Malformed CSV row, csv-006–008                            | P12 quarantine with a reason; no public change                                                                             |
+| Paused source or incomplete run                           | Explain the blocked approval and route to source review or a new complete import                                           |
+| Only website selected                                     | Saved approval and publication include only that eligible fact                                                             |
+| Editor changes a field after approval                     | Publication fails atomically; reload, show protected conflict, retain correction                                           |
+| Same approval submitted again                             | Return recorded publication without duplicate entities or writes                                                           |
+| Reject a previously published version                     | Earlier publication remains; persistent removal requires explicit suppression                                              |
+| Suppress corrected field, then replay source              | Clear the confirmed value and block restoration                                                                            |
+| Withdraw pre-existing linked organisation                 | Hide whole organisation; later import cannot make it public                                                                |
+| Unauthorised visitor opens review or submits an action    | Deny private read/mutation; show no raw evidence or private reason                                                         |
 
 Follow-up UI work should retain labelled controls, keyboard access, textual status
 and errors, and a readable stacked current/source comparison on narrow screens.
