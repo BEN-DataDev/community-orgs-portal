@@ -237,6 +237,28 @@ export const validationQueueSchema = z.object({
 		.nullable()
 });
 
+export const validationRunReadinessSchema = z.object({
+	run_id: id,
+	eligible: z.boolean(),
+	raw_evidence_available: z.boolean(),
+	issue_count: z.number(),
+	blocking_count: z.number(),
+	unresolved_blocking_count: z.number(),
+	non_overridable_blocking_count: z.number(),
+	deferred_blocking_count: z.number(),
+	rejected_blocking_count: z.number(),
+	acquisition_failure_count: z.number(),
+	active_replay: z
+		.object({
+			id: z.string().uuid(),
+			status: z.enum(['queued', 'running', 'complete']),
+			requested_at: z.string(),
+			message: z.string().nullable(),
+			derived_run_id: id.nullable()
+		})
+		.nullable()
+});
+
 export const validationFilterInput = z.object({
 	issue: z.union([id, z.literal('')]),
 	run: z.union([id, z.literal('')]),

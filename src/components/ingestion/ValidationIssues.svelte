@@ -1,16 +1,24 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
-	import type { validationQueueSchema, validationFilterInput } from '$lib/server/ingestion-review';
+	import type {
+		validationQueueSchema,
+		validationFilterInput,
+		validationRunReadinessSchema
+	} from '$lib/server/ingestion-review';
+	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { z } from 'zod';
+	let creatingRun = $state(false);
 
 	let {
 		queue,
 		filter,
+		readiness,
 		form
 	}: {
 		queue: z.infer<typeof validationQueueSchema>;
 		filter: z.infer<typeof validationFilterInput>;
+		readiness: z.infer<typeof validationRunReadinessSchema> | null;
 		form: Record<string, unknown> | null | undefined;
 	} = $props();
 
@@ -64,6 +72,20 @@
 				return 'preset-tonal-warning';
 		}
 	}
+	const createCorrectedRun: SubmitFunction = ({ cancel }) => {
+		if (creatingRun) {
+			cancel();
+			return;
+		}
+		creatingRun = true;
+		return async ({ update }) => {
+			try {
+				await update();
+			} finally {
+				creatingRun = false;
+			}
+		};
+	};
 </script>
 
 <section aria-labelledby="validation-heading" class="space-y-4">
@@ -289,19 +311,88 @@
 						or qualification decision and cannot be manually overridden.
 					</p>{/if}
 				{#if issue.run_id}
-					<form method="POST" use:enhance class="card preset-tonal space-y-3 p-4">
-						<h3 class="font-semibold">Derived run</h3>
+					<form
+						method="POST"
+						use:enhance={createCorrectedRun}
+						class="card preset-tonal space-y-3 p-4"
+						aria-busy={creatingRun}
+					>
+						<div class="flex items-start justify-between gap-3">
+							<h3 class="font-semibold">Derived run</h3>
+							{#if readiness?.active_replay}<span class="badge preset-tonal-primary shrink-0"
+									>{readiness.active_replay.status === 'complete'
+										? 'Complete'
+										: readiness.active_replay.status === 'queued'
+											? 'Queued'
+											: 'Running'}</span
+								>
+							{:else if readiness?.eligible}<span class="badge preset-tonal-success shrink-0"
+									>Ready</span
+								>
+							{:else}<span class="badge preset-tonal-warning shrink-0">Action required</span>{/if}
+						</div>
 						<p>
 							The worker revalidates every retained record. The original run remains unchanged and
 							the derived run remains ineligible for publication until ordinary identity and field
 							review.
 						</p>
+						{#if readiness?.active_replay}<p role="status">
+								{#if readiness.active_replay.status === 'complete'}Replay {readiness.active_replay
+										.id}
+									completed{#if readiness.active_replay.derived_run_id}
+										as derived run {readiness.active_replay.derived_run_id}{/if}. Change a
+									resolution before creating another corrected run.{:else}Replay {readiness
+										.active_replay.id} is
+									{readiness.active_replay.status}. Another replay cannot be queued yet.{/if}
+							</p>
+						{:else if readiness?.eligible}<p class="preset-tonal-success rounded-container p-3">
+								All {readiness.blocking_count} blocking issues have replay-compatible decisions. This
+								run is ready to queue.{#if readiness.rejected_blocking_count}
+									{readiness.rejected_blocking_count} rejected record(s) will be intentionally excluded
+									and retained in the replay audit evidence.{/if}
+							</p>
+						{:else if readiness}<div class="preset-tonal-warning rounded-container p-3">
+								<p class="font-semibold">This run is not ready to queue.</p>
+								<ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+									{#if !readiness.raw_evidence_available}<li>Raw evidence has expired.</li>{/if}
+									{#if readiness.issue_count === 0}<li>
+											No validation issues exist for this run.
+										</li>{/if}
+									{#if readiness.acquisition_failure_count}<li>
+											{readiness.acquisition_failure_count} acquisition failure(s) require a new acquisition.
+										</li>{/if}
+									{#if readiness.unresolved_blocking_count}<li>
+											{readiness.unresolved_blocking_count} blocking issue(s) are unresolved.
+										</li>{/if}
+									{#if readiness.non_overridable_blocking_count}<li>
+											{readiness.non_overridable_blocking_count} blocking issue(s) cannot be manually
+											overridden.
+										</li>{/if}
+									{#if readiness.deferred_blocking_count}<li>
+											{readiness.deferred_blocking_count} blocking issue(s) are deferred.
+										</li>{/if}
+								</ul>
+							</div>
+						{:else}<p class="preset-tonal-warning rounded-container p-3">
+								Run readiness is unavailable. Reload before attempting to queue a corrected run.
+							</p>{/if}
 						<input type="hidden" name="intent" value="create_corrected_run" /><input
 							type="hidden"
 							name="run"
 							value={issue.run_id}
-						/><button class="btn preset-filled-primary-500">Create corrected run</button
-						>{#if form?.intent === 'create_corrected_run'}<p role="status">
+						/><button
+							class="btn preset-filled-primary-500"
+							disabled={!readiness?.eligible || creatingRun}
+							>{#if creatingRun}<span
+									aria-hidden="true"
+									class="size-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+								></span>Queuing corrected run…{:else}Create corrected run{/if}</button
+						>
+						{#if creatingRun}<p role="status" aria-live="polite">
+								Submitting once. Do not refresh or click again; the request may commit even if the
+								gateway times out.
+							</p>{/if}
+						{#if form?.intent === 'create_corrected_run'}<p role="status">
 								{form.message as string}
 							</p>{/if}
 					</form>

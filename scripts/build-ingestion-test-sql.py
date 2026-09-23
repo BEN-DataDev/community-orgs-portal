@@ -34,6 +34,9 @@ for name in [
     '20260923010000_register_abr_bulk_source.sql',
     '20260923020000_chunked_registry_seed_staging.sql',
     '20260924010000_staged_validation_resolution.sql',
+    '20260924020000_validation_run_readiness.sql',
+    '20260924030000_replay_rejected_records.sql',
+    '20260924040000_idempotent_validation_replay.sql',
 ]:
     print((root / 'supabase/migrations' / name).read_text())
 print((root / 'supabase/tests/support/ingestion_post_migration.sql').read_text())

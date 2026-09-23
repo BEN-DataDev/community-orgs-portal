@@ -48,19 +48,32 @@ begin
  q:=community_orgs.validation_issue_queue(issue,parent::text,null,'field_format','',0);
  if q->>'total'<>'1' or q->'detail'->>'code'<>'website.format'
   or q->'counts'->>'unresolved'<>'1' then raise exception 'Issue queue omitted structured evidence'; end if;
+ q:=community_orgs.validation_run_readiness(parent::text);
+ if (q->>'eligible')::boolean or q->>'unresolved_blocking_count'<>'1' then
+  raise exception 'Unresolved run was incorrectly reported ready'; end if;
  if (community_orgs.validate_issue_value(issue,'"https://example.org/path"')->>'valid')::boolean is distinct from true
   or (community_orgs.validate_issue_value(issue,'"javascript:alert(1)"')->>'valid')::boolean is distinct from false then
   raise exception 'Authoritative URL validation failed'; end if;
  perform community_orgs.save_validation_resolution(issue,0,'correct','"https://example.org/path"','Checked against source website',null);
+ q:=community_orgs.validation_run_readiness(parent::text);
+ if (q->>'eligible')::boolean is distinct from true or q->>'unresolved_blocking_count'<>'0' then
+  raise exception 'Resolved run was not reported ready'; end if;
  begin perform community_orgs.save_validation_resolution(issue,0,'omit',null,'Stale decision',null);
   raise exception 'Expected stale resolution rejection'; exception when serialization_failure then null; end;
+ perform community_orgs.save_validation_resolution(issue,1,'reject_record',null,'Record intentionally excluded',null);
+ q:=community_orgs.validation_run_readiness(parent::text);
+ if (q->>'eligible')::boolean is distinct from true or q->>'rejected_blocking_count'<>'1' then
+  raise exception 'Rejected record was not reported as replay-compatible'; end if;
  reset role;
- if (select count(*) from ingestion.validation_resolution_events where issue_id=issue::bigint)<>1
+ if (select count(*) from ingestion.validation_resolution_events where issue_id=issue::bigint)<>2
   or (select count(*) from ingestion.validation_attempts where issue_id=issue::bigint)<>2 then
   raise exception 'Validation audit history missing'; end if;
  set local role authenticated;
  perform set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000341","aal":"aal2"}',true);
  replay:=community_orgs.create_corrected_run(parent::text);
+ q:=community_orgs.validation_run_readiness(parent::text);
+ if (q->>'eligible')::boolean or q->'active_replay'->>'status'<>'queued' then
+  raise exception 'Queued replay was not reflected in run readiness'; end if;
  begin perform community_orgs.create_corrected_run(parent::text); raise exception 'Expected duplicate replay rejection';
  exception when serialization_failure then null; end;
  reset role;
@@ -71,18 +84,11 @@ begin
  reset role;
  derived_envelope:=parent_envelope||jsonb_build_object(
   'run_id','validation-replay-'||replay,'completion','complete','quarantine','[]'::jsonb,'issues','[]'::jsonb,
-  'mapping_version','acnc-register-fields-v3','counts',jsonb_build_object('accepted',1,'quarantined',0,'pages',0,'source_total',1),
-  'validation_replay',jsonb_build_object('id',replay,'parent_run_id',parent),
-  'records',jsonb_build_array(jsonb_build_object(
-   'source_id','acnc-register','resource_id','p34a-fixture','run_id','validation-replay-'||replay,
-   'native_id','2','parser_version','acnc-ckan-v3','observed_at','2026-09-23T00:00:00Z',
-   'source_modified_at',null,'source_url','https://data.gov.au/fixture',
-   'raw',jsonb_build_object('_id','2','Charity_Legal_Name','P34a fixture','Charity_Website','https://example.org/path'),
-   'raw_sha256','7cc23f7896e5db934786236debc64f9f93372b2a4ea3400ed39c50b53e058c17',
-   'mapping_version','acnc-register-fields-v3','warnings','[]'::jsonb,
-   'assertions',jsonb_build_array(
-    jsonb_build_object('field','entity_name','value','P34a fixture'),
-    jsonb_build_object('field','website','value','https://example.org/path')))));
+  'mapping_version','acnc-register-fields-v3',
+  'counts',jsonb_build_object('accepted',0,'quarantined',0,'rejected',1,'pages',0,'source_total',1),
+  'validation_replay',jsonb_build_object('id',replay,'parent_run_id',parent,'rejections',jsonb_build_array(
+   jsonb_build_object('issue_id',issue,'revision',2,'native_id','2','row',0))),
+  'records','[]'::jsonb);
  set local role ingestion_worker;
  derived:=ingestion.finish_validation_replay(replay::uuid,(claimed->>'lease_token')::uuid,derived_envelope);
  reset role;
@@ -92,6 +98,16 @@ begin
   or not exists(select 1 from ingestion.reprocessing_runs where run_id=derived and parent_run_id=parent) then
   raise exception 'Derived lineage or immutable parent gate failed'; end if;
  if (select count(*) from community_orgs.organisations)<>before_orgs then raise exception 'Validation replay published data'; end if;
+
+ set local role authenticated;
+ perform set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000341","aal":"aal2"}',true);
+ q:=community_orgs.validation_run_readiness(parent::text);
+ if (q->>'eligible')::boolean or q->'active_replay'->>'status'<>'complete'
+  or q->'active_replay'->>'derived_run_id' is distinct from derived::text then
+  raise exception 'Completed replay was not reported idempotently'; end if;
+ begin perform community_orgs.create_corrected_run(parent::text);
+  raise exception 'Expected completed replay duplicate rejection'; exception when serialization_failure then null; end;
+ reset role;
 
  begin update ingestion.validation_issues set detail='tampered' where id=issue::bigint;
   raise exception 'Expected immutable issue rejection'; exception when object_not_in_prerequisite_state then null; end;

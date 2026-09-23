@@ -10,6 +10,7 @@ import {
 	withdrawalSchema,
 	suppressionInput,
 	validationQueueSchema,
+	validationRunReadinessSchema,
 	validationFilterInput,
 	validationAttemptInput,
 	validationResolutionInput
@@ -127,6 +128,16 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 					: 500,
 			'Could not load validation issues.'
 		);
+	let validationReadiness: z.infer<typeof validationRunReadinessSchema> | null = null;
+	if (validation.data.detail?.run_id) {
+		const readinessResult = await locals.supabase.rpc('validation_run_readiness', {
+			p_run: validation.data.detail.run_id
+		});
+		const readiness = validationRunReadinessSchema.safeParse(readinessResult.data);
+		if (readinessResult.error || !readiness.success)
+			error(readinessResult.error?.code === '42501' ? 403 : 500, 'Could not load run readiness.');
+		validationReadiness = readiness.data;
+	}
 	return {
 		queue: parsed.data,
 		offset,
@@ -136,6 +147,7 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 		withdrawal,
 		withdrawalFields,
 		validation: validation.data,
+		validationReadiness,
 		validationFilter: vf
 	};
 };
@@ -202,17 +214,29 @@ export const actions: Actions = {
 				.safeParse(form.get('run'));
 			if (!run.success) return fail(400, { intent, message: 'Invalid parent run.' });
 			const result = await locals.supabase.rpc('create_corrected_run', { p_run: run.data });
-			if (result.error)
+			if (result.error) {
+				const knownMessage = {
+					'Raw evidence expired':
+						'Corrected run was not queued because its raw evidence has expired.',
+					'Acquisition failures require a new acquisition':
+						'Corrected run was not queued because acquisition failures require a new acquisition.',
+					'No validation issues exist for this run':
+						'Corrected run was not queued because this run has no validation issues.',
+					'Blocking issues remain unresolved or non-overridable':
+						'Corrected run was not queued because blocking issues still require action.',
+					'A corrected run is already queued': 'A corrected run is already queued.',
+					'A corrected run already completed for these resolutions':
+						'A corrected run already completed for these resolutions.'
+				}[result.error.message];
 				return fail(
 					result.error.code === '40001' ? 409 : result.error.code === '42501' ? 403 : 400,
 					{
 						intent,
 						message:
-							result.error.code === '40001'
-								? 'A corrected run is already queued.'
-								: 'Corrected run was not queued. Resolve every eligible blocking issue first; acquisition and qualification failures require a new acquisition.'
+							knownMessage ?? 'Corrected run was not queued. Reload and review its readiness.'
 					}
 				);
+			}
 			return {
 				intent,
 				replayId: result.data,

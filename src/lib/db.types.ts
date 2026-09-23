@@ -1661,6 +1661,7 @@ export type Database = {
 				Args: { p_issue?: string; p_run?: string; p_release?: string; p_category?: string; p_decision?: string; p_offset?: number };
 				Returns: Json;
 			};
+			validation_run_readiness: { Args: { p_run: string }; Returns: Json };
 			validate_issue_value: { Args: { p_issue: string; p_value: Json }; Returns: Json };
 			save_validation_resolution: {
 				Args: { p_issue: string; p_revision: number; p_decision: string; p_proposed_value?: Json; p_note: string; p_evidence_reference?: string };

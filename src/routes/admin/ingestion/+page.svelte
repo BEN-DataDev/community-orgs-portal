@@ -39,7 +39,12 @@
 		</p>
 	</header>
 	{#if form?.message}<p role="status" class="card preset-tonal p-4">{form.message}</p>{/if}
-	<ValidationIssues queue={data.validation} filter={data.validationFilter} {form} />
+	<ValidationIssues
+		queue={data.validation}
+		filter={data.validationFilter}
+		readiness={data.validationReadiness}
+		{form}
+	/>
 	<hr class="hr" />
 	<form method="GET" class="flex flex-wrap items-end gap-3">
 		<label class="label flex-1"

@@ -60,10 +60,32 @@ class ValidationReplayTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'unresolved'):
             replay(request(decision='defer'))
 
-    def test_reject_record_cannot_claim_complete(self):
+    def test_reject_record_is_an_audited_complete_exclusion(self):
         result = replay(request(decision='reject_record'))
-        self.assertEqual(result['completion'], 'partial')
-        self.assertEqual(len(result['quarantine']), 1)
+        self.assertEqual(result['completion'], 'complete')
+        self.assertEqual(result['quarantine'], [])
+        self.assertEqual(result['records'], [])
+        self.assertEqual(result['counts']['rejected'], 1)
+        self.assertFalse(result['scope']['complete_snapshot'])
+        self.assertEqual(result['validation_replay']['rejections'], [{
+            'issue_id': '1', 'revision': 1, 'native_id': '7', 'row': 0,
+        }])
+
+    def test_rejection_downgrades_complete_snapshot_absence_claim(self):
+        job = request(decision='reject_record')
+        envelope = job['envelope']
+        envelope['completion'] = 'complete'
+        envelope['scope']['complete_snapshot'] = True
+        envelope['records'] = [{
+            'native_id': '7', 'row': 0, 'raw': copy.deepcopy(RAW),
+            'source_modified_at': None, 'source_url': 'https://data.gov.au/fixture',
+        }]
+        envelope['quarantine'] = []
+        envelope['counts'].update(accepted=1, quarantined=0)
+        job['parent_envelope_sha256'] = digest(envelope)
+        result = replay(job)
+        self.assertEqual(result['completion'], 'complete')
+        self.assertFalse(result['scope']['complete_snapshot'])
 
     def test_adapter_emits_field_addressable_issue(self):
         payload = {'success': True, 'result': {'total': 1, 'records': [RAW]}}

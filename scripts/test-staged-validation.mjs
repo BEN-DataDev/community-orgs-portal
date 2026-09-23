@@ -33,6 +33,19 @@ try {
 		],
 		detail: null
 	};
+	const readiness = {
+		run_id: '30',
+		eligible: false,
+		raw_evidence_available: true,
+		issue_count: 7,
+		blocking_count: 7,
+		unresolved_blocking_count: 1,
+		non_overridable_blocking_count: 0,
+		deferred_blocking_count: 0,
+		rejected_blocking_count: 0,
+		acquisition_failure_count: 0,
+		active_replay: null
+	};
 	const review = { runs: [], run: null, total: 0, records: [], detail: null, candidates: [] };
 	const locals = {
 		supabase: {
@@ -41,6 +54,7 @@ try {
 				if (name === 'is_ingestion_operator') return { data: true, error: null };
 				if (name === 'ingestion_review_queue') return { data: review, error: null };
 				if (name === 'validation_issue_queue') return { data: validation, error: rpcError };
+				if (name === 'validation_run_readiness') return { data: readiness, error: rpcError };
 				if (name === 'validate_issue_value')
 					return { data: { valid: true, message: 'Value passed.' }, error: rpcError };
 				if (name === 'create_corrected_run')
@@ -56,7 +70,37 @@ try {
 	};
 	const data = await load(event);
 	assert.equal(data.validation.total, 1);
+	assert.equal(data.validationReadiness, null);
 	assert.equal(calls.find(([name]) => name === 'validation_issue_queue')[1].p_run, '30');
+	validation.detail = {
+		id: '41',
+		run_id: '30',
+		release_id: null,
+		subject_native_id: '2242',
+		source_row: 14,
+		source_key: 'Charity_Website',
+		canonical_key: 'website',
+		code: 'website.format',
+		category: 'field_format',
+		severity: 'blocking',
+		source_value: 'example.org',
+		raw_evidence_hash: 'a'.repeat(64),
+		validator_name: 'http_url',
+		validator_version: 'acnc-ckan-v3',
+		allowed_resolutions: ['correct', 'omit', 'defer', 'reject_record'],
+		detail: 'Invalid URL',
+		created_at: '2026-09-23T00:00:00Z',
+		resolution: null,
+		history: [],
+		attempts: []
+	};
+	const selected = await load({
+		...event,
+		url: new URL('http://localhost/admin/ingestion?issue=41&issue_run=30')
+	});
+	assert.equal(selected.validationReadiness.unresolved_blocking_count, 1);
+	assert.equal(calls.find(([name]) => name === 'validation_run_readiness')[1].p_run, '30');
+	validation.detail = null;
 	await assert.rejects(
 		() => load({ ...event, url: new URL('http://localhost/admin/ingestion?issue_run=x') }),
 		(e) => e.status === 400

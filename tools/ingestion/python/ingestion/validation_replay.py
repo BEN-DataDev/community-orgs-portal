@@ -8,24 +8,35 @@ from ingestion.approved_csv import COLUMNS, PARSER as CSV_PARSER, row_errors
 from ingestion.validation_issues import evidence_hash
 
 
-def _apply(raw, resolutions, native_id, row):
-    rejected = False
+def _apply(raw, resolutions, native_id, row, applied):
+    rejections = []
     for resolution in resolutions:
-        if resolution.get('native_id') != native_id and resolution.get('row') != row:
+        resolution_native_id = resolution.get('native_id')
+        if ((resolution_native_id is not None and resolution_native_id != native_id) or
+                (resolution_native_id is None and resolution.get('row') != row)):
             continue
+        issue_id = str(resolution.get('issue_id'))
+        if issue_id in applied:
+            raise ValueError('resolution matched more than one retained record')
         key = resolution.get('source_key')
         if not key or evidence_hash(raw.get(key)) != resolution.get('raw_evidence_hash'):
             raise ValueError('resolution raw evidence changed')
+        applied.add(issue_id)
         decision = resolution.get('decision')
         if decision == 'correct':
             raw[key] = resolution.get('proposed_value')
         elif decision == 'omit':
             raw[key] = ''
         elif decision == 'reject_record':
-            rejected = True
+            rejections.append({
+                'issue_id': issue_id,
+                'revision': resolution.get('revision'),
+                'native_id': resolution.get('native_id'),
+                'row': resolution.get('row'),
+            })
         else:
             raise ValueError('unresolved validation decision')
-    return rejected
+    return rejections
 
 
 def _csv_record(raw, common):
@@ -76,15 +87,19 @@ def replay(request):
                       'processed_at': datetime.now(timezone.utc).isoformat(),
                       'resolutions': [{'issue_id': x['issue_id'], 'revision': x['revision']}
                                       for x in resolutions],
+                      'rejections': [],
                   })
     seen = set()
+    applied = set()
+    rejected_records = 0
     for native_id, original_raw, row, old in originals:
         if not isinstance(original_raw, dict):
             raise ValueError('retained raw record unavailable')
         raw = deepcopy(original_raw)
-        if _apply(raw, resolutions, native_id, row):
-            result['quarantine'].append({'row': row, 'native_id': native_id, 'raw': raw,
-                                         'raw_sha256': digest(raw), 'reason': 'Record rejected by operator resolution'})
+        rejections = _apply(raw, resolutions, native_id, row, applied)
+        if rejections:
+            result['validation_replay']['rejections'].extend(rejections)
+            rejected_records += 1
             continue
         if not native_id or native_id in seen:
             raise ValueError('duplicate or missing identity during full replay')
@@ -102,7 +117,15 @@ def replay(request):
         else:
             raise ValueError('no qualified replay adapter for source')
         result['records'].append(record)
-    result['counts'].update(accepted=len(result['records']), quarantined=len(result['quarantine']))
+    expected = {str(item.get('issue_id')) for item in resolutions}
+    if applied != expected:
+        raise ValueError('resolution did not match retained evidence')
+    if rejected_records:
+        result['validation_replay']['rejections'].sort(key=lambda item: int(item['issue_id']))
+        result['scope'] = deepcopy(result['scope'])
+        result['scope']['complete_snapshot'] = False
+    result['counts'].update(accepted=len(result['records']), quarantined=len(result['quarantine']),
+                            rejected=rejected_records)
     result['completion'] = 'complete' if not result['quarantine'] else 'partial'
     result['mapping_version'] = MAPPING_VERSION if envelope['source_id'] == 'acnc-register' else 'portal-csv-pilot-v1'
     return result

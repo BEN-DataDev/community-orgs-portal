@@ -8,8 +8,10 @@ P34a adds structured validation issues and worker-backed corrected-run replay.
 ACNC and approved-CSV adapters emit field/record issues with stable codes, evidence
 hashes and permitted decisions. `ingestion.worker` checks the validation replay
 queue before the acquisition queue, re-runs the qualified adapter over every
-retained record, and stages only a separate complete private run. It never changes
-the parent run, approves fields or publishes an organisation.
+non-rejected retained record, and stages only a separate complete private run.
+Intentional record rejections are counted and retained in replay evidence, and
+force `complete_snapshot=false`. Replay never changes the parent run, approves
+fields or publishes an organisation.
 
 P33 adds the offline `ingestion.abr_bulk` adapter for separately downloaded national
 ABN bulk releases. It streams every XML member across the inventoried ZIP parts,

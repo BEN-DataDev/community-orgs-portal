@@ -85,8 +85,9 @@ Resolution decisions are `correct`, `omit`, `defer` or `reject_record`:
 - `omit` is available only for a mapping-declared optional field. It means the
   derived record makes no assertion for that field; it is not a deletion.
 - `defer` retains the issue as unresolved private evidence.
-- `reject_record` excludes the record from a bounded candidate promotion, but
-  cannot make an otherwise complete source snapshot suitable for absence
+- `reject_record` intentionally excludes the record from the derived artifact.
+  The replay records the exact rejected issue revision and downgrades
+  `complete_snapshot` to `false`, so the rejected subset cannot drive absence
   reconciliation.
 
 There is no unrestricted `accept_as_is`. A mapping may define a manual-evidence
@@ -124,12 +125,14 @@ Replay applies an exact, immutable set of resolution revisions to raw evidence a
 runs the current approved adapter/mapping over every affected record. It must:
 
 1. verify that raw evidence is still retained and its hash matches the issue;
-2. re-run all record and field validation, not only the edited field;
+2. re-run all non-rejected records through record and field validation, not only
+   the edited field, and retain exact audit evidence for intentional rejections;
 3. preserve source identity, observation time and parent-run lineage;
 4. write a new parser/mapping-versioned record version and derived run;
 5. keep the parent run and its quarantine unchanged;
 6. produce `complete` only with zero quarantine and zero acquisition errors; and
-7. prohibit a derived or rejected subset from claiming complete-snapshot absence.
+7. downgrade a derived artifact containing intentional rejections to
+   `complete_snapshot=false`, prohibiting absence reconciliation.
 
 The derived run remains `publication_eligible=false`. Existing identity review,
 source enablement, selected-field approval, suppression, manual-edit protection
@@ -178,8 +181,10 @@ field-addressable `website.format` issues; this is the path that will backfill r
 **Admin → Import review → Validation issues** provides filters, immutable evidence,
 server validation, permitted decisions, history and **Create corrected run**. The
 acquisition worker claims replay requests, verifies the exact issue revisions and
-raw-evidence hashes, re-runs the source adapter across every retained record, and
-can stage only a separate complete private run with no errors or quarantine.
+raw-evidence hashes, re-runs the source adapter across every non-rejected retained
+record, and can stage only a separate complete private run with no errors or
+quarantine. Intentionally rejected records are excluded, counted and retained as
+immutable replay evidence.
 
 Local verification covers database access denial, structured staging, stale
 revision rejection, immutable history, non-overridable failures, fenced replay,
