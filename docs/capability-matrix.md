@@ -38,29 +38,32 @@ means portal-wide scope, still subject to the action's data and session gates.
 **No** means this role alone grants no such capability. All registered actors
 retain registered-reader access. Moderator follows member in this table.
 
-| Capability                                                                         | Public | Member  | Org admin          | Org owner          | Data Steward               | Portal Administrator   |
-| ---------------------------------------------------------------------------------- | ------ | ------- | ------------------ | ------------------ | -------------------------- | ---------------------- |
-| Read public organisation pages and approved register facts/attribution             | Yes    | Yes     | Yes                | Yes                | Yes                        | Yes                    |
-| Read private organisation pages and permitted child records                        | No     | Own org | Own org            | Own org            | No; review candidates only | Stewardship-dependent  |
-| Correct organisation facts through existing edit forms                             | No     | No      | Own org            | Own org            | No                         | Stewardship-dependent  |
-| Create an organisation through the registered-user submission flow                 | No     | Yes     | Yes                | Yes                | Yes                        | Yes                    |
-| Read own role assignments/requests                                                 | No     | Self    | Self               | Self               | Self                       | Self                   |
-| List all assignments, requests and role audit records for an organisation          | No     | No      | Own org            | Own org            | No                         | Stewardship-dependent  |
-| Grant/revoke existing organisation roles through authorised RPCs                   | No     | No      | Own org, ceiling 3 | Own org, ceiling 4 | No                         | Stewardship, ceiling 4 |
-| Review an organisation role request                                                | No     | No      | Own org            | Own org            | No                         | Stewardship-dependent  |
-| Open Admin task hub                                                                | No     | No      | No                 | No                 | Yes                        | Yes                    |
-| Inspect private import evidence, runs, matching candidates and review history      | No     | No      | No                 | No                 | Global                     | No                     |
-| Queue an acquisition with approved configuration; inspect jobs/failures            | No     | No      | No                 | No                 | Global                     | No                     |
-| Inspect staged validation issues; validate and record permitted resolutions        | No     | No      | No                 | No                 | Global                     | No                     |
-| Override scope, schema, licence/qualification or acquisition failures              | No     | No      | No                 | No                 | No                         | No                     |
-| Link/create/defer/reject a source-record proposal                                  | No     | No      | No                 | No                 | Global                     | No                     |
-| Approve selected eligible fields and explicitly publish saved approval             | No     | No      | No                 | No                 | Global                     | No                     |
-| Suppress an imported field or withdraw a linked organisation through review        | No     | No      | No                 | No                 | Global                     | No                     |
-| Enable/pause sources and inspect source approval history                           | No     | No      | No                 | No                 | No                         | Global                 |
-| Configure acquisition scope/licence and refresh schedule                           | No     | No      | No                 | No                 | No                         | Global                 |
-| Use portal governance tasks, including scope, role definitions and reserved slugs  | No     | No      | No                 | No                 | No                         | Global                 |
-| Appoint/revoke portal capabilities through bounded RPCs                            | No     | No      | No                 | No                 | No                         | Global                 |
-| Directly write staging, approval, publication or appointment tables from a browser | No     | No      | No                 | No                 | No                         | No                     |
+| Capability                                                                         | Public | Member  | Org admin          | Org owner          | Data Steward               | Portal Administrator       |
+| ---------------------------------------------------------------------------------- | ------ | ------- | ------------------ | ------------------ | -------------------------- | -------------------------- |
+| Read public organisation pages and approved register facts/attribution             | Yes    | Yes     | Yes                | Yes                | Yes                        | Yes                        |
+| Read private organisation pages and permitted child records                        | No     | Own org | Own org            | Own org            | No; review candidates only | Stewardship-dependent      |
+| Correct organisation facts through existing edit forms                             | No     | No      | Own org            | Own org            | No                         | Stewardship-dependent      |
+| Create an organisation through the registered-user submission flow                 | No     | Yes     | Yes                | Yes                | Yes                        | Yes                        |
+| Read own role assignments/requests                                                 | No     | Self    | Self               | Self               | Self                       | Self                       |
+| List all assignments, requests and role audit records for an organisation          | No     | No      | Own org            | Own org            | No                         | Stewardship-dependent      |
+| Grant/revoke existing organisation roles through authorised RPCs                   | No     | No      | Own org, ceiling 3 | Own org, ceiling 4 | No                         | Stewardship, ceiling 4     |
+| Review an organisation role request                                                | No     | No      | Own org            | Own org            | No                         | Stewardship-dependent      |
+| Open Admin task hub                                                                | No     | No      | No                 | No                 | Yes                        | Yes                        |
+| Inspect private import evidence, runs, matching candidates and review history      | No     | No      | No                 | No                 | Global                     | No                         |
+| Queue an acquisition with approved configuration; inspect jobs/failures            | No     | No      | No                 | No                 | Global                     | No                         |
+| Inspect staged validation issues; validate and record permitted resolutions        | No     | No      | No                 | No                 | Global                     | No                         |
+| Override scope, schema, licence/qualification or acquisition failures              | No     | No      | No                 | No                 | No                         | No                         |
+| Link/create/defer/reject a source-record proposal                                  | No     | No      | No                 | No                 | Global                     | No                         |
+| Approve selected eligible fields and submit a frozen publication release           | No     | No      | No                 | No                 | Global                     | No                         |
+| Independently decide a submitted publication release                               | No     | No      | No                 | No                 | Global, not own submission | Global, not own submission |
+| Publish an approved exact release revision                                         | No     | No      | No                 | No                 | Global                     | No                         |
+| Submit suppression or withdrawal as a destructive release                          | No     | No      | No                 | No                 | Global                     | No                         |
+| Configure whether ordinary releases require independent approval                   | No     | No      | No                 | No                 | No                         | Global                     |
+| Enable/pause sources and inspect source approval history                           | No     | No      | No                 | No                 | No                         | Global                     |
+| Configure acquisition scope/licence and refresh schedule                           | No     | No      | No                 | No                 | No                         | Global                     |
+| Use portal governance tasks, including scope, role definitions and reserved slugs  | No     | No      | No                 | No                 | No                         | Global                     |
+| Appoint/revoke portal capabilities through bounded RPCs                            | No     | No      | No                 | No                 | No                         | Global                     |
+| Directly write staging, approval, publication or appointment tables from a browser | No     | No      | No                 | No                 | No                         | No                         |
 
 The creation row is a registered-account capability, also available to a registered
 reader without assignments. The normal creation trigger grants its creator an
@@ -107,8 +110,9 @@ or suspended organisations.
 5. Operator authority does not bypass complete/enabled-source requirements,
    selected-field approval, target revision checks, manual-edit protection,
    projection visibility or suppression. A source enablement/configuration change
-   does not itself publish. The pilot permits one operator to approve and publish;
-   there is no implemented two-person approval requirement.
+   does not itself publish. Publication releases freeze those decisions. Initial,
+   suppression and destructive releases require a different approver; ordinary
+   releases follow the portal's retained one- or two-person policy revision.
    Under the approved [P34a model](staged-validation-resolution.md), an operator may
    resolve only issue modes declared by the validator. A resolution creates no
    public write and cannot change an original partial run; only a separately

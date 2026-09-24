@@ -140,6 +140,49 @@ export const approvalInput = z.object({
 	fields: fieldPreviewSchema.shape.fields.min(1).max(100)
 });
 
+export const publicationReleaseQueueSchema = z.object({
+	policy: z.object({
+		revision: z.number(),
+		ordinary_requires_independent_approval: z.boolean(),
+		updated_at: z.string(),
+		reason: z.string()
+	}),
+	releases: z.array(
+		z.object({
+			release_id: z.string().uuid(),
+			release_class: z.enum(['initial_seed', 'ordinary_update', 'suppression', 'destructive']),
+			revision: z.number(),
+			status: z.enum(['submitted', 'approved', 'rejected', 'published']),
+			reason: z.string(),
+			items: z.array(z.record(z.unknown())),
+			content_sha256: z.string(),
+			approval_policy_revision: z.number(),
+			required_independent_approvals: z.number(),
+			submitted_by: z.string().uuid(),
+			submitted_at: z.string(),
+			published_by: z.string().uuid().nullable(),
+			published_at: z.string().nullable(),
+			publication_result: z.unknown().nullable(),
+			decisions: z.array(
+				z.object({
+					decision: z.enum(['approved', 'rejected']),
+					decided_by: z.string().uuid(),
+					note: z.string(),
+					decided_at: z.string()
+				})
+			),
+			can_decide: z.boolean(),
+			can_publish: z.boolean()
+		})
+	)
+});
+
+export const releaseSubmissionInput = z.object({
+	approval: z.string().uuid(),
+	releaseClass: z.enum(['initial_seed', 'ordinary_update']),
+	reason: z.string().trim().min(1).max(2000)
+});
+
 export const withdrawalSchema = z.object({
 	organisation_id: z.string().uuid().nullable(),
 	suppressions: z.array(

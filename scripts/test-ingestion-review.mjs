@@ -31,7 +31,7 @@ try {
 				if (name === 'approve_ingestion_fields')
 					return { data: '00000000-0000-4000-8000-000000000003', error: saveError };
 				if (name === 'validation_issue_queue') return { data: validation, error: null };
-				return name === 'is_ingestion_operator'
+				return name === 'is_data_steward'
 					? { data: operator, error: null }
 					: name === 'ingestion_review_queue'
 						? { data: queue, error: null }
@@ -154,7 +154,17 @@ try {
 				body: new URLSearchParams(values)
 			})
 		});
-	assert.equal((await action({ intent: 'publish', approval: 'bad' })).status, 400);
+	assert.equal(
+		(
+			await action({
+				intent: 'submit_publication',
+				approval: 'bad',
+				releaseClass: 'ordinary_update',
+				reason: 'Synthetic release'
+			})
+		).status,
+		400
+	);
 	assert.equal((await action({ intent: 'approve', field: '{' })).status, 400);
 	const field = {
 		field: 'website',
@@ -195,8 +205,14 @@ try {
 		multi.append('field', JSON.stringify({ ...field, field: key }));
 	assert.match((await action(multi)).message, /approval saved/);
 	assert.equal(calls.at(-1)[1].p_fields.length, 4);
-	const publishForm = { intent: 'publish', approval: '00000000-0000-4000-8000-000000000003' };
-	assert.match((await action(publishForm)).message, /published/);
+	const publishForm = {
+		intent: 'submit_publication',
+		approval: '00000000-0000-4000-8000-000000000003',
+		releaseClass: 'ordinary_update',
+		reason: 'Synthetic release'
+	};
+	assert.match((await action(publishForm)).message, /release submitted/i);
+	assert.equal(calls.at(-1)[0], 'submit_publication_release');
 	saveError = { code: '40001' };
 	assert.equal((await action(publishForm)).status, 409);
 	assert.equal((await action(approvalForm)).status, 409);
@@ -208,7 +224,7 @@ try {
 	assert.match((await action(approvalForm)).data.message, /select Entity name/);
 
 	const suppressionForm = {
-		intent: 'suppress',
+		intent: 'submit_suppression',
 		run: '1',
 		version: '2',
 		field: '*',
@@ -219,8 +235,8 @@ try {
 	saveError = null;
 	assert.equal((await action({ ...suppressionForm, confirmed: '' })).status, 400);
 	assert.equal((await action({ ...suppressionForm, expected: '{' })).status, 400);
-	assert.match((await action(suppressionForm)).message, /Suppression saved/);
-	assert.equal(calls.at(-1)[0], 'suppress_ingestion_content');
+	assert.match((await action(suppressionForm)).message, /Suppression release submitted/);
+	assert.equal(calls.at(-1)[0], 'submit_publication_release');
 	saveError = { code: '40001' };
 	assert.equal((await action(suppressionForm)).status, 409);
 	operator = false;
@@ -242,7 +258,7 @@ try {
 	);
 	await assert.rejects(submit, (e) => e.status === 403);
 	console.log(
-		'Review route authorization, input validation, empty queue, save, stale revision field previews, selected approvals and publication action checks passed.'
+		'Review route authorization, input validation, empty queue, save, stale revision field previews, selected approvals and release submission checks passed.'
 	);
 } finally {
 	await server.close();

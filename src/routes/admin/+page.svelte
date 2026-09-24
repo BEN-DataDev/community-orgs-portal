@@ -18,6 +18,14 @@
 	<section aria-label="Administration tasks" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 		{#if data.isSiteAdmin}
 			<a
+				href={resolve('/admin/ingestion/releases')}
+				class="card border-surface-200-800 hover:preset-tonal space-y-3 border p-5 focus-visible:outline-2 focus-visible:outline-offset-2"
+			>
+				<h2 class="text-lg font-semibold">Publication releases</h2>
+				<p>Set approval policy and independently review frozen releases.</p>
+				<span class="font-medium">Open publication releases →</span>
+			</a>
+			<a
 				href={resolve('/admin/portal/scope')}
 				class="card border-surface-200-800 hover:preset-tonal space-y-3 border p-5 focus-visible:outline-2 focus-visible:outline-offset-2"
 			>
@@ -36,6 +44,14 @@
 		{/if}
 
 		{#if data.isIngestionOperator}
+			<a
+				href={resolve('/admin/ingestion/releases')}
+				class="card border-surface-200-800 hover:preset-tonal space-y-3 border p-5 focus-visible:outline-2 focus-visible:outline-offset-2"
+			>
+				<h2 class="text-lg font-semibold">Publication releases</h2>
+				<p>Review decisions and publish exact approved revisions.</p>
+				<span class="font-medium">Open publication releases →</span>
+			</a>
 			<a
 				href={resolve('/admin/ingestion')}
 				class="card border-surface-200-800 hover:preset-tonal space-y-3 border p-5 focus-visible:outline-2 focus-visible:outline-offset-2"

@@ -52,8 +52,8 @@ or change production state.
 | Stewardship                         | Implemented         | Current state/events gate administrator editing; email-bound acceptance atomically grants ownership and completes the handoff        |
 | Record edit audit                   | Partial             | Domain rows retain editor/timestamps and roles/imports have events, but no uniform before/after audit for Portal Administrator edits |
 | Source releases and private staging | Implemented/partial | Strong per-source releases and runs exist; cross-source campaign aggregation is absent                                               |
-| Initial seed workflow               | Partial             | ABN seed candidate store exists; no complete multi-source seed campaign or initial release gate                                      |
-| Two-person approval                 | Missing             | A single operator can approve and publish; no submitter/approver separation exists                                                   |
+| Initial seed workflow               | Partial             | ABN candidates and a mandatory independent initial-release gate exist; multi-source seed campaigns remain absent                     |
+| Two-person approval                 | Implemented         | Frozen releases retain policy revisions and require a different approver for initial and destructive work                            |
 | Recurring updates                   | Partial             | ACNC scheduling, reconciliation and conflict protections exist; broader source and campaign orchestration is incomplete              |
 | Review UX                           | Conflicting         | Validation, record matching, field approval, publication and withdrawal share one large page                                         |
 | Invitation evidence                 | Implemented         | Immutable email-bound terms and single-use events cover acceptance, cancellation and expiry independently of delivery provider       |
@@ -279,25 +279,29 @@ campaign readiness without mutating the previous campaign.
 
 ### PEG10 — Publication release and separation of duties
 
-**Priority: critical. Status: missing over partial primitives.**
+**Priority: critical. Status: implemented.**
 
-Current change sets and publication functions protect revisions and manual edits,
-but the capability matrix explicitly permits one operator to approve and publish.
-There is no release submitter, independent approver, approval policy, frozen release
-revision or destructive-action classification.
+Publication releases now freeze exact change-set or suppression actions with a
+content hash, policy revision, submitter and immutable release revision. Initial
+seed, suppression and destructive releases always require a decision by a different
+actor. The Portal Administrator controls whether ordinary updates also require an
+independent approver.
 
-Wrap bounded change sets in publication releases. Submission freezes a revision;
-approval is a separate append-only decision; publication rechecks the frozen
-revision and actor separation. Initial and destructive releases require a distinct
-approver. Ordinary policy is stored in portal configuration.
+Decisions and release events are append-only. Revising contents creates a new
+revision without inheriting earlier approval. Publication rechecks the content hash,
+frozen change-set snapshot, current source, review, target and suppression state in
+the existing transactional writer, then records the exact writes and publisher.
 
-Suppression currently acts through the review workspace and must be incorporated
-into the destructive release policy. Emergency withdrawal remains a narrow,
-audited exception followed by retrospective review.
+Direct browser publication and suppression RPCs now fail closed. Import Review
+submits releases, and the separate release queue handles decisions and execution.
+The retained PostgreSQL-superuser compatibility branch exists only for historical
+transactional regression tests; provider API sessions cannot use it. Emergency
+withdrawal remains deferred until its retrospective-review operating procedure is
+defined.
 
-**Acceptance:** the submitter cannot approve a dual-control release, changing its
-contents invalidates approval, and publication atomically records the exact
-approved writes and both actors.
+**Acceptance met:** the submitter cannot approve a dual-control release, changing
+its contents invalidates approval, and publication atomically records the exact
+approved writes, submitter, independent approver and publisher.
 
 ### PEG11 — Review information architecture
 
@@ -407,7 +411,7 @@ and the invitation workflow. Route organisation editing through the new authorit
 decision. Migrate the current platform administrator to an explicitly authorised
 bootstrap Portal Administrator only after verifying equivalent required access.
 
-### Phase 3 — Release approvals
+### Phase 3 — Release approvals (complete)
 
 Add publication releases, approval policies and actor separation. Wrap existing
 change sets and suppression actions rather than replacing their transactional
@@ -442,10 +446,12 @@ and recurring refresh campaigns.
 
 ## Immediate next slice
 
-Phases 1 and 2 are complete. Phase 2 now has explicit Portal Administrator/Data
-Steward appointments, retained revocation evidence, stewardship-aware organisation
-authorization and email-bound, single-use owner handoff invitations.
+Phases 1 through 3 are complete. Phase 3 now has immutable publication-release
+revisions, portal-configurable ordinary approval, mandatory independent approval for
+initial and destructive work, and exact-revision execution around the existing
+publication and suppression safeguards.
 
-The next slice is Phase 3 publication releases: freeze a bounded change-set revision,
-record submission and independent approval decisions, enforce mandatory dual control
-for initial and destructive releases, and publish only the exact approved revision.
+The next slice is Phase 4 campaign orchestration and review information architecture:
+reference existing source artifacts from a campaign, expose readiness and blockers,
+then split validation, identity, field-change and release decisions into focused
+queues without weakening their current evidence boundaries.

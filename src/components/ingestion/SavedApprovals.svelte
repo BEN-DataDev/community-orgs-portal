@@ -43,7 +43,8 @@
 		<button type="button" class="btn preset-tonal" onclick={() => dialog.close()}>Close</button>
 	</header>
 	<p id="saved-approvals-description">
-		Review the saved values before publishing. Saving approval does not publish any changes.
+		Review the saved values, then submit a frozen publication release. Saving field approval does
+		not publish any changes.
 	</p>
 	{#if message}<p role="status">{message}</p>{/if}
 	{#each approvals as approval (approval.id)}<article
@@ -65,12 +66,29 @@
 						id: approval.published_organisation!
 					})}>View organisation</a
 				>
-			{:else}<form method="POST" use:enhance>
-					<input type="hidden" name="intent" value="publish" /><input
+			{:else}<form method="POST" use:enhance class="space-y-3">
+					<input type="hidden" name="intent" value="submit_publication" /><input
 						type="hidden"
 						name="approval"
 						value={approval.id}
-					/><button class="btn preset-filled-primary-500">Publish these approved fields</button>
+					/>
+					<label class="label"
+						>Release class<select class="select" name="releaseClass" required
+							><option value="ordinary_update">Ordinary update</option><option value="initial_seed"
+								>Initial seed (independent approval required)</option
+							></select
+						></label
+					>
+					<label class="label"
+						>Submission reason<textarea
+							class="textarea"
+							name="reason"
+							required
+							maxlength="2000"
+							rows="2"
+						></textarea></label
+					>
+					<button class="btn preset-filled-primary-500">Submit publication release</button>
 				</form>{/if}
 		</article>{/each}
 </dialog>

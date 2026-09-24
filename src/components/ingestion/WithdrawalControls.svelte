@@ -33,7 +33,7 @@
 			· {item.reason}
 		</p>{/each}
 	<form method="POST" use:enhance class="space-y-3">
-		<input type="hidden" name="intent" value="suppress" /><input
+		<input type="hidden" name="intent" value="submit_suppression" /><input
 			type="hidden"
 			name="run"
 			value={run}
@@ -72,6 +72,10 @@
 			><input class="checkbox" type="checkbox" name="confirmed" value="yes" required />I confirm
 			removal of the selected content and blocking its restoration.</label
 		>
-		<button class="btn preset-filled-error-500">Apply suppression</button>
+		<p class="text-sm">
+			Submission does not remove data. A different authorised person must approve the frozen
+			release.
+		</p>
+		<button class="btn preset-filled-error-500">Submit suppression release</button>
 	</form>
 </section>

@@ -1706,7 +1706,32 @@ export type Database = {
 				};
 				Returns: string;
 			};
+			submit_publication_release: {
+				Args: { p_release_class: string; p_items: Json; p_reason: string };
+				Returns: string;
+			};
+			revise_publication_release: {
+				Args: { p_release: string; p_expected_revision: number; p_items: Json; p_reason: string };
+				Returns: number;
+			};
+			decide_publication_release: {
+				Args: { p_release: string; p_revision: number; p_decision: string; p_note: string };
+				Returns: string;
+			};
+			publish_publication_release: {
+				Args: { p_release: string; p_revision: number };
+				Returns: Json;
+			};
+			publication_release_queue: { Args: Record<PropertyKey, never>; Returns: Json };
 			publish_ingestion_fields: { Args: { p_change_set: string }; Returns: string };
+			set_publication_approval_policy: {
+				Args: {
+					p_ordinary_requires_independent_approval: boolean;
+					p_expected_revision: number;
+					p_reason: string;
+				};
+				Returns: number;
+			};
 			ingestion_field_approvals: { Args: { p_version: string }; Returns: Json };
 			ingestion_field_preview: {
 				Args: { p_run: string; p_version: string; p_organisation?: string };

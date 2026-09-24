@@ -7,6 +7,7 @@ import {
 	fieldPreviewSchema,
 	approvalsSchema,
 	approvalInput,
+	releaseSubmissionInput,
 	withdrawalSchema,
 	suppressionInput,
 	validationQueueSchema,
@@ -244,7 +245,7 @@ export const actions: Actions = {
 					'Corrected run queued. The worker will revalidate all retained records into a separate private run.'
 			};
 		}
-		if (intent === 'suppress') {
+		if (intent === 'submit_suppression') {
 			let expected: unknown;
 			try {
 				expected = JSON.parse(String(form.get('expected')));
@@ -255,36 +256,52 @@ export const actions: Actions = {
 			if (!input.success)
 				return fail(400, { message: 'Choose a scope, provide a reason and confirm removal.' });
 			const x = input.data;
-			const result = await locals.supabase.rpc('suppress_ingestion_content', {
-				p_run: x.run,
-				p_version: x.version,
-				p_field: x.field,
-				p_reason: x.reason,
-				p_expected: x.expected as Json
+			const result = await locals.supabase.rpc('submit_publication_release', {
+				p_release_class: 'suppression',
+				p_items: [
+					{
+						action: 'suppress_content',
+						run: x.run,
+						version: x.version,
+						field: x.field,
+						reason: x.reason,
+						expected: x.expected
+					}
+				] as Json,
+				p_reason: x.reason
 			});
 			if (result.error)
 				return fail(result.error.code === '42501' ? 403 : 409, {
 					message:
-						'Removal was not applied. Reload and check the target; it may have changed or have multiple rows.'
+						'Suppression was not submitted. Reload and check the target; it may have changed.'
 				});
 			return {
+				releaseId: result.data,
 				message:
-					'Suppression saved. The selected content is removed from publication and blocked from restoration.'
+					'Suppression release submitted. A different authorised person must approve it before publication.'
 			};
 		}
-		if (intent === 'publish') {
-			const id = z.string().uuid().safeParse(form.get('approval'));
-			if (!id.success) return fail(400, { message: 'Invalid field approval.' });
-			const result = await locals.supabase.rpc('publish_ingestion_fields', {
-				p_change_set: id.data
+		if (intent === 'submit_publication') {
+			const input = releaseSubmissionInput.safeParse(Object.fromEntries(form));
+			if (!input.success)
+				return fail(400, { intent, message: 'Choose a release class and provide a reason.' });
+			const result = await locals.supabase.rpc('submit_publication_release', {
+				p_release_class: input.data.releaseClass,
+				p_items: [{ action: 'publish_change_set', change_set_id: input.data.approval }],
+				p_reason: input.data.reason
 			});
 			if (result.error)
 				return fail(result.error.code === '42501' ? 403 : 409, {
-					message:
-						'Publication was not applied. Check source availability, target protection, suppression and review revisions; reload and approve again if needed.'
+					intent,
+					message: 'Release was not submitted. Reload the saved approval and try again.'
 				});
 			return {
-				message: 'Approved fields published. Repeating this publication will not apply them twice.'
+				intent,
+				releaseId: result.data,
+				message:
+					input.data.releaseClass === 'initial_seed'
+						? 'Initial release submitted for independent approval.'
+						: 'Ordinary release submitted under the current portal approval policy.'
 			};
 		}
 		if (intent === 'approve') {

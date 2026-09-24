@@ -31,6 +31,7 @@
 	<header>
 		<a class="anchor" href={resolve('/admin')}>Back to Admin</a>
 		<a class="anchor" href={resolve('/admin/ingestion/jobs')}>Acquisition jobs</a>
+		<a class="anchor" href={resolve('/admin/ingestion/releases')}>Publication releases</a>
 		<h1 class="text-2xl font-bold">Import review</h1>
 		<p>Compare source evidence with existing organisations and record a proposed decision.</p>
 		<p class="text-sm">
