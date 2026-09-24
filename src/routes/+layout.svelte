@@ -13,7 +13,8 @@
 	import { theme } from '$lib/theme.svelte';
 
 	let { data, children } = $props();
-	let { session, supabase, user, isSiteAdmin, isIngestionOperator, isAnonymous } = $derived(data);
+	let { portal, session, supabase, user, isSiteAdmin, isIngestionOperator, isAnonymous } =
+		$derived(data);
 
 	/**
 	 * A guest holds a session but has no account, so the navigation and the
@@ -74,11 +75,13 @@
 	<AppBar>
 		<AppBar.Toolbar class="flex items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
 			<AppBar.Lead>
-				<a class="flex items-center gap-2" aria-label="CII home" href={resolve('/')}>
-					<img width="48" height="48" src="/images/Logo.png" alt="" />
-					<span class="hidden text-lg leading-tight sm:block">
-						Community Information<br />Infrastructure
-					</span>
+				<a
+					class="flex items-center gap-2"
+					aria-label={`${portal.shortName} home`}
+					href={resolve('/')}
+				>
+					<img width="48" height="48" src={portal.logoUrl ?? '/images/Logo.png'} alt="" />
+					<span class="hidden text-lg leading-tight sm:block">{portal.displayName}</span>
 				</a>
 			</AppBar.Lead>
 
@@ -119,8 +122,12 @@
 
 	<footer class="border-surface-200-800 border-t p-4 text-sm {signedIn ? 'pb-20 md:pb-4' : ''}">
 		<div class="mx-auto flex max-w-7xl flex-wrap justify-between gap-2 px-4 sm:px-6 lg:px-8">
-			<span>Community Information Infrastructure</span>
-			<a class="hover:underline" href="https://resiliencehub.org.au/">resiliencehub.org.au</a>
+			<span>{portal.displayName}</span>
+			{#if portal.sponsorUrl}
+				<a class="hover:underline" href={portal.sponsorUrl}>{portal.sponsorName}</a>
+			{:else}
+				<span>{portal.sponsorName}</span>
+			{/if}
 		</div>
 	</footer>
 </div>

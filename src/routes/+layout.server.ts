@@ -36,6 +36,14 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 			? await loadAccountAvatar(locals.supabase, locals.user)
 			: null;
 	return {
+		portal: {
+			displayName: locals.portal.displayName,
+			shortName: locals.portal.shortName,
+			sponsorName: locals.portal.sponsorName,
+			sponsorUrl: locals.portal.sponsorUrl,
+			logoUrl: locals.portal.logoUrl,
+			lifecycleState: locals.portal.lifecycleState
+		},
 		isIngestionOperator:
 			locals.user && !locals.isAnonymous ? await isIngestionOperator(locals.supabase) : false,
 		avatar,

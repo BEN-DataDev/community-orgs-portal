@@ -14,9 +14,9 @@ and organisation role safeguards are already implemented.
 The target architecture is nevertheless a material product and operational change.
 The current system assumes one Supabase project, one global platform-administrator
 set, one global ingestion-operator set and one combined import-review workspace. It
-has no persisted portal identity or scope history, portal lifecycle, stewardship
-state, invitation workflow, release-level separation of duties, multi-source
-campaign, provider adapter or fleet operations capability.
+now has a persisted singleton portal identity and lifecycle, but has no scope
+history, stewardship state, invitation workflow, release-level separation of
+duties, multi-source campaign, provider adapter or fleet operations capability.
 
 The safest refactor is evolutionary. Preserve the existing ingestion evidence and
 publication invariants while placing them inside explicit portal, campaign,
@@ -42,7 +42,7 @@ or change production state.
 | Area                                | Status              | Main finding                                                                                                                         |
 | ----------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | Independent portal databases        | Partial             | One deployment already targets one database, but configuration and operations are hard-wired to one Supabase/Vercel project          |
-| Portal identity and lifecycle       | Missing             | No portal singleton, manifest, sponsor or lifecycle events                                                                           |
+| Portal identity and lifecycle       | Implemented         | Private singleton identity, deployment-manifest fencing, sponsor branding and append-only lifecycle events are enforced              |
 | Versioned postcode scope            | Partial             | Postcodes exist in ACNC acquisition configuration and seed manifests, not as the authoritative portal scope                          |
 | Fleet operations                    | Missing             | Provisioning, migrations, access, recovery and inventory are manual operational procedures                                           |
 | Provider abstraction                | Provider-bound      | Request auth, data API, storage, cron and generated types directly use Supabase; deployment directly uses Vercel cron                |
@@ -89,23 +89,24 @@ These foundations are documented in
 
 ### PEG01 — Portal identity, sponsor and lifecycle
 
-**Priority: critical. Status: missing.**
+**Priority: critical. Status: implemented.**
 
-There is no singleton record establishing which portal a database represents. The
-application name and external links are compiled into the shared layout. There is
-no owning/auspicing organisation, lifecycle state or transition history.
-
-Add a portal configuration schema with exactly one portal identity, sponsor details,
-display/branding configuration and immutable lifecycle events. Enforce singleton
-semantics in the database. Application startup and health reporting should fail
-closed if the manifest and database identity disagree.
+The private `portal.configuration` singleton establishes which portal a database
+represents, its sponsor, display configuration and current lifecycle state.
+`portal.lifecycle_events` is append-only, and guarded transition RPCs enforce the
+approved lifecycle sequence, administrator authority and scope evidence before the
+scope-configured milestone. The application request boundary and cron health check
+both fail closed unless `PORTAL_ID` and `PORTAL_KEY` match the database identity.
+The root layout renders the active portal and sponsor configuration.
 
 Do not add a portal foreign key to all existing domain tables. Database isolation
 already supplies that boundary.
 
-**Acceptance:** a fresh database cannot become operational until its identity and
-scope are configured; lifecycle transitions are authorised and append-only; the UI
-shows the active portal rather than a hard-coded global identity.
+**Acceptance met:** a fresh database cannot serve application requests without an
+identity and cannot transition to operational without passing the scope-configured
+milestone; lifecycle transitions are authorised and append-only; the UI shows the
+active portal rather than a hard-coded global identity. PEG02 will replace the
+interim scope evidence reference with authoritative scope revisions.
 
 ### PEG02 — Authoritative postcode scope and re-baselining
 

@@ -5,6 +5,9 @@ import { PRIVATE_SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
 import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from '$lib/db.types';
+import type { TypedSupabaseClient } from '$lib/supabase-client';
+import { PortalIdentityError, requirePortalIdentity } from '$lib/server/portal';
 
 /**
  * Compares two secrets without leaking their contents through timing. Both
@@ -42,9 +45,25 @@ export const GET: RequestHandler = async ({ request }) => {
 	try {
 		// Create the privileged client only after authenticating the request.
 		// health_check lives in public, outside the generated community_orgs types.
-		const supabase = createClient(PUBLIC_SUPABASE_URL, PRIVATE_SUPABASE_SERVICE_ROLE_KEY, {
-			auth: { persistSession: false, autoRefreshToken: false }
-		});
+		const supabase = createClient<Database>(
+			PUBLIC_SUPABASE_URL,
+			PRIVATE_SUPABASE_SERVICE_ROLE_KEY,
+			{
+				auth: { persistSession: false, autoRefreshToken: false }
+			}
+		);
+		let portal;
+		try {
+			portal = await requirePortalIdentity(
+				supabase.schema('community_orgs') as unknown as TypedSupabaseClient
+			);
+		} catch (error) {
+			if (error instanceof PortalIdentityError) {
+				console.error('Cron portal identity check failed:', error.message);
+				return json({ success: false, stage: 'portal_identity' }, { status: 503 });
+			}
+			throw error;
+		}
 		const { data, error } = await supabase.rpc('health_check');
 		if (error) {
 			console.error('Cron health check failed:', error);
@@ -80,7 +99,18 @@ export const GET: RequestHandler = async ({ request }) => {
 			completedAt: new Date().toISOString(),
 			purgedAnonymousUsers: purged
 		});
-		return json({ success: true, data, purgedAnonymousUsers: purged, acquisitions });
+		return json({
+			success: true,
+			data,
+			portal: {
+				portalId: portal.portalId,
+				portalKey: portal.portalKey,
+				lifecycleState: portal.lifecycleState,
+				configurationRevision: portal.configurationRevision
+			},
+			purgedAnonymousUsers: purged,
+			acquisitions
+		});
 	} catch (error) {
 		console.error('Cron execution failed:', error);
 		return json({ success: false, stage: 'execution' }, { status: 500 });

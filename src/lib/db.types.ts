@@ -1609,6 +1609,41 @@ export type Database = {
 			[_ in never]: never;
 		};
 		Functions: {
+			get_portal_identity: {
+				Args: Record<PropertyKey, never>;
+				Returns: {
+					portal_id: string;
+					portal_key: string;
+					display_name: string;
+					short_name: string;
+					sponsor_name: string;
+					sponsor_url: string | null;
+					logo_url: string | null;
+					lifecycle_state: string;
+					configuration_revision: number;
+				}[];
+			};
+			transition_portal_lifecycle: {
+				Args: {
+					p_next_state: string;
+					p_reason: string;
+					p_reference?: string;
+					p_expected_revision?: number;
+				};
+				Returns: number;
+			};
+			update_portal_configuration: {
+				Args: {
+					p_display_name: string;
+					p_short_name: string;
+					p_sponsor_name: string;
+					p_sponsor_url?: string;
+					p_logo_url?: string;
+					p_expected_revision?: number;
+				};
+				Returns: number;
+			};
+			purge_stale_anonymous_users: { Args: Record<PropertyKey, never>; Returns: number };
 			organisation_role_assignments: { Args: { p_organisation_id: string }; Returns: Json };
 			search_organisations: {
 				Args: { p_query?: string; p_offset?: number; p_limit?: number };

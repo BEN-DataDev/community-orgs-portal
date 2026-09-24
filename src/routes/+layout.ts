@@ -55,6 +55,7 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 	 * server load with it — when the session changes.
 	 */
 	return {
+		portal: data.portal,
 		session,
 		supabase,
 		user: data.user,

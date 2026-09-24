@@ -8,6 +8,7 @@ import type { Database } from '$lib/db.types';
 import type { TypedSupabaseClient } from '$lib/supabase-client';
 import { requireAdminAccess } from '$lib/server/admin-access';
 import { guardRedirect } from '$lib/server/guard';
+import { PortalIdentityError, requirePortalIdentity } from '$lib/server/portal';
 
 /**
  * The cron endpoint authenticates with its own shared secret and talks to
@@ -48,6 +49,19 @@ const supabase: Handle = async ({ event, resolve }) => {
 			}
 		}
 	) as unknown as TypedSupabaseClient;
+
+	try {
+		event.locals.portal = await requirePortalIdentity(event.locals.supabase);
+	} catch (error) {
+		if (error instanceof PortalIdentityError) {
+			console.error('Portal identity check failed:', error.message);
+			return new Response('Portal unavailable: deployment identity check failed.', {
+				status: 503,
+				headers: { 'cache-control': 'no-store' }
+			});
+		}
+		throw error;
+	}
 
 	/**
 	 * Unlike `supabase.auth.getSession()`, which returns the session _without_
