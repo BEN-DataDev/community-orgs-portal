@@ -106,7 +106,11 @@ export const GET: RequestHandler = async ({ request }) => {
 				portalId: portal.portalId,
 				portalKey: portal.portalKey,
 				lifecycleState: portal.lifecycleState,
-				configurationRevision: portal.configurationRevision
+				configurationRevision: portal.configurationRevision,
+				schemaVersion: portal.schemaVersion,
+				scopeRevisionId: portal.scopeRevisionId,
+				scopeRevision: portal.scopeRevision,
+				scopePostcodes: portal.scopePostcodes
 			},
 			purgedAnonymousUsers: purged,
 			acquisitions

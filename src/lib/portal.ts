@@ -22,6 +22,10 @@ export interface PortalIdentity {
 	logoUrl: string | null;
 	lifecycleState: PortalLifecycleState;
 	configurationRevision: number;
+	schemaVersion: string;
+	scopeRevisionId: number | null;
+	scopeRevision: number | null;
+	scopePostcodes: string[];
 }
 
 export interface PortalManifest {

@@ -10,9 +10,21 @@
 	<header>
 		<h1 class="text-2xl font-bold">Admin</h1>
 		<p class="text-surface-600-400">Choose an administration task.</p>
+		<p class="text-surface-600-400">
+			Portal scope revision {data.portal.scopeRevision ?? 'not configured'} · {data.portal
+				.scopePostcodes.length} postcodes
+		</p>
 	</header>
 	<section aria-label="Administration tasks" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 		{#if data.isSiteAdmin}
+			<a
+				href={resolve('/admin/portal/scope')}
+				class="card border-surface-200-800 hover:preset-tonal space-y-3 border p-5 focus-visible:outline-2 focus-visible:outline-offset-2"
+			>
+				<h2 class="text-lg font-semibold">Portal scope</h2>
+				<p>Review the postcode boundary and create an immutable scope revision.</p>
+				<span class="font-medium">Open portal scope →</span>
+			</a>
 			<a
 				href={resolve('/admin/sources')}
 				class="card border-surface-200-800 hover:preset-tonal space-y-3 border p-5 focus-visible:outline-2 focus-visible:outline-offset-2"

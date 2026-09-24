@@ -23,7 +23,11 @@ try {
 		sponsor_url: null,
 		logo_url: null,
 		lifecycle_state: 'operational',
-		configuration_revision: 7
+		configuration_revision: 7,
+		schema_version: '20260924060000',
+		scope_revision_id: 12,
+		scope_revision: 2,
+		scope_postcodes: ['2720', '2730']
 	};
 	let calls = [];
 	let responses = [];
@@ -103,7 +107,11 @@ try {
 			portalId,
 			portalKey: 'test-portal',
 			lifecycleState: 'operational',
-			configurationRevision: 7
+			configurationRevision: 7,
+			schemaVersion: '20260924060000',
+			scopeRevisionId: 12,
+			scopeRevision: 2,
+			scopePostcodes: ['2720', '2730']
 		},
 		purgedAnonymousUsers: 0,
 		acquisitions: 2

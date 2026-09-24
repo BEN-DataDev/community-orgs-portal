@@ -41,7 +41,11 @@ export async function requirePortalIdentity(client: TypedSupabaseClient): Promis
 				sponsorUrl: row.sponsor_url,
 				logoUrl: row.logo_url,
 				lifecycleState: lifecycleState!,
-				configurationRevision: row.configuration_revision
+				configurationRevision: row.configuration_revision,
+				schemaVersion: row.schema_version,
+				scopeRevisionId: row.scope_revision_id,
+				scopeRevision: row.scope_revision,
+				scopePostcodes: row.scope_postcodes ?? []
 			}
 		: null;
 	const manifestError = portalManifestError(portal, {

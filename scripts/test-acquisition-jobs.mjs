@@ -20,7 +20,8 @@ try {
 			rpc: async (name, args) => {
 				if (name === 'is_ingestion_operator') return { data: operator };
 				if (name === 'is_platform_admin') return { data: admin };
-				if (name === 'acquisition_dashboard') return { data: { sources: [], jobs: [] } };
+				if (name === 'acquisition_dashboard')
+					return { data: { portal_scope_revision_id: '1', sources: [], jobs: [] } };
 				writes.push({ name, args });
 				return { data: 'job', error: rpcError };
 			}
@@ -71,6 +72,7 @@ try {
 	assert.match((await submit('configure', values)).message, /saved/);
 	assert.equal(writes.at(-1).args.p_interval, null);
 	assert.deepEqual(writes.at(-1).args.p_postcodes, ['2720', '2730']);
+	assert.equal(writes.at(-1).args.p_scope_exception_reason, null);
 	rpcError = { code: '40001' };
 	assert.equal((await submit('configure', values)).status, 409);
 	const { render } = await server.ssrLoadModule('svelte/server');
@@ -79,6 +81,7 @@ try {
 	);
 	const fixture = {
 		canConfigure: true,
+		portal_scope_revision_id: '1',
 		sources: [
 			{
 				resource_id: resource,
@@ -88,7 +91,10 @@ try {
 				licence_title: 'Reviewed licence',
 				interval_hours: null,
 				next_due_at: null,
-				revision: '1'
+				revision: '1',
+				scope_revision_id: '1',
+				scope_alignment: 'exact',
+				scope_exception_reason: null
 			}
 		],
 		jobs: [

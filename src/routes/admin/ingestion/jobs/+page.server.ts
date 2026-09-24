@@ -5,6 +5,7 @@ import { isSiteAdmin } from '$lib/server/authorization';
 import type { Actions, PageServerLoad } from './$types';
 
 const dashboard = z.object({
+	portal_scope_revision_id: z.string().nullable(),
 	sources: z.array(
 		z.object({
 			resource_id: z.string(),
@@ -14,7 +15,10 @@ const dashboard = z.object({
 			licence_title: z.string(),
 			interval_hours: z.number().nullable(),
 			next_due_at: z.string().nullable(),
-			revision: z.string()
+			revision: z.string(),
+			scope_revision_id: z.string().nullable(),
+			scope_alignment: z.enum(['exact', 'subset', 'superset']).nullable(),
+			scope_exception_reason: z.string().nullable()
 		})
 	),
 	jobs: z.array(
@@ -75,7 +79,8 @@ export const actions: Actions = {
 				resource: z.string().uuid(),
 				licence: z.string().trim().min(1).max(300),
 				interval: z.enum(['off', '24', '168', '720']),
-				revision: z.string().regex(/^[0-9]{1,19}$/)
+				revision: z.string().regex(/^[0-9]{1,19}$/),
+				scopeExceptionReason: z.string().trim().max(2000).default('')
 			})
 			.safeParse(formData);
 		const canonicalPostcodes = [...new Set(postcodes)].sort();
@@ -95,7 +100,8 @@ export const actions: Actions = {
 			p_postcodes: canonicalPostcodes,
 			p_licence: x.licence,
 			p_interval: x.interval === 'off' ? null : Number(x.interval),
-			p_revision: x.revision
+			p_revision: x.revision,
+			p_scope_exception_reason: x.scopeExceptionReason || null
 		});
 		if (result.error)
 			return fail(result.error.code === '42501' ? 403 : 409, {

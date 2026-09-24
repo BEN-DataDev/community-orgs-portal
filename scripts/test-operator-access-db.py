@@ -65,9 +65,33 @@ try:
     print(f'Applied {len(migrations)} unmodified portal/access/ingestion migrations.', flush=True)
     for name in ['p2_admin_access_regression.sql', 'platform_administrators.sql',
                  'portal_identity_lifecycle.sql',
+                 'portal_scope_revisions.sql',
                  'operator_access.sql', 'organisation_role_management.sql', 'p1_access_regression.sql', 'ingestion_review.sql', 'ingestion_publication.sql', 'private_raw_retention.sql', 'deterministic_identity.sql', 'ingestion_change_report.sql', 'registry_seed_candidates.sql']:
         print(sql((ROOT / 'supabase/tests' / name).read_text()).strip(), flush=True)
         print(f'{name}: passed', flush=True)
+        if name == 'portal_scope_revisions.sql':
+            sql("""
+              insert into portal.configuration(
+                portal_id,portal_key,display_name,short_name,sponsor_name,establishment_reason
+              ) values (
+                '10000000-0000-4000-8000-000000000004','test-harness',
+                'Test Harness Portal','Test Harness','Test Sponsor','Disposable suite scope'
+              );
+              with revision as (
+                insert into portal.scope_revisions(
+                  portal_id,revision,inclusion_policy_version,impact_assessment,
+                  requires_rebaseline,reason
+                ) values (
+                  '10000000-0000-4000-8000-000000000004',1,'test-v1',
+                  'Disposable test harness boundary',false,'Test harness setup'
+                ) returning id
+              ), postcode as (
+                insert into portal.scope_postcodes(scope_revision_id,postcode)
+                select id,'2730' from revision returning scope_revision_id
+              )
+              update portal.configuration set current_scope_revision_id=postcode.scope_revision_id
+              from postcode where singleton;
+            """)
     print(sql(command(['python3', str(ROOT / 'scripts/build-csv-test-sql.py')])).strip(), flush=True)
     print('Approved CSV integration: passed', flush=True)
     # P10: exercise all mapped fields and public visibility against the current

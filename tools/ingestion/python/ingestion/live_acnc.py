@@ -34,6 +34,17 @@ def configuration(raw):
                    for value in postcodes)
             or postcodes != sorted(set(postcodes))):
         raise ValueError('1 to 50 sorted, unique four-digit postcodes are required')
+    if (not isinstance(raw.get('portal_scope_revision_id'), str)
+            or not raw['portal_scope_revision_id'].isdigit()
+            or int(raw['portal_scope_revision_id']) < 1):
+        raise ValueError('portal_scope_revision_id must be a positive integer string')
+    if raw.get('scope_alignment') not in {'exact', 'subset', 'superset'}:
+        raise ValueError('scope_alignment must be exact, subset or superset')
+    if (raw['scope_alignment'] == 'exact' and raw.get('scope_exception_reason') is not None
+            or raw['scope_alignment'] != 'exact'
+            and (not isinstance(raw.get('scope_exception_reason'), str)
+                 or not raw['scope_exception_reason'].strip())):
+        raise ValueError('scope exceptions require a reason and exact scope must not have one')
     for key, low, high in [('page_size', 1, 100), ('max_pages', 1, 10),
                            ('timeout_seconds', 1, 20), ('deadline_seconds', 1, 120),
                            ('max_response_bytes', 1024, 4 * 1024 * 1024)]:
@@ -164,6 +175,8 @@ def acquire(config, transport, run_id, observed_at):
         metadata = qualify(transport.get('package_show', {'id': 'acnc-register'}), config)
         envelope = ACNCExtractor(page, config['resource_id'], config['page_size'], config['max_pages']).extract(
             filters={'Postcode': config['postcodes']}, run_id=run_id, observed_at=observed_at)
+        envelope['scope'].update(portal_scope_revision_id=config['portal_scope_revision_id'],
+                                 alignment=config['scope_alignment'])
         after = qualify(transport.get('package_show', {'id': 'acnc-register'}), config)
         if metadata != after:
             raise ValueError('source metadata changed during acquisition; snapshot is not stable')
@@ -173,6 +186,8 @@ def acquire(config, transport, run_id, observed_at):
                 raise ValueError(str(exc))
             envelope = ACNCExtractor(failed_page, config['resource_id'], config['page_size'], 1).extract(
                 filters={'Postcode': config['postcodes']}, run_id=run_id, observed_at=observed_at)
+            envelope['scope'].update(portal_scope_revision_id=config['portal_scope_revision_id'],
+                                     alignment=config['scope_alignment'])
         else:
             envelope['completion'] = 'partial' if envelope['pages'] else 'failed'
             envelope['errors'].append({'reason': str(exc)})

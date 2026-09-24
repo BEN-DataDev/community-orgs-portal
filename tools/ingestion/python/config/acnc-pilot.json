@@ -26,6 +26,9 @@
 		"3709",
 		"3900"
 	],
+	"portal_scope_revision_id": "1",
+	"scope_alignment": "exact",
+	"scope_exception_reason": null,
 	"page_size": 100,
 	"max_pages": 10,
 	"timeout_seconds": 10,

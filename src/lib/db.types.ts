@@ -1621,8 +1621,24 @@ export type Database = {
 					logo_url: string | null;
 					lifecycle_state: string;
 					configuration_revision: number;
+					schema_version: string;
+					scope_revision_id: number | null;
+					scope_revision: number | null;
+					scope_postcodes: string[] | null;
 				}[];
 			};
+			configure_portal_scope: {
+				Args: {
+					p_postcodes: string[];
+					p_inclusion_policy_version: string;
+					p_reason: string;
+					p_impact_assessment: string;
+					p_requires_rebaseline: boolean;
+					p_expected_revision?: number;
+				};
+				Returns: number;
+			};
+			portal_scope_history: { Args: Record<PropertyKey, never>; Returns: Json };
 			transition_portal_lifecycle: {
 				Args: {
 					p_next_state: string;
@@ -1651,7 +1667,7 @@ export type Database = {
 			};
             acquisition_dashboard: { Args: Record<PropertyKey, never>; Returns: Json };
             enqueue_acnc_acquisition: { Args: { p_resource: string }; Returns: string };
-            configure_acnc_acquisition: { Args: { p_resource: string; p_postcodes: string[]; p_licence: string; p_interval: number | null; p_revision: string }; Returns: undefined };
+            configure_acnc_acquisition: { Args: { p_resource: string; p_postcodes: string[]; p_licence: string; p_interval: number | null; p_revision: string; p_scope_exception_reason?: string | null }; Returns: undefined };
             enqueue_due_acquisitions: { Args: Record<PropertyKey, never>; Returns: number };
             ingestion_source_approvals: { Args: Record<PropertyKey, never>; Returns: Json };
             set_ingestion_source_enabled: { Args: { p_source: string; p_resource: string; p_enabled: boolean; p_token: string; p_reason: string }; Returns: undefined };

@@ -42,7 +42,9 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 			sponsorName: locals.portal.sponsorName,
 			sponsorUrl: locals.portal.sponsorUrl,
 			logoUrl: locals.portal.logoUrl,
-			lifecycleState: locals.portal.lifecycleState
+			lifecycleState: locals.portal.lifecycleState,
+			scopeRevision: locals.portal.scopeRevision,
+			scopePostcodes: locals.portal.scopePostcodes
 		},
 		isIngestionOperator:
 			locals.user && !locals.isAnonymous ? await isIngestionOperator(locals.supabase) : false,

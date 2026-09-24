@@ -40,6 +40,13 @@ insert into portal.configuration (
 Set the same UUID and key as `PORTAL_ID` and `PORTAL_KEY` in the application and
 worker deployment. A second configuration row is rejected by the database.
 
+Before advancing to `scope_configured`, an administrator creates the first
+authoritative postcode revision from **Admin → Portal scope**. Scope revisions are
+append-only and record the inclusion-policy version, impact assessment, approval
+reason and whether a re-baseline campaign is required. The existing deployment's
+approved 23-postcode boundary is backfilled as revision 1 when PEG02 is applied to
+an established database.
+
 ## Lifecycle administration
 
 An authenticated platform administrator with the required MFA assurance advances
@@ -57,5 +64,6 @@ select community_orgs.transition_portal_lifecycle(
 The expected revision prevents overwriting a concurrent change. Moving to
 `scope_configured` requires a non-empty scope evidence reference. Direct Data API
 writes are denied, invalid jumps are rejected, and lifecycle events cannot be
-updated or deleted. PEG02 will replace the scope reference with an authoritative
-scope revision.
+updated or deleted. The lifecycle transition now requires an authoritative scope
+revision; the text reference is retained only as a human-readable compatibility
+field.

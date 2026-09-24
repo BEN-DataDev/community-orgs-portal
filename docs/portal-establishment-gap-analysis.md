@@ -14,8 +14,8 @@ and organisation role safeguards are already implemented.
 The target architecture is nevertheless a material product and operational change.
 The current system assumes one Supabase project, one global platform-administrator
 set, one global ingestion-operator set and one combined import-review workspace. It
-now has a persisted singleton portal identity and lifecycle, but has no scope
-history, stewardship state, invitation workflow, release-level separation of
+now has persisted singleton identity, lifecycle and authoritative scope history,
+but has no stewardship state, invitation workflow, release-level separation of
 duties, multi-source campaign, provider adapter or fleet operations capability.
 
 The safest refactor is evolutionary. Preserve the existing ingestion evidence and
@@ -43,7 +43,7 @@ or change production state.
 | ----------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | Independent portal databases        | Partial             | One deployment already targets one database, but configuration and operations are hard-wired to one Supabase/Vercel project          |
 | Portal identity and lifecycle       | Implemented         | Private singleton identity, deployment-manifest fencing, sponsor branding and append-only lifecycle events are enforced              |
-| Versioned postcode scope            | Partial             | Postcodes exist in ACNC acquisition configuration and seed manifests, not as the authoritative portal scope                          |
+| Versioned postcode scope            | Implemented         | Immutable portal scope revisions govern acquisition configuration and reconciliation compatibility                                   |
 | Fleet operations                    | Missing             | Provisioning, migrations, access, recovery and inventory are manual operational procedures                                           |
 | Provider abstraction                | Provider-bound      | Request auth, data API, storage, cron and generated types directly use Supabase; deployment directly uses Vercel cron                |
 | Portal Administrator                | Conflicting         | `platform_access.administrators` is a database-global appointment with effective owner and ingestion authority                       |
@@ -105,26 +105,30 @@ already supplies that boundary.
 **Acceptance met:** a fresh database cannot serve application requests without an
 identity and cannot transition to operational without passing the scope-configured
 milestone; lifecycle transitions are authorised and append-only; the UI shows the
-active portal rather than a hard-coded global identity. PEG02 will replace the
-interim scope evidence reference with authoritative scope revisions.
+active portal rather than a hard-coded global identity. Scope evidence is now an
+authoritative PEG02 revision rather than the interim text reference.
 
 ### PEG02 — Authoritative postcode scope and re-baselining
 
-**Priority: critical. Status: partial.**
+**Priority: critical. Status: implemented.**
 
-ACNC acquisition configuration accepts one to fifty postcodes, and the ABN seed
-manifest retains selection scope. These are source-specific settings. There is no
-authoritative versioned portal scope against which source configurations are
-validated.
+Immutable portal scope revisions and canonical postcode memberships are private,
+append-only governance records. The current 23-postcode boundary is backfilled as
+revision 1 for an established deployment. Administrators create later revisions
+with policy, impact, reason and re-baseline evidence through a bounded admin page.
 
-Add portal scope revisions and postcode memberships. Source acquisition
-configuration must reference a scope revision or explicitly document a justified
-subset/superset. A scope change creates an impact assessment and, normally, a
-`scope_rebaseline` campaign. Reconciliation must reject incomparable revisions.
+ACNC configuration is pinned to the current scope revision and classified as exact,
+subset or superset; non-exact configurations require a retained justification.
+Jobs and envelopes carry the revision, a scope change cancels obsolete work, and
+enqueue rejects stale configurations. Existing completed acquisition jobs receive
+an append-only FK-backed attribution without rewriting retained evidence.
+Reconciliation rejects runs from different portal scope revisions before
+considering source-level scope compatibility.
 
-**Acceptance:** no scheduled acquisition silently uses a postcode set different
-from the approved portal scope; old runs remain attributable to the old revision;
-scope expansion cannot create or publish organisations by itself.
+**Acceptance met:** scheduled acquisition cannot silently diverge from the approved
+scope; old runs retain their revision; expansion only records governance state and
+does not acquire or publish data; immutable-history and incompatibility regressions
+cover the boundary.
 
 ### PEG03 — Fleet operations and technical access
 
@@ -386,7 +390,7 @@ write concise schemas and acceptance tests for portal identity, scope, capabilit
 stewardship, invitations, campaigns and publication releases. Update older role and
 capability documentation to distinguish historical behaviour from the target.
 
-### Phase 1 — Portal foundation without behaviour change
+### Phase 1 — Portal foundation without behaviour change (complete)
 
 Add the singleton portal identity, lifecycle, scope revisions and deployment
 manifest verification. Backfill the current deployment as the first portal and map
@@ -437,17 +441,6 @@ and recurring refresh campaigns.
 
 ## Immediate next slice
 
-The lowest-risk implementation slice is Phase 1:
-
-1. Define `portal_identity`, `portal_lifecycle_events`, `portal_scope_revisions`
-   and `portal_scope_postcodes`.
-2. Add a read-only portal context service used by the root layout and admin hub.
-3. Validate ACNC acquisition postcodes against the current portal scope while
-   retaining an explicit exception mechanism.
-4. Add manifest/schema/scope information to the health check.
-5. Backfill the current deployment without changing authorization or publication.
-6. Add disposable-database tests for singleton identity, immutable scope history,
-   lifecycle transitions and incompatible reconciliation scope.
-
-This establishes the boundary required by every later phase while leaving the
-deployed ingestion and organisation workflows intact.
+Phase 1 is complete. The next slice is Phase 2: define explicit portal capability
+appointments and organisation stewardship state/events, then route unclaimed
+record editing through that authority decision before adding invitations.

@@ -60,18 +60,29 @@ begin
   raise exception 'Suppressed staged replay restored retained website';
  end if;
 
- insert into ingestion.acquisition_configs(source_id,resource_id,postcodes,licence_title,updated_by)
- values('acnc-register','p28-redaction',array['2730'],'Synthetic',actor);
+ insert into ingestion.acquisition_configs(
+  source_id,resource_id,postcodes,licence_title,updated_by,scope_revision_id,scope_alignment
+ ) values(
+  'acnc-register','p28-redaction',array['2730'],'Synthetic',actor,
+  (select current_scope_revision_id from portal.configuration where singleton),'exact'
+ );
  insert into ingestion.acquisition_jobs(source_id,resource_id,config_revision,source_revision,config,origin,status,
    lease_token,lease_until,attempts,created_at)
  values('acnc-register','p28-redaction',1,0,jsonb_build_object('resource_id','p28-redaction','postcodes',to_jsonb(array['2730']),
+  'portal_scope_revision_id',(select current_scope_revision_id::text from portal.configuration where singleton),
+  'scope_alignment','exact','scope_exception_reason',null,
   'page_size',100,'max_pages',5,'timeout_seconds',10,'deadline_seconds',120,'max_response_bytes',2097152),'manual',
   'running',gen_random_uuid(),now()+interval '5 minutes',1,now()-interval '1 minute')
  returning id,lease_token into job,token;
  e:=jsonb_set(jsonb_set(e,'{run_id}',to_jsonb(('acnc-job-'||job::text)::text)),'{records,0,run_id}',to_jsonb(('acnc-job-'||job::text)::text));
  e:=jsonb_set(jsonb_set(e,'{observed_at}',to_jsonb(now()::text)),'{records,0,observed_at}',to_jsonb(now()::text));
- e:=jsonb_set(e,'{scope}',jsonb_build_object('kind','filtered-resource','filters',jsonb_build_object('Postcode',to_jsonb(array['2730']))));
+ e:=jsonb_set(e,'{scope}',jsonb_build_object('kind','filtered-resource',
+  'portal_scope_revision_id',(select current_scope_revision_id::text from portal.configuration where singleton),
+  'alignment','exact','complete_snapshot',false,
+  'filters',jsonb_build_object('Postcode',to_jsonb(array['2730']))));
  e:=jsonb_set(e,'{qualification}',jsonb_build_object('limits',jsonb_build_object('resource_id','p28-redaction','postcodes',to_jsonb(array['2730']),
+  'portal_scope_revision_id',(select current_scope_revision_id::text from portal.configuration where singleton),
+  'scope_alignment','exact','scope_exception_reason',null,
   'page_size',100,'max_pages',5,'timeout_seconds',10,'deadline_seconds',120,'max_response_bytes',2097152)));
  e:=jsonb_set(e,'{parser_version}','"acnc-ckan-v3"');
  e:=jsonb_set(e,'{records,0,parser_version}','"acnc-ckan-v3"');

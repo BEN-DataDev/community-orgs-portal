@@ -19,6 +19,7 @@
 			Scheduled jobs run when the daily scheduler next checks for due work. A connected acquisition
 			worker is required to process queued jobs.
 		</p>
+		<p>Authoritative portal scope revision: {data.portal_scope_revision_id ?? 'not configured'}.</p>
 		<button type="button" class="btn preset-tonal" onclick={() => invalidateAll()}
 			>Refresh status</button
 		>
@@ -35,6 +36,12 @@
 				Source {source.enabled ? 'enabled' : 'paused'} · Postcodes {source.postcodes?.join(', ') ??
 					'not configured'}
 			</p>
+			{#if source.scope_revision_id}
+				<p>
+					Scope revision {source.scope_revision_id} · {source.scope_alignment}{#if source.scope_exception_reason}
+						· {source.scope_exception_reason}{/if}
+				</p>
+			{/if}
 			<p>
 				Schedule: {source.interval_hours
 					? `every ${source.interval_hours / 24} days`
@@ -61,11 +68,19 @@
 							<input type="hidden" name="revision" value={source.revision} />
 							<label class="label"
 								>Postcodes (one per line)<textarea
-									class="input"
+									class="textarea"
 									name="postcodes"
 									rows="5"
 									required
 									maxlength="249">{source.postcodes?.join('\n') ?? ''}</textarea
+								></label
+							>
+							<label class="label"
+								>Scope exception reason (required for a subset or superset)<textarea
+									class="textarea"
+									name="scopeExceptionReason"
+									rows="3"
+									maxlength="2000">{source.scope_exception_reason ?? ''}</textarea
 								></label
 							>
 							<label class="label"

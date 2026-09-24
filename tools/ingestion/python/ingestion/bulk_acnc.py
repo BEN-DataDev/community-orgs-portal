@@ -103,6 +103,8 @@ def extract(stream, config, run_id, observed_at, *, clock_check=lambda: None):
                   run_id=run_id, observed_at=observed_at, parser_version=PARSER_VERSION)
     result = dict(common, contract_version='1.0', publication_eligible=False,
                   synthetic=False, scope={'kind': 'filtered-resource',
+                  'portal_scope_revision_id': config['portal_scope_revision_id'],
+                  'alignment': config['scope_alignment'],
                   'filters': {'Postcode': config['postcodes']}, 'complete_snapshot': False}, completion='failed',
                   records=[], quarantine=[], errors=[], pages=[])
     rows = selected = 0

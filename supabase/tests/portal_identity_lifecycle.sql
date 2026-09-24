@@ -62,15 +62,19 @@ begin
     perform community_orgs.transition_portal_lifecycle(
       'scope_configured', 'Scope accepted', null, 2
     );
-    raise exception 'Scope transition without evidence was allowed';
+    raise exception 'Scope transition without an authoritative revision was allowed';
   exception when invalid_parameter_value then null;
   end;
+  perform community_orgs.configure_portal_scope(
+    array['2720','2730'], 'test-policy-v1', 'Approved initial scope',
+    'Initial test boundary; no existing acquisitions are affected.', false, 2
+  );
   perform community_orgs.transition_portal_lifecycle(
-    'scope_configured', 'Scope accepted', 'SCOPE-1', 2
+    'scope_configured', 'Scope accepted', 'SCOPE-1', 3
   );
   begin
     perform community_orgs.transition_portal_lifecycle(
-      'operational', 'Skipped establishment stages', 'REL-1', 3
+      'operational', 'Skipped establishment stages', 'REL-1', 4
     );
     raise exception 'Invalid lifecycle jump was allowed';
   exception when invalid_parameter_value then null;
