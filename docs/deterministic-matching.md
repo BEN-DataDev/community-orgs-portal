@@ -67,7 +67,7 @@ browser form:
   `unknown`, `legal_entity`, `community_group` or `branch` and an evidence object
   containing a nonempty `reference`. Initial classification revision is 1.
 - `review_identifier_identity(p_org, p_scheme, p_jurisdiction, p_value,
-  p_revision, p_state, p_evidence)` uses revision 0 for a new key; otherwise use
+p_revision, p_state, p_evidence)` uses revision 0 for a new key; otherwise use
   its current revision. States are `verified`, `disputed`, `withdrawn`.
   Evidence requires `reference`, `authority`, `holder_name`, RFC3339 `observed_at`
   and `qualified_registry_review: true`. This is an explicit operator attestation
@@ -142,7 +142,6 @@ scopes identity assertions to its fixture organisations. It never commits fixtur
 The build retains existing Rollup annotation/chunk warnings. These are local
 results with emulated auth/JWT scaffolding. The separate hosted evidence below
 uses the real schema and actual signed-in sessions.
-
 
 ## Hosted completion — 18 September 2026
 

@@ -17,6 +17,80 @@
 		non-expiring owner role.
 	</p>
 	{#if form?.message}<p role="status" class="card preset-tonal p-4">{form.message}</p>{/if}
+	{#if form?.invitationUrl}
+		<p class="card preset-tonal-success p-4">
+			Acceptance link: <a class="anchor break-all" href={form.invitationUrl}>{form.invitationUrl}</a
+			>
+		</p>
+	{/if}
+	{#if data.roster.canInvite}
+		<form
+			method="POST"
+			action="?/invite"
+			use:enhance
+			class="card bg-surface-100-900 max-w-xl space-y-4 p-4"
+		>
+			<h2 class="h2">Invite an owner</h2>
+			<p class="text-sm">
+				Acceptance is restricted to a registered account with this verified email address. The link
+				can be delivered separately from the portal.
+			</p>
+			<label class="label"
+				><span class="label-text">Email</span><input
+					class="input"
+					name="email"
+					type="email"
+					required
+				/></label
+			>
+			<label class="label"
+				><span class="label-text">Stewardship after acceptance</span><select
+					class="select"
+					name="targetStewardship"
+					required
+					><option value="self_managed">Self-managed</option><option value="co_managed"
+						>Co-managed (approved continuing portal support)</option
+					></select
+				></label
+			>
+			<label class="label"
+				><span class="label-text">Expires after</span><select
+					class="select"
+					name="expiresInDays"
+					required
+					><option value="7">7 days</option><option value="14">14 days</option><option value="30"
+						>30 days</option
+					></select
+				></label
+			>
+			<label class="label"
+				><span class="label-text">Decision reason</span><input
+					class="input"
+					name="reason"
+					maxlength="2000"
+					required
+				/></label
+			>
+			<label class="label"
+				><span class="label-text">Approval reference</span><input
+					class="input"
+					name="approvalReference"
+					maxlength="500"
+					required
+				/></label
+			>
+			<label class="label"
+				><span class="label-text">Invitation note</span><textarea
+					class="textarea"
+					name="note"
+					maxlength="4000"
+					rows="3"
+					required
+				></textarea></label
+			>
+			<button class="btn preset-filled-primary-500" type="submit">Issue invitation</button>
+		</form>
+	{/if}
 	<form
 		method="POST"
 		action="?/grant"
@@ -46,6 +120,37 @@
 		>
 		<button class="btn preset-filled-primary-500" type="submit">Grant role</button>
 	</form>
+	<section class="space-y-4" aria-label="Owner invitations">
+		<h2 class="h2">Owner invitations ({data.roster.invitations.length})</h2>
+		{#each data.roster.invitations as invitation (invitation.id)}
+			<article class="card bg-surface-100-900 space-y-3 p-4">
+				<h3 class="h3">{invitation.email} · {invitation.status}</h3>
+				<p class="text-sm">
+					Outcome: {invitation.targetStewardship === 'self_managed' ? 'Self-managed' : 'Co-managed'} ·
+					expires {new Date(invitation.expiresAt).toLocaleString()}
+				</p>
+				{#if invitation.status === 'pending'}
+					<a class="anchor break-all" href={`/invitations/${invitation.id}`}
+						>/invitations/{invitation.id}</a
+					>
+				{/if}
+				{#if invitation.canCancel}
+					<form method="POST" action="?/cancelInvitation" use:enhance class="max-w-xl space-y-3">
+						<input type="hidden" name="invitationId" value={invitation.id} />
+						<label class="label"
+							><span class="label-text">Cancellation reason</span><input
+								class="input"
+								name="reason"
+								maxlength="2000"
+								required
+							/></label
+						>
+						<button class="btn preset-tonal-error" type="submit">Cancel invitation</button>
+					</form>
+				{/if}
+			</article>
+		{:else}<p>No owner invitations have been issued.</p>{/each}
+	</section>
 	<section class="space-y-4" aria-label="Role assignments">
 		<h2 class="h2">Assignments ({data.roster.assignments.length})</h2>
 		{#each data.roster.assignments as assignment (assignment.id)}

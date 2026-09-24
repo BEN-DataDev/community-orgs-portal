@@ -91,11 +91,15 @@ export function guardRedirect({
 	 */
 	if (isAnonymous) {
 		/**
-		 * Nothing under `/account` or `/admin` can do anything useful for an
-		 * account with no email and no password. Sent to sign-up rather than
-		 * shown a 403, because signing up is what would make the page work.
+		 * Account/admin pages and email-bound invitations cannot do anything
+		 * useful for an account with no email and no password. Sent to sign-up
+		 * rather than shown a 403, because signing up is what makes them work.
 		 */
-		if (pathname.startsWith('/account') || pathname.startsWith('/admin')) {
+		if (
+			pathname.startsWith('/account') ||
+			pathname.startsWith('/admin') ||
+			pathname.startsWith('/invitations')
+		) {
 			return signInWithReturn();
 		}
 		return null;

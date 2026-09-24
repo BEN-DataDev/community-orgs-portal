@@ -7,13 +7,13 @@ manifests. It does not deploy a worker, enable a source, schedule a job or publi
 
 ## Acceptance
 
-| Requirement | Implementation and evidence |
-| --- | --- |
-| Adapt the existing extractor | [Pinned upstream provenance](../tools/ingestion/python/upstream-manifest.json); injected transport and standard-library Python, no legacy application/loader dependencies. |
-| Qualify the configured resource and schema | Package membership, reviewed licence, metadata before/after acquisition; exact 70-field CKAN schema or 69-column CSV header. Missing/extra/duplicate/type-changed fields fail closed, including empty CKAN results. |
-| Emit versioned staging records and manifest | Contract `1.0`; `acnc-ckan-v3` or `acnc-bulk-v1`; mapping `acnc-register-fields-v3`. Private `envelope.json` and `manifest.json` bind source/resource, scope, observation, parser/mapping, limits, completion and canonical envelope hash. |
-| Bulk-resource fallback | [Bulk CLI](../tools/ingestion/python/ingestion/bulk_acnc.py) downloads the pinned CSV resource directly, independently of DataStore availability, then scans it to EOF and retains the bounded postcode cohort. Live six-record typed assertions matched the CKAN path. |
-| Safe staging/replay | [Database regression](../supabase/tests/acnc_bulk.sql) stages real parser output as the restricted worker, reuses the same run/version on replay and creates no organisation, link or publication. |
+| Requirement                                 | Implementation and evidence                                                                                                                                                                                                                                             |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Adapt the existing extractor                | [Pinned upstream provenance](../tools/ingestion/python/upstream-manifest.json); injected transport and standard-library Python, no legacy application/loader dependencies.                                                                                              |
+| Qualify the configured resource and schema  | Package membership, reviewed licence, metadata before/after acquisition; exact 70-field CKAN schema or 69-column CSV header. Missing/extra/duplicate/type-changed fields fail closed, including empty CKAN results.                                                     |
+| Emit versioned staging records and manifest | Contract `1.0`; `acnc-ckan-v3` or `acnc-bulk-v1`; mapping `acnc-register-fields-v3`. Private `envelope.json` and `manifest.json` bind source/resource, scope, observation, parser/mapping, limits, completion and canonical envelope hash.                              |
+| Bulk-resource fallback                      | [Bulk CLI](../tools/ingestion/python/ingestion/bulk_acnc.py) downloads the pinned CSV resource directly, independently of DataStore availability, then scans it to EOF and retains the bounded postcode cohort. Live six-record typed assertions matched the CKAN path. |
+| Safe staging/replay                         | [Database regression](../supabase/tests/acnc_bulk.sql) stages real parser output as the restricted worker, reuses the same run/version on replay and creates no organisation, link or publication.                                                                      |
 
 The fallback is an explicit operator command, not an automatic retry from the
 scheduled worker. A CKAN failure remains a failed/partial acquisition; it is never

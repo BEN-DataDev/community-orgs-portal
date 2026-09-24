@@ -4,11 +4,11 @@ Completed: 17 September 2026. Scope: qualify the retained ACNC sample and a
 synthetic CSV fixture, and prepare ABN access. P12 remains responsible for the
 CSV importer; P16 remains responsible for exact-ABN integration and live checks.
 
-| Source | Qualification evidence | Decision |
-| --- | --- | --- |
-| ACNC Register | Six-record postcode 2730 observation; exact resource, revision dates, hashes, licence and 70-column schema below | Qualified for the recorded bounded sample; later acquisitions recheck metadata/schema |
-| Project CSV fixture v1 | Nine invented records, file hashes, explicit use basis, attribution, schema and expected review outcomes | Qualified for offline development only; no real provider export or publication approval |
-| ABN Lookup | Official registration, agreement and method documentation checked 17 September 2026 | Access preparation complete; registration/GUID and live adapter verification remain pending |
+| Source                 | Qualification evidence                                                                                           | Decision                                                                                    |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| ACNC Register          | Six-record postcode 2730 observation; exact resource, revision dates, hashes, licence and 70-column schema below | Qualified for the recorded bounded sample; later acquisitions recheck metadata/schema       |
+| Project CSV fixture v1 | Nine invented records, file hashes, explicit use basis, attribution, schema and expected review outcomes         | Qualified for offline development only; no real provider export or publication approval     |
+| ABN Lookup             | Official registration, agreement and method documentation checked 17 September 2026                              | Access preparation complete; registration/GUID and live adapter verification remain pending |
 
 P04 does not qualify a real NSW associations export, complete P12/P16, or enable
 another source. A synthetic CSV establishes a development contract, not evidence
@@ -111,14 +111,14 @@ identifier/date/URL rules and candidate destinations. It includes quoted commas,
 non-ASCII text, a leading-zero postcode and incorporation number. The all-zero ABN
 is an explicitly unverified synthetic placeholder, not a valid registry identity.
 
-| Records | Expected P12 handling |
-| --- | --- |
-| csv-001, csv-002 | Two well-formed candidates; no-ABN groups are allowed; both still require inclusion/matching and field review |
-| csv-003 | Hold: branch shares an ABN with csv-002; preserve both identities |
-| csv-004 | Hold: out-of-area service needs evidence and a delivering-organisation link |
-| csv-005 | Hold: same name as csv-001 does not establish a duplicate |
-| csv-006, csv-007, csv-008 | Quarantine: missing name, malformed ABN, unsafe website respectively |
-| csv-009 | Hold: postcode `0800` stays text; no evidence of Snowy Valleys eligibility |
+| Records                   | Expected P12 handling                                                                                         |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| csv-001, csv-002          | Two well-formed candidates; no-ABN groups are allowed; both still require inclusion/matching and field review |
+| csv-003                   | Hold: branch shares an ABN with csv-002; preserve both identities                                             |
+| csv-004                   | Hold: out-of-area service needs evidence and a delivering-organisation link                                   |
+| csv-005                   | Hold: same name as csv-001 does not establish a duplicate                                                     |
+| csv-006, csv-007, csv-008 | Quarantine: missing name, malformed ABN, unsafe website respectively                                          |
+| csv-009                   | Hold: postcode `0800` stays text; no evidence of Snowy Valleys eligibility                                    |
 
 Expected totals are **2 candidates, 4 held, 3 quarantined**. These are acceptance
 expectations, not results of an implemented importer. Every record is synthetic;

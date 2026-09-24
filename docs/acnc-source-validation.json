@@ -1,329 +1,329 @@
 {
-  "checked_at": "2026-09-15T23:38:31.075598+00:00",
-  "metadata_url": "https://data.gov.au/data/api/3/action/package_show?id=acnc-register",
-  "dataset_id": "b050b242-4487-4306-abf5-07ca073e5594",
-  "license_title": "Creative Commons Attribution 3.0 Australia",
-  "license_url": "http://creativecommons.org/licenses/by/3.0/au/",
-  "metadata_modified": "2026-09-13T19:56:51.506354",
-  "resource": {
-    "id": "eb1e6be4-5b13-4feb-b28e-388bf7c26f93",
-    "name": "ACNC Register of Australian charities",
-    "format": "XLSX",
-    "datastore_active": true,
-    "last_modified": "2026-09-13T19:00:59.574359"
-  },
-  "scope": {
-    "filters": {
-      "Postcode": "2730"
-    },
-    "kind": "filtered-resource"
-  },
-  "completion": "complete",
-  "counts": {
-    "accepted": 6,
-    "quarantined": 0,
-    "pages": 2,
-    "source_total": 6
-  },
-  "field_types": [
-    {
-      "id": "_id",
-      "type": "int"
-    },
-    {
-      "id": "ABN",
-      "type": "text"
-    },
-    {
-      "id": "Charity_Legal_Name",
-      "type": "text"
-    },
-    {
-      "id": "Other_Organisation_Names",
-      "type": "text"
-    },
-    {
-      "id": "Address_Type",
-      "type": "text"
-    },
-    {
-      "id": "Address_Line_1",
-      "type": "text"
-    },
-    {
-      "id": "Address_Line_2",
-      "type": "text"
-    },
-    {
-      "id": "Address_Line_3",
-      "type": "text"
-    },
-    {
-      "id": "Town_City",
-      "type": "text"
-    },
-    {
-      "id": "State",
-      "type": "text"
-    },
-    {
-      "id": "Postcode",
-      "type": "text"
-    },
-    {
-      "id": "Country",
-      "type": "text"
-    },
-    {
-      "id": "Charity_Website",
-      "type": "text"
-    },
-    {
-      "id": "Registration_Date",
-      "type": "text"
-    },
-    {
-      "id": "Date_Organisation_Established",
-      "type": "text"
-    },
-    {
-      "id": "Charity_Size",
-      "type": "text"
-    },
-    {
-      "id": "Number_of_Responsible_Persons",
-      "type": "text"
-    },
-    {
-      "id": "Financial_Year_End",
-      "type": "text"
-    },
-    {
-      "id": "Operates_in_ACT",
-      "type": "text"
-    },
-    {
-      "id": "Operates_in_NSW",
-      "type": "text"
-    },
-    {
-      "id": "Operates_in_NT",
-      "type": "text"
-    },
-    {
-      "id": "Operates_in_QLD",
-      "type": "text"
-    },
-    {
-      "id": "Operates_in_SA",
-      "type": "text"
-    },
-    {
-      "id": "Operates_in_TAS",
-      "type": "text"
-    },
-    {
-      "id": "Operates_in_VIC",
-      "type": "text"
-    },
-    {
-      "id": "Operates_in_WA",
-      "type": "text"
-    },
-    {
-      "id": "Operating_Countries",
-      "type": "text"
-    },
-    {
-      "id": "PBI",
-      "type": "text"
-    },
-    {
-      "id": "HPC",
-      "type": "text"
-    },
-    {
-      "id": "Preventing_or_relieving_suffering_of_animals",
-      "type": "text"
-    },
-    {
-      "id": "Advancing_Culture",
-      "type": "text"
-    },
-    {
-      "id": "Advancing_Education",
-      "type": "text"
-    },
-    {
-      "id": "Advancing_Health",
-      "type": "text"
-    },
-    {
-      "id": "Promote_or_oppose_a_change_to_law__government_poll_or_prac",
-      "type": "text"
-    },
-    {
-      "id": "Advancing_natual_environment",
-      "type": "text"
-    },
-    {
-      "id": "Promoting_or_protecting_human_rights",
-      "type": "text"
-    },
-    {
-      "id": "Purposes_beneficial_to_ther_general_public_and_other_analogous",
-      "type": "text"
-    },
-    {
-      "id": "Promoting_reconciliation__mutual_respect_and_tolerance",
-      "type": "text"
-    },
-    {
-      "id": "Advancing_Religion",
-      "type": "text"
-    },
-    {
-      "id": "Advancing_social_or_public_welfare",
-      "type": "text"
-    },
-    {
-      "id": "Advancing_security_or_safety_of_Australia_or_Australian_public",
-      "type": "text"
-    },
-    {
-      "id": "Aboriginal_or_TSI",
-      "type": "text"
-    },
-    {
-      "id": "Adults",
-      "type": "text"
-    },
-    {
-      "id": "Aged_Persons",
-      "type": "text"
-    },
-    {
-      "id": "Children",
-      "type": "text"
-    },
-    {
-      "id": "Communities_Overseas",
-      "type": "text"
-    },
-    {
-      "id": "Early_Childhood",
-      "type": "text"
-    },
-    {
-      "id": "Ethnic_Groups",
-      "type": "text"
-    },
-    {
-      "id": "Families",
-      "type": "text"
-    },
-    {
-      "id": "Females",
-      "type": "text"
-    },
-    {
-      "id": "Financially_Disadvantaged",
-      "type": "text"
-    },
-    {
-      "id": "LGBTIQA+",
-      "type": "text"
-    },
-    {
-      "id": "General_Community_in_Australia",
-      "type": "text"
-    },
-    {
-      "id": "Males",
-      "type": "text"
-    },
-    {
-      "id": "Migrants_Refugees_or_Asylum_Seekers",
-      "type": "text"
-    },
-    {
-      "id": "Other_Beneficiaries",
-      "type": "text"
-    },
-    {
-      "id": "Other_Charities",
-      "type": "text"
-    },
-    {
-      "id": "People_at_risk_of_homelessness",
-      "type": "text"
-    },
-    {
-      "id": "People_with_Chronic_Illness",
-      "type": "text"
-    },
-    {
-      "id": "People_with_Disabilities",
-      "type": "text"
-    },
-    {
-      "id": "Pre_Post_Release_Offenders",
-      "type": "text"
-    },
-    {
-      "id": "Rural_Regional_Remote_Communities",
-      "type": "text"
-    },
-    {
-      "id": "Unemployed_Person",
-      "type": "text"
-    },
-    {
-      "id": "Veterans_or_their_families",
-      "type": "text"
-    },
-    {
-      "id": "Victims_of_crime",
-      "type": "text"
-    },
-    {
-      "id": "Victims_of_Disasters",
-      "type": "text"
-    },
-    {
-      "id": "Youth",
-      "type": "text"
-    },
-    {
-      "id": "animals",
-      "type": "text"
-    },
-    {
-      "id": "environment",
-      "type": "text"
-    },
-    {
-      "id": "other_gender_identities",
-      "type": "text"
-    }
-  ],
-  "page_hashes": [
-    {
-      "offset": 0,
-      "count": 5,
-      "sha256": "ce5ea266fbdb477bcd0244a06f23b471ab71c6b8e67509c805ef379ba65a30ea"
-    },
-    {
-      "offset": 5,
-      "count": 1,
-      "sha256": "b22ef5b5cb35f13a4f2e531c1384ee0cd26da1e00ae8d413053f975075979348"
-    }
-  ],
-  "raw_records_committed": false,
-  "limits": [
-    "One postcode only",
-    "No consistency guarantee across live pages",
-    "No historical source-ID stability verification",
-    "No publication approval"
-  ]
+	"checked_at": "2026-09-15T23:38:31.075598+00:00",
+	"metadata_url": "https://data.gov.au/data/api/3/action/package_show?id=acnc-register",
+	"dataset_id": "b050b242-4487-4306-abf5-07ca073e5594",
+	"license_title": "Creative Commons Attribution 3.0 Australia",
+	"license_url": "http://creativecommons.org/licenses/by/3.0/au/",
+	"metadata_modified": "2026-09-13T19:56:51.506354",
+	"resource": {
+		"id": "eb1e6be4-5b13-4feb-b28e-388bf7c26f93",
+		"name": "ACNC Register of Australian charities",
+		"format": "XLSX",
+		"datastore_active": true,
+		"last_modified": "2026-09-13T19:00:59.574359"
+	},
+	"scope": {
+		"filters": {
+			"Postcode": "2730"
+		},
+		"kind": "filtered-resource"
+	},
+	"completion": "complete",
+	"counts": {
+		"accepted": 6,
+		"quarantined": 0,
+		"pages": 2,
+		"source_total": 6
+	},
+	"field_types": [
+		{
+			"id": "_id",
+			"type": "int"
+		},
+		{
+			"id": "ABN",
+			"type": "text"
+		},
+		{
+			"id": "Charity_Legal_Name",
+			"type": "text"
+		},
+		{
+			"id": "Other_Organisation_Names",
+			"type": "text"
+		},
+		{
+			"id": "Address_Type",
+			"type": "text"
+		},
+		{
+			"id": "Address_Line_1",
+			"type": "text"
+		},
+		{
+			"id": "Address_Line_2",
+			"type": "text"
+		},
+		{
+			"id": "Address_Line_3",
+			"type": "text"
+		},
+		{
+			"id": "Town_City",
+			"type": "text"
+		},
+		{
+			"id": "State",
+			"type": "text"
+		},
+		{
+			"id": "Postcode",
+			"type": "text"
+		},
+		{
+			"id": "Country",
+			"type": "text"
+		},
+		{
+			"id": "Charity_Website",
+			"type": "text"
+		},
+		{
+			"id": "Registration_Date",
+			"type": "text"
+		},
+		{
+			"id": "Date_Organisation_Established",
+			"type": "text"
+		},
+		{
+			"id": "Charity_Size",
+			"type": "text"
+		},
+		{
+			"id": "Number_of_Responsible_Persons",
+			"type": "text"
+		},
+		{
+			"id": "Financial_Year_End",
+			"type": "text"
+		},
+		{
+			"id": "Operates_in_ACT",
+			"type": "text"
+		},
+		{
+			"id": "Operates_in_NSW",
+			"type": "text"
+		},
+		{
+			"id": "Operates_in_NT",
+			"type": "text"
+		},
+		{
+			"id": "Operates_in_QLD",
+			"type": "text"
+		},
+		{
+			"id": "Operates_in_SA",
+			"type": "text"
+		},
+		{
+			"id": "Operates_in_TAS",
+			"type": "text"
+		},
+		{
+			"id": "Operates_in_VIC",
+			"type": "text"
+		},
+		{
+			"id": "Operates_in_WA",
+			"type": "text"
+		},
+		{
+			"id": "Operating_Countries",
+			"type": "text"
+		},
+		{
+			"id": "PBI",
+			"type": "text"
+		},
+		{
+			"id": "HPC",
+			"type": "text"
+		},
+		{
+			"id": "Preventing_or_relieving_suffering_of_animals",
+			"type": "text"
+		},
+		{
+			"id": "Advancing_Culture",
+			"type": "text"
+		},
+		{
+			"id": "Advancing_Education",
+			"type": "text"
+		},
+		{
+			"id": "Advancing_Health",
+			"type": "text"
+		},
+		{
+			"id": "Promote_or_oppose_a_change_to_law__government_poll_or_prac",
+			"type": "text"
+		},
+		{
+			"id": "Advancing_natual_environment",
+			"type": "text"
+		},
+		{
+			"id": "Promoting_or_protecting_human_rights",
+			"type": "text"
+		},
+		{
+			"id": "Purposes_beneficial_to_ther_general_public_and_other_analogous",
+			"type": "text"
+		},
+		{
+			"id": "Promoting_reconciliation__mutual_respect_and_tolerance",
+			"type": "text"
+		},
+		{
+			"id": "Advancing_Religion",
+			"type": "text"
+		},
+		{
+			"id": "Advancing_social_or_public_welfare",
+			"type": "text"
+		},
+		{
+			"id": "Advancing_security_or_safety_of_Australia_or_Australian_public",
+			"type": "text"
+		},
+		{
+			"id": "Aboriginal_or_TSI",
+			"type": "text"
+		},
+		{
+			"id": "Adults",
+			"type": "text"
+		},
+		{
+			"id": "Aged_Persons",
+			"type": "text"
+		},
+		{
+			"id": "Children",
+			"type": "text"
+		},
+		{
+			"id": "Communities_Overseas",
+			"type": "text"
+		},
+		{
+			"id": "Early_Childhood",
+			"type": "text"
+		},
+		{
+			"id": "Ethnic_Groups",
+			"type": "text"
+		},
+		{
+			"id": "Families",
+			"type": "text"
+		},
+		{
+			"id": "Females",
+			"type": "text"
+		},
+		{
+			"id": "Financially_Disadvantaged",
+			"type": "text"
+		},
+		{
+			"id": "LGBTIQA+",
+			"type": "text"
+		},
+		{
+			"id": "General_Community_in_Australia",
+			"type": "text"
+		},
+		{
+			"id": "Males",
+			"type": "text"
+		},
+		{
+			"id": "Migrants_Refugees_or_Asylum_Seekers",
+			"type": "text"
+		},
+		{
+			"id": "Other_Beneficiaries",
+			"type": "text"
+		},
+		{
+			"id": "Other_Charities",
+			"type": "text"
+		},
+		{
+			"id": "People_at_risk_of_homelessness",
+			"type": "text"
+		},
+		{
+			"id": "People_with_Chronic_Illness",
+			"type": "text"
+		},
+		{
+			"id": "People_with_Disabilities",
+			"type": "text"
+		},
+		{
+			"id": "Pre_Post_Release_Offenders",
+			"type": "text"
+		},
+		{
+			"id": "Rural_Regional_Remote_Communities",
+			"type": "text"
+		},
+		{
+			"id": "Unemployed_Person",
+			"type": "text"
+		},
+		{
+			"id": "Veterans_or_their_families",
+			"type": "text"
+		},
+		{
+			"id": "Victims_of_crime",
+			"type": "text"
+		},
+		{
+			"id": "Victims_of_Disasters",
+			"type": "text"
+		},
+		{
+			"id": "Youth",
+			"type": "text"
+		},
+		{
+			"id": "animals",
+			"type": "text"
+		},
+		{
+			"id": "environment",
+			"type": "text"
+		},
+		{
+			"id": "other_gender_identities",
+			"type": "text"
+		}
+	],
+	"page_hashes": [
+		{
+			"offset": 0,
+			"count": 5,
+			"sha256": "ce5ea266fbdb477bcd0244a06f23b471ab71c6b8e67509c805ef379ba65a30ea"
+		},
+		{
+			"offset": 5,
+			"count": 1,
+			"sha256": "b22ef5b5cb35f13a4f2e531c1384ee0cd26da1e00ae8d413053f975075979348"
+		}
+	],
+	"raw_records_committed": false,
+	"limits": [
+		"One postcode only",
+		"No consistency guarantee across live pages",
+		"No historical source-ID stability verification",
+		"No publication approval"
+	]
 }

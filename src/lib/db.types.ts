@@ -1661,6 +1661,30 @@ export type Database = {
 			};
 			purge_stale_anonymous_users: { Args: Record<PropertyKey, never>; Returns: number };
 			organisation_role_assignments: { Args: { p_organisation_id: string }; Returns: Json };
+			issue_organisation_invitation: {
+				Args: {
+					p_organisation_id: string;
+					p_email: string;
+					p_target_stewardship: string;
+					p_reason: string;
+					p_approval_reference: string;
+					p_note: string;
+					p_expires_at?: string;
+				};
+				Returns: string;
+			};
+			cancel_organisation_invitation: {
+				Args: { p_invitation_id: string; p_reason: string };
+				Returns: boolean;
+			};
+			accept_organisation_invitation: {
+				Args: { p_invitation_id: string };
+				Returns: Json;
+			};
+			organisation_invitation: {
+				Args: { p_invitation_id: string };
+				Returns: Json;
+			};
 			search_organisations: {
 				Args: { p_query?: string; p_offset?: number; p_limit?: number };
 				Returns: Json;

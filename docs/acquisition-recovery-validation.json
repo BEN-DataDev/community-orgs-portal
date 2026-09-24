@@ -1,50 +1,50 @@
 {
-  "result": "pass",
-  "checks": [
-    {
-      "check": "full_ingestion_sql_suites",
-      "result": "pass",
-      "coverage": "manual edits, stale approvals, withdrawal replay, access, queue recovery"
-    },
-    {
-      "check": "mid_fetch",
-      "result": "pass",
-      "attempts": 2,
-      "staged_runs": 1,
-      "source_refetched": true
-    },
-    {
-      "check": "after_checkpoint",
-      "result": "pass",
-      "attempts": 2,
-      "staged_runs": 1,
-      "source_refetched": false
-    },
-    {
-      "check": "protected_edit_and_withdrawal_after_changed_refresh",
-      "result": "pass",
-      "linked_organisations": 2
-    },
-    {
-      "check": "failed_source",
-      "result": "pass",
-      "accepted": 0,
-      "public_state_unchanged": true
-    },
-    {
-      "check": "partial_source",
-      "result": "pass",
-      "accepted": 1,
-      "public_state_unchanged": true
-    }
-  ],
-  "isolation": "internal Docker network; synthetic HTTP only",
-  "recorded_at": "2026-09-17T03:57:07.575230+00:00",
-  "command": "python3 scripts/test-acquisition-recovery.py",
-  "database": "Disposable PostgreSQL 16; synthetic auth helpers",
-  "lease_expiry": "Expired the disposable job row after process kill; no five-minute wall-clock wait",
-  "test_files_sha256": {
-    "scripts/test-acquisition-recovery.py": "d671041129ddfbcdfd3132c862107812cf83fc6bdf7bfe613791f72a166d235b",
-    "tools/ingestion/python/tests/recovery_worker_fixture.py": "ccdf228091e599dc5d8c23c46ab2a090117e9ee1789e3e1babd6fefd066271f2"
-  }
+	"result": "pass",
+	"checks": [
+		{
+			"check": "full_ingestion_sql_suites",
+			"result": "pass",
+			"coverage": "manual edits, stale approvals, withdrawal replay, access, queue recovery"
+		},
+		{
+			"check": "mid_fetch",
+			"result": "pass",
+			"attempts": 2,
+			"staged_runs": 1,
+			"source_refetched": true
+		},
+		{
+			"check": "after_checkpoint",
+			"result": "pass",
+			"attempts": 2,
+			"staged_runs": 1,
+			"source_refetched": false
+		},
+		{
+			"check": "protected_edit_and_withdrawal_after_changed_refresh",
+			"result": "pass",
+			"linked_organisations": 2
+		},
+		{
+			"check": "failed_source",
+			"result": "pass",
+			"accepted": 0,
+			"public_state_unchanged": true
+		},
+		{
+			"check": "partial_source",
+			"result": "pass",
+			"accepted": 1,
+			"public_state_unchanged": true
+		}
+	],
+	"isolation": "internal Docker network; synthetic HTTP only",
+	"recorded_at": "2026-09-17T03:57:07.575230+00:00",
+	"command": "python3 scripts/test-acquisition-recovery.py",
+	"database": "Disposable PostgreSQL 16; synthetic auth helpers",
+	"lease_expiry": "Expired the disposable job row after process kill; no five-minute wall-clock wait",
+	"test_files_sha256": {
+		"scripts/test-acquisition-recovery.py": "d671041129ddfbcdfd3132c862107812cf83fc6bdf7bfe613791f72a166d235b",
+		"tools/ingestion/python/tests/recovery_worker_fixture.py": "ccdf228091e599dc5d8c23c46ab2a090117e9ee1789e3e1babd6fefd066271f2"
+	}
 }

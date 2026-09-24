@@ -40,18 +40,18 @@ is evidence that the organisation serves Snowy Valleys.
 
 Candidates must have an identifiable community purpose in at least one category:
 
-| Category | Included activities |
-| --- | --- |
-| Sport and recreation | Community clubs, participation and recreation groups |
-| Arts, culture and heritage | Community arts, cultural groups and historical societies |
-| Environment | Landcare, conservation and community gardens |
-| Neighbourhood and community centres | Local centres, resident and progress associations |
-| Welfare and community support | Food relief, transport, family support and disaster assistance |
-| Health and wellbeing | Community health, peer support and hospital auxiliaries |
-| Education and learning | Community education, early childhood and learning groups |
-| Service clubs and volunteering | Service clubs, volunteer groups and community fundraising |
-| Faith and religious community | Congregations and religious groups with local community activity |
-| Other community purpose | An operator documents the purpose and why existing categories do not fit |
+| Category                            | Included activities                                                      |
+| ----------------------------------- | ------------------------------------------------------------------------ |
+| Sport and recreation                | Community clubs, participation and recreation groups                     |
+| Arts, culture and heritage          | Community arts, cultural groups and historical societies                 |
+| Environment                         | Landcare, conservation and community gardens                             |
+| Neighbourhood and community centres | Local centres, resident and progress associations                        |
+| Welfare and community support       | Food relief, transport, family support and disaster assistance           |
+| Health and wellbeing                | Community health, peer support and hospital auxiliaries                  |
+| Education and learning              | Community education, early childhood and learning groups                 |
+| Service clubs and volunteering      | Service clubs, volunteer groups and community fundraising                |
+| Faith and religious community       | Congregations and religious groups with local community activity         |
+| Other community purpose             | An operator documents the purpose and why existing categories do not fit |
 
 Multiple categories are allowed. Preserve source categories alongside the review
 mapping. Charity registration, an ABN or incorporation alone does not establish
@@ -61,12 +61,12 @@ does not qualify solely because it funds or sells to a community organisation.
 
 ## Entity, group, service and location distinctions
 
-| Concept | Treatment |
-| --- | --- |
-| Legal entity | Record the registered organisation and its supported identifiers. |
-| Community group or branch | Keep its local identity distinct from its parent; a shared ABN does not prove two groups are the same. |
-| Service or program | Associate it with the delivering organisation; do not create a second legal entity from a service name. |
-| Location or venue | Treat it as a place associated with an organisation or service, not automatically as another organisation. |
+| Concept                   | Treatment                                                                                                  |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Legal entity              | Record the registered organisation and its supported identifiers.                                          |
+| Community group or branch | Keep its local identity distinct from its parent; a shared ABN does not prove two groups are the same.     |
+| Service or program        | Associate it with the delivering organisation; do not create a second legal entity from a service name.    |
+| Location or venue         | Treat it as a place associated with an organisation or service, not automatically as another organisation. |
 
 Match against existing source links and supported identifiers before proposing a
 new organisation. Name similarity is a review signal, not permission to merge.
@@ -83,11 +83,11 @@ community category, entity/group/service classification, and decision with reaso
 Use existing review notes for these details until structured fields are available.
 Unverified examples in `Content.md` are research leads, not inclusion evidence.
 
-| Decision | Rule |
-| --- | --- |
-| Include | Identity, community purpose and geographic relevance are supported, source use is approved, and matching is resolved. Proceed through normal field approval/publication. |
-| Hold for review | Evidence is missing, ambiguous or contradictory; source permissions, activity status or entity mapping remain unresolved. Keep private. |
-| Exclude | Evidence establishes that the candidate is outside scope or belongs to an excluded class. Record the reason. |
+| Decision        | Rule                                                                                                                                                                     |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Include         | Identity, community purpose and geographic relevance are supported, source use is approved, and matching is resolved. Proceed through normal field approval/publication. |
+| Hold for review | Evidence is missing, ambiguous or contradictory; source permissions, activity status or entity mapping remain unresolved. Keep private.                                  |
+| Exclude         | Evidence establishes that the candidate is outside scope or belongs to an excluded class. Record the reason.                                                             |
 
 Exclude individual people, standalone events, directory category pages, venues
 without an identified operating group, and ordinary commercial businesses without

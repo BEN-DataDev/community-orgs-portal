@@ -41,13 +41,13 @@ Its all-zero ABN is synthetic and must never become verified identity evidence.
 These decisions implement the [P01 inclusion rules](pilot-inclusion-policy.md)
 without requiring every eligible group to hold a registration.
 
-| Reviewed kind | Target | Identity and relationship rule |
-| --- | --- | --- |
-| `legal_entity` | Existing or new `organisations.org_id` | Holds its own verified identifiers. A source label or ABN alone does not establish this classification. |
-| `community_group` | Existing or new `organisations.org_id` | Independent community identity; identifiers are optional. Review any claimed legal registration before changing kind. |
-| `branch` | Separate `organisations.org_id` | Local identity plus an evidenced link to its legal entity. A parent's ABN is a reference to the parent, not an identifier owned by the branch. |
-| `service` | `programs_services.program_id` | Link to the delivering organisation via `org_id`; do not create another legal entity for the program name. |
-| `unknown` | Existing organisation retained; new candidate deferred | Migration default when classification evidence is absent. Never infer legal status from the presence of an ABN. |
+| Reviewed kind     | Target                                                 | Identity and relationship rule                                                                                                                 |
+| ----------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `legal_entity`    | Existing or new `organisations.org_id`                 | Holds its own verified identifiers. A source label or ABN alone does not establish this classification.                                        |
+| `community_group` | Existing or new `organisations.org_id`                 | Independent community identity; identifiers are optional. Review any claimed legal registration before changing kind.                          |
+| `branch`          | Separate `organisations.org_id`                        | Local identity plus an evidenced link to its legal entity. A parent's ABN is a reference to the parent, not an identifier owned by the branch. |
+| `service`         | `programs_services.program_id`                         | Link to the delivering organisation via `org_id`; do not create another legal entity for the program name.                                     |
+| `unknown`         | Existing organisation retained; new candidate deferred | Migration default when classification evidence is absent. Never infer legal status from the presence of an ABN.                                |
 
 A branch with independent legal identity is classified as a legal entity; its
 affiliation can remain a separate relationship. Auspicing, affiliation and service
@@ -69,12 +69,12 @@ An identifier key is `(scheme, jurisdiction, normalized_value)`, with all three
 components required for a matchable claim. Values remain text. Retain raw spelling,
 normalizer version, source/version reference and observation time privately.
 
-| Scheme | Jurisdiction | Normalization and use |
-| --- | --- | --- |
-| `abn` | `AU` | Trim outer whitespace and remove permitted display spaces; require 11 ASCII digits. Checksum validation precedes verification. Do not strip arbitrary letters/punctuation or convert through a number. |
-| `acn` | `AU` | Preserve nine ASCII digits, including leading zeros; allow qualified display spaces. Implement scheme validation before enabling verification/matching. No ACN is inferred by slicing an ABN. |
-| `incorporated_association` | `AU-NSW` initially | Preserve leading zeros and internal punctuation/case unless an approved registry-specific normalizer establishes equivalence. Map CSV `NSW` explicitly to `AU-NSW`. |
-| Provider-native ID | Source and resource namespace | Keep in `source_records`, not as a nationally unique legal identifier. New resources require reviewed crosswalks, not automatic `_id` reuse. |
+| Scheme                     | Jurisdiction                  | Normalization and use                                                                                                                                                                                  |
+| -------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `abn`                      | `AU`                          | Trim outer whitespace and remove permitted display spaces; require 11 ASCII digits. Checksum validation precedes verification. Do not strip arbitrary letters/punctuation or convert through a number. |
+| `acn`                      | `AU`                          | Preserve nine ASCII digits, including leading zeros; allow qualified display spaces. Implement scheme validation before enabling verification/matching. No ACN is inferred by slicing an ABN.          |
+| `incorporated_association` | `AU-NSW` initially            | Preserve leading zeros and internal punctuation/case unless an approved registry-specific normalizer establishes equivalence. Map CSV `NSW` explicitly to `AU-NSW`.                                    |
+| Provider-native ID         | Source and resource namespace | Keep in `source_records`, not as a nationally unique legal identifier. New resources require reviewed crosswalks, not automatic `_id` reuse.                                                           |
 
 Other states require separately qualified jurisdiction/normalizer mappings. Missing
 jurisdiction is unresolved evidence, not `AU`, NSW inferred from an address, or a
@@ -204,20 +204,20 @@ this migration and requires its own recovery design.
 
 These are implementation requirements, not claims of new passing runtime tests.
 
-| Case | Required result |
-| --- | --- |
-| CSV `csv-001`, no ABN | Eligible community group may be reviewed/created without an identifier. |
-| CSV `csv-002` and `csv-003`, shared all-zero ABN | Synthetic value never verified; branch remains distinct and held for parent resolution. |
-| CSV `csv-004`, service | Hold until an evidenced deliverer and service publication path exist; never create a duplicate legal entity. |
-| CSV `csv-005`, same name as `csv-001` | Candidate review, no automatic merge or unique-name failure. |
-| CSV `csv-007`, malformed ABN | Quarantine; do not coerce into a numeric identifier. |
-| NSW `0000123` versus VIC `0000123`, or NSW `123` | Distinct scoped keys; preserve zeros. Missing jurisdiction cannot match either. |
-| Exact verified ABN, same legal entity, second provider | Multiple assertions/source links to one holder; replay creates no second entity. |
-| Exact ABN and incorporation key point to different holders | Conflict hold even if a source link already exists. |
-| Two concurrent verified-holder assignments for the same key | At most one accepted holder; loser receives a reviewable conflict. |
-| Legacy shared ABNs, multiple legal rows and unknown kinds | Evidence backfill succeeds without fabricated verification, merging or UUID changes. |
-| Cancelled ABN, failed lookup or changed resource `_id` | Preserve history; no automatic closure, reassignment or cross-resource match. |
-| Classification/holder changes after approval | Stale approval refused; manual protection, visibility and suppression retained. |
+| Case                                                        | Required result                                                                                              |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| CSV `csv-001`, no ABN                                       | Eligible community group may be reviewed/created without an identifier.                                      |
+| CSV `csv-002` and `csv-003`, shared all-zero ABN            | Synthetic value never verified; branch remains distinct and held for parent resolution.                      |
+| CSV `csv-004`, service                                      | Hold until an evidenced deliverer and service publication path exist; never create a duplicate legal entity. |
+| CSV `csv-005`, same name as `csv-001`                       | Candidate review, no automatic merge or unique-name failure.                                                 |
+| CSV `csv-007`, malformed ABN                                | Quarantine; do not coerce into a numeric identifier.                                                         |
+| NSW `0000123` versus VIC `0000123`, or NSW `123`            | Distinct scoped keys; preserve zeros. Missing jurisdiction cannot match either.                              |
+| Exact verified ABN, same legal entity, second provider      | Multiple assertions/source links to one holder; replay creates no second entity.                             |
+| Exact ABN and incorporation key point to different holders  | Conflict hold even if a source link already exists.                                                          |
+| Two concurrent verified-holder assignments for the same key | At most one accepted holder; loser receives a reviewable conflict.                                           |
+| Legacy shared ABNs, multiple legal rows and unknown kinds   | Evidence backfill succeeds without fabricated verification, merging or UUID changes.                         |
+| Cancelled ABN, failed lookup or changed resource `_id`      | Preserve history; no automatic closure, reassignment or cross-resource match.                                |
+| Classification/holder changes after approval                | Stale approval refused; manual protection, visibility and suppression retained.                              |
 
 P11 validation: compared this contract with the current schema, review/publication
 constraints, P01/P04 evidence and CSV implementation; checked local document links

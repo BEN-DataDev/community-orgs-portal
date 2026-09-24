@@ -92,7 +92,6 @@ existing RPC signatures with the stricter safeguards. Prefer a forward migration
 for database repairs; do not restore unrestricted assignment writes or the old
 last-owner behaviour. No production assignments are modified by this migration.
 
-
 ## Hosted verification — 17 September 2026
 
 - Applied `organisation_role_management` as **20260917065322** to Supabase project

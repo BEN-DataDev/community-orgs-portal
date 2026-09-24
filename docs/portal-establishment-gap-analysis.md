@@ -49,14 +49,14 @@ or change production state.
 | Portal Administrator                | Partial             | Explicit current appointments and revocation evidence replace the implicit capability union; invitation/administration UX remains    |
 | Data Steward / operator             | Partial             | Explicit Data Steward appointments retain revocation evidence and no longer derive from Portal Administrator authority               |
 | Organisation roles                  | Partial             | Strong grant/revoke safeguards exist; assignments use account UUIDs and no invitation/handoff workflow exists                        |
-| Stewardship                         | Partial             | Current state and append-only events gate administrator editing; transactional invitation acceptance remains                         |
+| Stewardship                         | Implemented         | Current state/events gate administrator editing; email-bound acceptance atomically grants ownership and completes the handoff        |
 | Record edit audit                   | Partial             | Domain rows retain editor/timestamps and roles/imports have events, but no uniform before/after audit for Portal Administrator edits |
 | Source releases and private staging | Implemented/partial | Strong per-source releases and runs exist; cross-source campaign aggregation is absent                                               |
 | Initial seed workflow               | Partial             | ABN seed candidate store exists; no complete multi-source seed campaign or initial release gate                                      |
 | Two-person approval                 | Missing             | A single operator can approve and publish; no submitter/approver separation exists                                                   |
 | Recurring updates                   | Partial             | ACNC scheduling, reconciliation and conflict protections exist; broader source and campaign orchestration is incomplete              |
 | Review UX                           | Conflicting         | Validation, record matching, field approval, publication and withdrawal share one large page                                         |
-| Invitation evidence                 | Missing             | No email invitation, acceptance, approval reference or invitation events                                                             |
+| Invitation evidence                 | Implemented         | Immutable email-bound terms and single-use events cover acceptance, cancellation and expiry independently of delivery provider       |
 | NSW state register                  | Missing             | No current adapter is integrated                                                                                                     |
 
 ## Reusable foundations
@@ -179,7 +179,7 @@ before claiming provider portability.
 
 ### PEG05 — Portal Administrator conflicts with platform administrator
 
-**Priority: critical. Status: partial.**
+**Priority: critical. Status: implemented.**
 
 Explicit `portal.capability_appointments` now separates `portal_administrator`
 from `data_steward`, and immutable issue/revoke events determine current authority.
@@ -210,8 +210,11 @@ for `unclaimed` and `invitation_pending`, and requires approval-backed current
 evidence for `portal_managed` and `co_managed`. A transition to `self_managed`
 removes that automatic access immediately without a session refresh.
 
-The remaining gap is the domain invitation workflow: acceptance must atomically
-grant ownership and record `self_managed` or an approved `co_managed` decision.
+The domain invitation workflow now moves an unclaimed organisation to
+`invitation_pending`. Acceptance by the named verified email atomically grants a
+non-expiring owner assignment and records either `self_managed` or an explicitly
+approved `co_managed` decision. Cancellation and expiry return the organisation to
+`unclaimed` and grant no role.
 
 **Acceptance:** handoff immediately removes automatic Portal Administrator edit
 authority from existing sessions; imported publication still creates no owner;
@@ -219,16 +222,21 @@ portal-managed status cannot arise merely from an expired invitation.
 
 ### PEG07 — Invitation and approval-evidence workflow
 
-**Priority: high. Status: missing.**
+**Priority: high. Status: implemented.**
 
-The current access screen grants an existing role using a registered account UUID.
-Supabase can process a generic Auth invitation callback, but there is no domain
-invitation, email match, approval reference, expiry, acceptance or event history.
+Domain invitations are retained independently of the email-delivery provider. Their
+immutable terms contain a normalised email, stewardship outcome, expiry, private
+approval reference and note. Append-only events permit one terminal acceptance,
+cancellation or expiry outcome. The management screen produces a delivery-neutral
+acceptance link; the recipient screen requires a registered account whose Auth email
+is confirmed and exactly matches the invitation.
 
-Implement domain invitations independently of the email-delivery provider. Retain
-the hardened assignment RPCs as the final grant primitive or incorporate their
-safeguards into transactional acceptance. Add a private approval reference and note;
-defer evidence-document storage until its access and retention model is designed.
+Acceptance incorporates the owner-assignment safeguards into the same database
+transaction as the stewardship event. Direct table access remains denied, replay
+does not duplicate either the assignment audit or the governance history, and an
+expired invitation is materialised as a no-grant event when reviewed or opened.
+Evidence-document storage remains deferred until its access and retention model is
+designed.
 
 **Acceptance:** an invitation cannot be accepted by a different verified email,
 cannot be replayed, and atomically creates the intended assignment and stewardship
@@ -392,7 +400,7 @@ wrappers while adding new capability vocabulary.
 
 This phase should not alter published organisation data or ingestion decisions.
 
-### Phase 2 — Governance and stewardship
+### Phase 2 — Governance and stewardship (complete)
 
 Add portal appointments with retained revocation events, stewardship state/events
 and the invitation workflow. Route organisation editing through the new authority
@@ -434,8 +442,10 @@ and recurring refresh campaigns.
 
 ## Immediate next slice
 
-Phase 1 is complete. Phase 2 now has explicit Portal Administrator/Data Steward
-appointments, retained revocation evidence, stewardship state/events and
-stewardship-aware organisation authorization. The next slice is domain invitations:
-verified-email acceptance, atomic owner grant/handoff, cancellation, expiry and
-single-use event history.
+Phases 1 and 2 are complete. Phase 2 now has explicit Portal Administrator/Data
+Steward appointments, retained revocation evidence, stewardship-aware organisation
+authorization and email-bound, single-use owner handoff invitations.
+
+The next slice is Phase 3 publication releases: freeze a bounded change-set revision,
+record submission and independent approval decisions, enforce mandatory dual control
+for initial and destructive releases, and publish only the exact approved revision.

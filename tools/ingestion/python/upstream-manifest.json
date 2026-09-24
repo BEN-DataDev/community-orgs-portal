@@ -1,74 +1,74 @@
 {
-  "repository": "https://github.com/BEN-DataDev/orgs-sveltekit-etl",
-  "commit": "2676fdcc620e9a1c8beeacf587a8bcf688aa35c9",
-  "reuse_basis": "User explicitly requested adaptation of these repositories in this workspace. No upstream licence file found; this is not a claim of a general redistribution licence. Confirm ownership/licensing before external redistribution.",
-  "files": [
-    {
-      "source_path": "app/extractors/acnc_extractor.py",
-      "sha256": "c8f06fbbf8e9fed9ed3b3a7ebd9a43f36df23f19c39742c010aa332d0d8b1b54",
-      "local_path": "ingestion/adapters/acnc.py",
-      "use": "Adapted CKAN offset/filter algorithm"
-    },
-    {
-      "source_path": "app/transformers/data_transformer.py",
-      "sha256": "a50971d6e9c2a8a951ae0e957fcfa9d487891274c7b912da93dfdebea02d4632",
-      "local_path": "ingestion/adapters/acnc.py",
-      "use": "Field mapping reference; replacement fixes repeated street keys"
-    },
-    {
-      "source_path": "app/extractors/abn_extractor.py",
-      "sha256": "d812b8c7f43789f4e5eb9a16b4d67a0d44e9612145f56a71bfb675e26e6fb052",
-      "local_path": "ingestion/adapters/abn.py",
-      "use": "P16 adapts exact-ABN SOAP, namespace parsing and field extraction approach; replaces Zeep/runtime WSDL with pinned 202001 contract, injected credentials, bounded transport and stable arrays."
-    }
-  ],
-  "changes": [
-    "Removed requests, Flask, Redis, environment and database startup dependencies",
-    "Injected page reader; offline fixture CLI only",
-    "One explicit scope, deterministic _id sort and bounded pages",
-    "Explicit complete/partial/failed results and quarantine",
-    "Preserved individual raw address lines and normalised line array",
-    "Retained missing-ABN records for review; no ABN-based entity deduplication",
-    "Versioned JSON envelope with raw hashes and provenance; publication disabled",
-    "F02 acnc_transform.py adapts the recorded transformer/mappings inventories: all 69 organisation columns, corrected canonical keys, explicit Y/N, strict dates/calendar/count/URL, no truncation or ambiguous splitting; parser v2 quarantines invalid or unknown fields.",
-    "F05 reprocess_acnc.py is new local orchestration over the F02 normaliser, not an additional upstream adaptation: preserves retained observation/raw/page evidence, validates resource-scoped identity, quarantines invalid records and emits independent coverage states; no legacy loader writes.",
-    "Parser/mapping v3 qualifies bare ASCII DNS website names with an explicit inferred HTTPS scheme, preserved raw source text and normalisation warning; historical v2 contract remains retained. New local work, not an upstream adaptation.",
-    "P13 local extensions: live_acnc.py now qualifies the full mapped CKAN schema; acquisition_output.py writes private envelope/manifest artifacts; bulk_acnc.py adds bounded direct-resource CSV acquisition with independent resource-scoped identity, full-file scan, selected-record quarantine and raw-file hash. Reuses the adapted normaliser without inventing CKAN IDs; no legacy loader, automatic source switch or publication."
-  ],
-  "pending": [
-    "Code redistribution rights confirmation",
-    "NSW adapter and authenticated ABN live qualification; ABN offline implementation complete"
-  ],
-  "mapping_contract_references": [
-    {
-      "repository": "https://github.com/BEN-DataDev/orgs-sveltekit-etl",
-      "commit": "2676fdcc620e9a1c8beeacf587a8bcf688aa35c9",
-      "source_path": "app/transformers/data_transformer.py",
-      "local_path": "ingestion/mappings/acnc-register-v1.json",
-      "use": "F01 inventory reference only; corrected address overwrite and outdated source names, separated classification/purpose/beneficiary groups."
-    },
-    {
-      "repository": "https://github.com/BEN-DataDev/orgs-data-manager",
-      "commit": "dea271215b267097bc4364f562f62e784b2e1294",
-      "source_path": "database/production/mappings.py",
-      "local_path": "ingestion/mappings/acnc-register-v1.json",
-      "use": "F01 domain destination reference only; no execution of legacy mappings, truthiness or truncation."
-    }
-  ],
-  "transformation_references": [
-    {
-      "repository": "https://github.com/BEN-DataDev/orgs-sveltekit-etl",
-      "commit": "2676fdcc620e9a1c8beeacf587a8bcf688aa35c9",
-      "source_path": "app/transformers/data_transformer.py",
-      "local_path": "ingestion/acnc_transform.py",
-      "use": "F02 strict transformations replacing legacy coercion and lossy mappings."
-    },
-    {
-      "repository": "https://github.com/BEN-DataDev/orgs-data-manager",
-      "commit": "dea271215b267097bc4364f562f62e784b2e1294",
-      "source_path": "database/production/mappings.py",
-      "local_path": "ingestion/acnc_transform.py",
-      "use": "F02 strict transformations replacing legacy coercion and lossy mappings."
-    }
-  ]
+	"repository": "https://github.com/BEN-DataDev/orgs-sveltekit-etl",
+	"commit": "2676fdcc620e9a1c8beeacf587a8bcf688aa35c9",
+	"reuse_basis": "User explicitly requested adaptation of these repositories in this workspace. No upstream licence file found; this is not a claim of a general redistribution licence. Confirm ownership/licensing before external redistribution.",
+	"files": [
+		{
+			"source_path": "app/extractors/acnc_extractor.py",
+			"sha256": "c8f06fbbf8e9fed9ed3b3a7ebd9a43f36df23f19c39742c010aa332d0d8b1b54",
+			"local_path": "ingestion/adapters/acnc.py",
+			"use": "Adapted CKAN offset/filter algorithm"
+		},
+		{
+			"source_path": "app/transformers/data_transformer.py",
+			"sha256": "a50971d6e9c2a8a951ae0e957fcfa9d487891274c7b912da93dfdebea02d4632",
+			"local_path": "ingestion/adapters/acnc.py",
+			"use": "Field mapping reference; replacement fixes repeated street keys"
+		},
+		{
+			"source_path": "app/extractors/abn_extractor.py",
+			"sha256": "d812b8c7f43789f4e5eb9a16b4d67a0d44e9612145f56a71bfb675e26e6fb052",
+			"local_path": "ingestion/adapters/abn.py",
+			"use": "P16 adapts exact-ABN SOAP, namespace parsing and field extraction approach; replaces Zeep/runtime WSDL with pinned 202001 contract, injected credentials, bounded transport and stable arrays."
+		}
+	],
+	"changes": [
+		"Removed requests, Flask, Redis, environment and database startup dependencies",
+		"Injected page reader; offline fixture CLI only",
+		"One explicit scope, deterministic _id sort and bounded pages",
+		"Explicit complete/partial/failed results and quarantine",
+		"Preserved individual raw address lines and normalised line array",
+		"Retained missing-ABN records for review; no ABN-based entity deduplication",
+		"Versioned JSON envelope with raw hashes and provenance; publication disabled",
+		"F02 acnc_transform.py adapts the recorded transformer/mappings inventories: all 69 organisation columns, corrected canonical keys, explicit Y/N, strict dates/calendar/count/URL, no truncation or ambiguous splitting; parser v2 quarantines invalid or unknown fields.",
+		"F05 reprocess_acnc.py is new local orchestration over the F02 normaliser, not an additional upstream adaptation: preserves retained observation/raw/page evidence, validates resource-scoped identity, quarantines invalid records and emits independent coverage states; no legacy loader writes.",
+		"Parser/mapping v3 qualifies bare ASCII DNS website names with an explicit inferred HTTPS scheme, preserved raw source text and normalisation warning; historical v2 contract remains retained. New local work, not an upstream adaptation.",
+		"P13 local extensions: live_acnc.py now qualifies the full mapped CKAN schema; acquisition_output.py writes private envelope/manifest artifacts; bulk_acnc.py adds bounded direct-resource CSV acquisition with independent resource-scoped identity, full-file scan, selected-record quarantine and raw-file hash. Reuses the adapted normaliser without inventing CKAN IDs; no legacy loader, automatic source switch or publication."
+	],
+	"pending": [
+		"Code redistribution rights confirmation",
+		"NSW adapter and authenticated ABN live qualification; ABN offline implementation complete"
+	],
+	"mapping_contract_references": [
+		{
+			"repository": "https://github.com/BEN-DataDev/orgs-sveltekit-etl",
+			"commit": "2676fdcc620e9a1c8beeacf587a8bcf688aa35c9",
+			"source_path": "app/transformers/data_transformer.py",
+			"local_path": "ingestion/mappings/acnc-register-v1.json",
+			"use": "F01 inventory reference only; corrected address overwrite and outdated source names, separated classification/purpose/beneficiary groups."
+		},
+		{
+			"repository": "https://github.com/BEN-DataDev/orgs-data-manager",
+			"commit": "dea271215b267097bc4364f562f62e784b2e1294",
+			"source_path": "database/production/mappings.py",
+			"local_path": "ingestion/mappings/acnc-register-v1.json",
+			"use": "F01 domain destination reference only; no execution of legacy mappings, truthiness or truncation."
+		}
+	],
+	"transformation_references": [
+		{
+			"repository": "https://github.com/BEN-DataDev/orgs-sveltekit-etl",
+			"commit": "2676fdcc620e9a1c8beeacf587a8bcf688aa35c9",
+			"source_path": "app/transformers/data_transformer.py",
+			"local_path": "ingestion/acnc_transform.py",
+			"use": "F02 strict transformations replacing legacy coercion and lossy mappings."
+		},
+		{
+			"repository": "https://github.com/BEN-DataDev/orgs-data-manager",
+			"commit": "dea271215b267097bc4364f562f62e784b2e1294",
+			"source_path": "database/production/mappings.py",
+			"local_path": "ingestion/acnc_transform.py",
+			"use": "F02 strict transformations replacing legacy coercion and lossy mappings."
+		}
+	]
 }

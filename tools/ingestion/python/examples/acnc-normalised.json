@@ -1,164 +1,153 @@
 {
-  "contract_version": "1.0",
-  "source_id": "acnc-register",
-  "resource_id": "synthetic-acnc-resource-v1",
-  "run_id": "offline-acnc-sample-v1",
-  "observed_at": "2026-09-16T00:00:00Z",
-  "parser_version": "acnc-ckan-v1",
-  "scope": {
-    "filters": {
-      "State": "NSW",
-      "Postcode": "2730"
-    },
-    "kind": "filtered-resource"
-  },
-  "completion": "complete",
-  "publication_eligible": false,
-  "records": [
-    {
-      "native_id": "1",
-      "assertions": [
-        {
-          "field": "entity_name",
-          "value": "Synthetic Valley Community Centre"
-        },
-        {
-          "field": "administrative_address",
-          "value": {
-            "type": "Postal",
-            "lines": [
-              "PO Box 10",
-              "Care of Example Centre"
-            ],
-            "locality": "BATLOW",
-            "state": "NSW",
-            "postcode": "2730",
-            "country": "Australia"
-          }
-        },
-        {
-          "field": "abn",
-          "value": "00000000000"
-        },
-        {
-          "field": "website",
-          "value": "https://example.org"
-        },
-        {
-          "field": "date_established_source",
-          "value": "01/02/1990"
-        },
-        {
-          "field": "charity_registration_date_source",
-          "value": "03/12/2012"
-        },
-        {
-          "field": "financial_year_end_source",
-          "value": "30/06"
-        },
-        {
-          "field": "other_names_source",
-          "value": "Synthetic Valley Centre"
-        }
-      ],
-      "warnings": [
-        "ABN is unverified; format validation is not registry verification"
-      ],
-      "source_id": "acnc-register",
-      "resource_id": "synthetic-acnc-resource-v1",
-      "run_id": "offline-acnc-sample-v1",
-      "observed_at": "2026-09-16T00:00:00Z",
-      "source_modified_at": null,
-      "parser_version": "acnc-ckan-v1",
-      "source_url": "https://data.gov.au/data/api/3/action/datastore_search?resource_id=synthetic-acnc-resource-v1",
-      "raw_sha256": "d92d7fc26e8a2d740ce1ba2511227397fee8910399d65e3e74cc9e7c76e7de88",
-      "raw": {
-        "_id": 1,
-        "ABN": "00000000000",
-        "Charity_Legal_Name": "Synthetic Valley Community Centre",
-        "Address_Type": "Postal",
-        "Address_Line_1": "PO Box 10",
-        "Address_Line_2": "Care of Example Centre",
-        "Address_Line_3": null,
-        "Town_City": "BATLOW",
-        "State": "NSW",
-        "Postcode": "2730",
-        "Country": "Australia",
-        "Charity_Website": "https://example.org",
-        "Date_Organisation_Established": "01/02/1990",
-        "Registration_Date": "03/12/2012",
-        "Financial_Year_End": "30/06",
-        "Other_Organisation_Names": "Synthetic Valley Centre"
-      }
-    },
-    {
-      "native_id": "2",
-      "assertions": [
-        {
-          "field": "entity_name",
-          "value": "Synthetic No-ABN Review Case"
-        },
-        {
-          "field": "administrative_address",
-          "value": {
-            "type": "Physical",
-            "lines": [
-              "12 Example Street",
-              "Building B",
-              "Room 3"
-            ],
-            "locality": "BATLOW",
-            "state": "NSW",
-            "postcode": "2730",
-            "country": "Australia"
-          }
-        }
-      ],
-      "warnings": [
-        "No ABN supplied; retained for review"
-      ],
-      "source_id": "acnc-register",
-      "resource_id": "synthetic-acnc-resource-v1",
-      "run_id": "offline-acnc-sample-v1",
-      "observed_at": "2026-09-16T00:00:00Z",
-      "source_modified_at": null,
-      "parser_version": "acnc-ckan-v1",
-      "source_url": "https://data.gov.au/data/api/3/action/datastore_search?resource_id=synthetic-acnc-resource-v1",
-      "raw_sha256": "a5b1ae3bf8aec75c7136ef4be99acee98d51b715b144dba8303797ded938ed88",
-      "raw": {
-        "_id": 2,
-        "ABN": null,
-        "Charity_Legal_Name": "Synthetic No-ABN Review Case",
-        "Address_Type": "Physical",
-        "Address_Line_1": "12 Example Street",
-        "Address_Line_2": "Building B",
-        "Address_Line_3": "Room 3",
-        "Town_City": "BATLOW",
-        "State": "NSW",
-        "Postcode": "2730",
-        "Country": "Australia"
-      }
-    }
-  ],
-  "quarantine": [],
-  "errors": [],
-  "pages": [
-    {
-      "offset": 0,
-      "count": 1,
-      "sha256": "0a9a9714f09b180a47c6bd99ae6b537c4fb0abf0aad14af9da96f1d7e3219550"
-    },
-    {
-      "offset": 1,
-      "count": 1,
-      "sha256": "5426156c0a17171e8413d2cb59ca4399ae98bee89bd431fd26605e4294db729d"
-    }
-  ],
-  "counts": {
-    "accepted": 2,
-    "quarantined": 0,
-    "pages": 2,
-    "source_total": 2
-  },
-  "synthetic": true
+	"contract_version": "1.0",
+	"source_id": "acnc-register",
+	"resource_id": "synthetic-acnc-resource-v1",
+	"run_id": "offline-acnc-sample-v1",
+	"observed_at": "2026-09-16T00:00:00Z",
+	"parser_version": "acnc-ckan-v1",
+	"scope": {
+		"filters": {
+			"State": "NSW",
+			"Postcode": "2730"
+		},
+		"kind": "filtered-resource"
+	},
+	"completion": "complete",
+	"publication_eligible": false,
+	"records": [
+		{
+			"native_id": "1",
+			"assertions": [
+				{
+					"field": "entity_name",
+					"value": "Synthetic Valley Community Centre"
+				},
+				{
+					"field": "administrative_address",
+					"value": {
+						"type": "Postal",
+						"lines": ["PO Box 10", "Care of Example Centre"],
+						"locality": "BATLOW",
+						"state": "NSW",
+						"postcode": "2730",
+						"country": "Australia"
+					}
+				},
+				{
+					"field": "abn",
+					"value": "00000000000"
+				},
+				{
+					"field": "website",
+					"value": "https://example.org"
+				},
+				{
+					"field": "date_established_source",
+					"value": "01/02/1990"
+				},
+				{
+					"field": "charity_registration_date_source",
+					"value": "03/12/2012"
+				},
+				{
+					"field": "financial_year_end_source",
+					"value": "30/06"
+				},
+				{
+					"field": "other_names_source",
+					"value": "Synthetic Valley Centre"
+				}
+			],
+			"warnings": ["ABN is unverified; format validation is not registry verification"],
+			"source_id": "acnc-register",
+			"resource_id": "synthetic-acnc-resource-v1",
+			"run_id": "offline-acnc-sample-v1",
+			"observed_at": "2026-09-16T00:00:00Z",
+			"source_modified_at": null,
+			"parser_version": "acnc-ckan-v1",
+			"source_url": "https://data.gov.au/data/api/3/action/datastore_search?resource_id=synthetic-acnc-resource-v1",
+			"raw_sha256": "d92d7fc26e8a2d740ce1ba2511227397fee8910399d65e3e74cc9e7c76e7de88",
+			"raw": {
+				"_id": 1,
+				"ABN": "00000000000",
+				"Charity_Legal_Name": "Synthetic Valley Community Centre",
+				"Address_Type": "Postal",
+				"Address_Line_1": "PO Box 10",
+				"Address_Line_2": "Care of Example Centre",
+				"Address_Line_3": null,
+				"Town_City": "BATLOW",
+				"State": "NSW",
+				"Postcode": "2730",
+				"Country": "Australia",
+				"Charity_Website": "https://example.org",
+				"Date_Organisation_Established": "01/02/1990",
+				"Registration_Date": "03/12/2012",
+				"Financial_Year_End": "30/06",
+				"Other_Organisation_Names": "Synthetic Valley Centre"
+			}
+		},
+		{
+			"native_id": "2",
+			"assertions": [
+				{
+					"field": "entity_name",
+					"value": "Synthetic No-ABN Review Case"
+				},
+				{
+					"field": "administrative_address",
+					"value": {
+						"type": "Physical",
+						"lines": ["12 Example Street", "Building B", "Room 3"],
+						"locality": "BATLOW",
+						"state": "NSW",
+						"postcode": "2730",
+						"country": "Australia"
+					}
+				}
+			],
+			"warnings": ["No ABN supplied; retained for review"],
+			"source_id": "acnc-register",
+			"resource_id": "synthetic-acnc-resource-v1",
+			"run_id": "offline-acnc-sample-v1",
+			"observed_at": "2026-09-16T00:00:00Z",
+			"source_modified_at": null,
+			"parser_version": "acnc-ckan-v1",
+			"source_url": "https://data.gov.au/data/api/3/action/datastore_search?resource_id=synthetic-acnc-resource-v1",
+			"raw_sha256": "a5b1ae3bf8aec75c7136ef4be99acee98d51b715b144dba8303797ded938ed88",
+			"raw": {
+				"_id": 2,
+				"ABN": null,
+				"Charity_Legal_Name": "Synthetic No-ABN Review Case",
+				"Address_Type": "Physical",
+				"Address_Line_1": "12 Example Street",
+				"Address_Line_2": "Building B",
+				"Address_Line_3": "Room 3",
+				"Town_City": "BATLOW",
+				"State": "NSW",
+				"Postcode": "2730",
+				"Country": "Australia"
+			}
+		}
+	],
+	"quarantine": [],
+	"errors": [],
+	"pages": [
+		{
+			"offset": 0,
+			"count": 1,
+			"sha256": "0a9a9714f09b180a47c6bd99ae6b537c4fb0abf0aad14af9da96f1d7e3219550"
+		},
+		{
+			"offset": 1,
+			"count": 1,
+			"sha256": "5426156c0a17171e8413d2cb59ca4399ae98bee89bd431fd26605e4294db729d"
+		}
+	],
+	"counts": {
+		"accepted": 2,
+		"quarantined": 0,
+		"pages": 2,
+		"source_total": 2
+	},
+	"synthetic": true
 }

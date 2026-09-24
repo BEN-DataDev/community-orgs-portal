@@ -1,10 +1,12 @@
 import { error, fail } from '@sveltejs/kit';
 import { z } from 'zod';
+import { emailSchema } from '$lib/auth/schemas';
 import type { Actions, PageServerLoad, RequestEvent } from './$types';
 
 const rosterSchema = z.object({
 	name: z.string(),
 	level: z.number(),
+	canInvite: z.boolean(),
 	roles: z.array(z.object({ id: z.string().uuid(), name: z.string(), level: z.number() })),
 	assignments: z.array(
 		z.object({
@@ -18,6 +20,17 @@ const rosterSchema = z.object({
 			grantedAt: z.string().nullable(),
 			status: z.enum(['Active', 'Expired', 'Revoked']),
 			canRevoke: z.boolean()
+		})
+	),
+	invitations: z.array(
+		z.object({
+			id: z.string().uuid(),
+			email: z.string(),
+			targetStewardship: z.enum(['self_managed', 'co_managed']),
+			invitedAt: z.string(),
+			expiresAt: z.string(),
+			status: z.enum(['pending', 'accepted', 'cancelled', 'expired']),
+			canCancel: z.boolean()
 		})
 	)
 });
@@ -96,5 +109,75 @@ async function change(event: RequestEvent, revoke: boolean) {
 }
 export const actions: Actions = {
 	grant: (event) => change(event, false),
-	revoke: (event) => change(event, true)
+	revoke: (event) => change(event, true),
+	invite: async (event) => {
+		const roster = await requireManager(event);
+		if (!roster.canInvite)
+			return fail(403, {
+				success: false,
+				message: 'Only a Portal Administrator can invite an owner for an unclaimed organisation.'
+			});
+		const form = Object.fromEntries(await event.request.formData());
+		const parsed = z
+			.object({
+				email: emailSchema,
+				targetStewardship: z.enum(['self_managed', 'co_managed']),
+				reason: z.string().trim().min(1).max(2000),
+				approvalReference: z.string().trim().min(1).max(500),
+				note: z.string().trim().min(1).max(4000),
+				expiresInDays: z.coerce.number().int().min(1).max(30)
+			})
+			.safeParse(form);
+		if (!parsed.success)
+			return fail(400, {
+				success: false,
+				message: 'Enter a valid email, outcome, expiry, reason, approval reference and note.'
+			});
+		const expiresAt = new Date(
+			Date.now() + parsed.data.expiresInDays * 24 * 60 * 60 * 1000
+		).toISOString();
+		const result = await event.locals.supabase.rpc('issue_organisation_invitation', {
+			p_organisation_id: event.params.id,
+			p_email: parsed.data.email,
+			p_target_stewardship: parsed.data.targetStewardship,
+			p_reason: parsed.data.reason,
+			p_approval_reference: parsed.data.approvalReference,
+			p_note: parsed.data.note,
+			p_expires_at: expiresAt
+		});
+		if (result.error)
+			return fail(result.error.code === '42501' ? 403 : 400, {
+				success: false,
+				message:
+					result.error.message === 'This organisation already has a pending invitation'
+						? 'This organisation already has a pending invitation.'
+						: 'The invitation could not be issued. Reload and check the stewardship state.'
+			});
+		return {
+			success: true,
+			message: 'Invitation issued. Send the acceptance link to the named email address.',
+			invitationUrl: `/invitations/${result.data}`
+		};
+	},
+	cancelInvitation: async (event) => {
+		await requireManager(event);
+		const form = Object.fromEntries(await event.request.formData());
+		const parsed = z
+			.object({ invitationId: z.string().uuid(), reason: z.string().trim().min(1).max(2000) })
+			.safeParse(form);
+		if (!parsed.success)
+			return fail(400, { success: false, message: 'A valid invitation and reason are required.' });
+		const result = await event.locals.supabase.rpc('cancel_organisation_invitation', {
+			p_invitation_id: parsed.data.invitationId,
+			p_reason: parsed.data.reason
+		});
+		if (result.error)
+			return fail(result.error.code === '42501' ? 403 : 400, {
+				success: false,
+				message: 'The invitation could not be cancelled.'
+			});
+		if (!result.data)
+			return fail(409, { success: false, message: 'That invitation is already closed.' });
+		return { success: true, message: 'Invitation closed without granting access.' };
+	}
 };
