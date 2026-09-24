@@ -1609,6 +1609,34 @@ export type Database = {
 			[_ in never]: never;
 		};
 		Functions: {
+			campaign_dashboard: { Args: Record<PropertyKey, never>; Returns: Json };
+			campaign_readiness: { Args: { p_campaign: string }; Returns: Json };
+			create_campaign: {
+				Args: {
+					p_campaign_type: string;
+					p_name: string;
+					p_scope_revision: string;
+					p_mapping_versions: Json;
+					p_artifacts: Json;
+					p_reason: string;
+					p_scheduled_for?: string;
+					p_replaces_campaign?: string;
+				};
+				Returns: string;
+			};
+			link_campaign_publication_release: {
+				Args: { p_campaign: string; p_release: string };
+				Returns: boolean;
+			};
+			record_source_artifact_replacement: {
+				Args: {
+					p_artifact_kind: string;
+					p_replaced: string;
+					p_replacement: string;
+					p_reason: string;
+				};
+				Returns: string;
+			};
 			get_portal_identity: {
 				Args: Record<PropertyKey, never>;
 				Returns: {

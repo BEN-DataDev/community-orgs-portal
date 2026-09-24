@@ -16,6 +16,16 @@
 		</p>
 	</header>
 	<section aria-label="Administration tasks" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+		{#if data.isSiteAdmin || data.isIngestionOperator}
+			<a
+				href={resolve('/admin/campaigns')}
+				class="card border-surface-200-800 hover:preset-tonal space-y-3 border p-5 focus-visible:outline-2 focus-visible:outline-offset-2"
+			>
+				<h2 class="text-lg font-semibold">Campaigns</h2>
+				<p>Track pinned source evidence, progress, blockers and publication releases.</p>
+				<span class="font-medium">Open campaign dashboard →</span>
+			</a>
+		{/if}
 		{#if data.isSiteAdmin}
 			<a
 				href={resolve('/admin/ingestion/releases')}

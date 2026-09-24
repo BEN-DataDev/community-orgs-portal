@@ -262,16 +262,22 @@ request cannot forge the actor.
 
 ### PEG09 — Campaign and cross-source seed aggregation
 
-**Priority: high. Status: partial.**
+**Priority: high. Status: implemented foundation.**
 
 The ingestion model has source-specific runs and registry releases. It does not have
 a campaign that pins an ABN release, ACNC run, state-register release, portal scope,
 inclusion policy and mapping versions as one establishment or refresh operation.
 
-Add campaign metadata and stage readiness without copying raw evidence. Existing
-runs/releases should be referenced. A campaign-level identity queue groups source
-identities while preserving their independent assertions. Existing deterministic
-identity primitives should remain authoritative.
+Campaign records now pin the portal scope revision, its inclusion policy, named
+mapping versions, approval policy revision and existing ingestion runs or registry
+releases. Readiness is derived over the authoritative source, validation, identity,
+field-decision and publication-release records; no raw evidence is copied.
+
+Source-artifact replacements are append-only facts. Recording one makes every
+campaign pinned to the old artifact stale while leaving its campaign row and pins
+unchanged. Publication releases have an append-only campaign link and are checked
+for campaign-type compatibility. Cross-source identity presentation remains part of
+the focused queue split rather than a new identity authority.
 
 **Acceptance:** the initial release can state exactly which source observations and
 policy versions it used; replacing one source release invalidates downstream
@@ -305,7 +311,7 @@ approved writes, submitter, independent approver and publisher.
 
 ### PEG11 — Review information architecture
 
-**Priority: high. Status: conflicting UX.**
+**Priority: high. Status: dashboard implemented; queue split pending.**
 
 The current `/admin/ingestion` route loads validation queues, run records, matching
 candidates, field previews, saved approvals and withdrawal state. The page presents
@@ -313,8 +319,9 @@ validation, identity review, field approval, publication and suppression in one
 long workspace. Acquisition and source configuration are separate pages, but the
 overall flow is run-centric rather than campaign- or task-centric.
 
-Introduce the target navigation incrementally. Start with a campaign dashboard and
-deep links to the existing screens, then split one decision queue at a time:
+The campaign dashboard now reports progress counts, role-labelled blockers, pinned
+contracts and publication state, with deep links to the existing screens. Continue
+the target navigation incrementally by splitting one decision queue at a time:
 
 1. validation issues;
 2. identity and eligibility;
@@ -451,7 +458,8 @@ revisions, portal-configurable ordinary approval, mandatory independent approval
 initial and destructive work, and exact-revision execution around the existing
 publication and suppression safeguards.
 
-The next slice is Phase 4 campaign orchestration and review information architecture:
-reference existing source artifacts from a campaign, expose readiness and blockers,
-then split validation, identity, field-change and release decisions into focused
-queues without weakening their current evidence boundaries.
+The Phase 4 campaign foundation now references existing source artifacts, exposes
+derived readiness and blockers, and links publication releases without weakening
+their evidence boundaries. The next slice is the review information architecture:
+split validation, identity, field-change, release and suppression decisions into
+focused queues, then add stewardship and invitation administration screens.
