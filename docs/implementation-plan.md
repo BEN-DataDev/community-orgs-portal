@@ -1,7 +1,20 @@
 # Portal implementation plan
 
-Prepared: 15 September 2026. Updated: 23 September 2026 for the approved P34a
-cross-source staged-validation workflow.
+Prepared: 15 September 2026. Updated: 24 September 2026 for the approved
+postcode-defined, independently deployed portal architecture.
+
+The approved long-term portal boundary, governance handoff, stewardship,
+dual-approval and provider-portability decisions are recorded in
+[Portal establishment and governance](portal-establishment-and-governance.md).
+The corresponding repository assessment and phased refactor are in the
+[portal establishment gap analysis](portal-establishment-gap-analysis.md). Those
+documents supersede this plan's older assumptions that global platform roles and a
+single hosted project are the final operating model. The existing P31-P36 ingestion
+sequence remains useful implementation work and must be incorporated into the new
+portal and campaign boundaries rather than discarded.
+
+Updated previously: 23 September 2026 for the approved P34a cross-source
+staged-validation workflow.
 Status: P31's private registry candidate boundary and P32 directory readiness are
 deployed. ACNC
 acquisition, reviewed publication, complete-snapshot reconciliation,
