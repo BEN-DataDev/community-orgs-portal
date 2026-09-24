@@ -77,12 +77,12 @@ export async function requireOrgEditor(
 	error(403, 'You do not have permission to change this organisation.');
 }
 
-/** Platform administrators can manage every organisation without membership. */
+/** Portal Administrators govern the portal; stewardship decides organisation access. */
 export async function isSiteAdmin(
 	supabase: TypedSupabaseClient,
 	userId: string | undefined
 ): Promise<boolean> {
 	if (!userId) return false;
-	const { data, error } = await supabase.rpc('is_platform_admin');
+	const { data, error } = await supabase.rpc('is_portal_administrator');
 	return !error && data === true;
 }

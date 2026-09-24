@@ -1,6 +1,6 @@
 # P06 capability matrix
 
-Version: 1.0. Completed: 17 September 2026.
+Version: 1.1. Completed: 17 September 2026. Governance amendment: 24 September 2026.
 
 This defines the pilot access contract for [P07/P08](implementation-plan.md)
 using the [P05 journeys](core-journeys.md). It preserves existing organisation
@@ -18,8 +18,8 @@ hosted policies. P06 is a documentation milestone.
 | Organisation moderator | Member access; existing moderation permission retained                                                | Organisation assignment; level 2; no general organisation editing authority |
 | Organisation admin     | Edit records and manage assignments within the assigned organisation                                  | Organisation assignment; level 3 and seeded `can_manage_members` permission |
 | Organisation owner     | Organisation admin access with level 4 assignment authority                                           | Organisation assignment; level 4                                            |
-| Ingestion operator     | Global acquisition/review/publication work through bounded RPCs                                       | Private `ingestion.operators` appointment                                   |
-| Platform administrator | Global administration, effective organisation owner access, and ingestion capabilities                | Private `platform_access.administrators` appointment                        |
+| Data Steward           | Global acquisition/review/publication work through bounded RPCs                                       | Private `portal.capability_appointments` appointment                        |
+| Portal Administrator   | Portal governance and stewardship-dependent organisation access; no implicit ingestion capability     | Private `portal.capability_appointments` appointment                        |
 
 The [P07 verification record](scoped-operator-access.md) documents the expired-role
 RLS correction and the independent creator read policy for base organisation rows.
@@ -28,39 +28,39 @@ Organisation scope is the exact `org_id` UUID, not a name, ABN, relationship,
 parent organisation or service area. Membership does not propagate to related
 organisations. Inactive or expired assignments confer no authority. Multiple
 assignments combine their applicable permissions; the highest active level
-sets the hierarchy ceiling. Platform appointments are independent of that
-hierarchy. A person may hold both an organisation role and an operator appointment.
+sets the hierarchy ceiling. Portal appointments are independent of that hierarchy.
+A person may hold both an organisation role and a Data Steward appointment.
 
 ## Capability matrix
 
 **Own org** means an active assignment for the target organisation. **Global**
-means platform-wide scope, still subject to the action's data and session gates.
+means portal-wide scope, still subject to the action's data and session gates.
 **No** means this role alone grants no such capability. All registered actors
 retain registered-reader access. Moderator follows member in this table.
 
-| Capability                                                                         | Public | Member  | Org admin          | Org owner          | Operator                   | Platform admin    |
-| ---------------------------------------------------------------------------------- | ------ | ------- | ------------------ | ------------------ | -------------------------- | ----------------- |
-| Read public organisation pages and approved register facts/attribution             | Yes    | Yes     | Yes                | Yes                | Yes                        | Yes               |
-| Read private organisation pages and permitted child records                        | No     | Own org | Own org            | Own org            | No; review candidates only | Global            |
-| Correct organisation facts through existing edit forms                             | No     | No      | Own org            | Own org            | No                         | Global            |
-| Create an organisation through the registered-user submission flow                 | No     | Yes     | Yes                | Yes                | Yes                        | Yes               |
-| Read own role assignments/requests                                                 | No     | Self    | Self               | Self               | Self                       | Self              |
-| List all assignments, requests and role audit records for an organisation          | No     | No      | Own org            | Own org            | No                         | Global            |
-| Grant/revoke existing organisation roles through authorised RPCs                   | No     | No      | Own org, ceiling 3 | Own org, ceiling 4 | No                         | Global, ceiling 4 |
-| Review an organisation role request                                                | No     | No      | Own org            | Own org            | No                         | Global            |
-| Open Admin task hub                                                                | No     | No      | No                 | No                 | Yes                        | Yes               |
-| Inspect private import evidence, runs, matching candidates and review history      | No     | No      | No                 | No                 | Global                     | Global            |
-| Queue an acquisition with approved configuration; inspect jobs/failures            | No     | No      | No                 | No                 | Global                     | Global            |
-| Inspect staged validation issues; validate and record permitted resolutions        | No     | No      | No                 | No                 | Global                     | Global            |
-| Override scope, schema, licence/qualification or acquisition failures              | No     | No      | No                 | No                 | No                         | No                |
-| Link/create/defer/reject a source-record proposal                                  | No     | No      | No                 | No                 | Global                     | Global            |
-| Approve selected eligible fields and explicitly publish saved approval             | No     | No      | No                 | No                 | Global                     | Global            |
-| Suppress an imported field or withdraw a linked organisation through review        | No     | No      | No                 | No                 | Global                     | Global            |
-| Enable/pause sources and inspect source approval history                           | No     | No      | No                 | No                 | No                         | Global            |
-| Configure acquisition scope/licence and refresh schedule                           | No     | No      | No                 | No                 | No                         | Global            |
-| Use other platform admin tasks, including role definitions and reserved slugs      | No     | No      | No                 | No                 | No                         | Global            |
-| Appoint/revoke operators or platform administrators through the application        | No     | No      | No                 | No                 | No                         | No                |
-| Directly write staging, approval, publication or appointment tables from a browser | No     | No      | No                 | No                 | No                         | No                |
+| Capability                                                                         | Public | Member  | Org admin          | Org owner          | Data Steward               | Portal Administrator   |
+| ---------------------------------------------------------------------------------- | ------ | ------- | ------------------ | ------------------ | -------------------------- | ---------------------- |
+| Read public organisation pages and approved register facts/attribution             | Yes    | Yes     | Yes                | Yes                | Yes                        | Yes                    |
+| Read private organisation pages and permitted child records                        | No     | Own org | Own org            | Own org            | No; review candidates only | Stewardship-dependent  |
+| Correct organisation facts through existing edit forms                             | No     | No      | Own org            | Own org            | No                         | Stewardship-dependent  |
+| Create an organisation through the registered-user submission flow                 | No     | Yes     | Yes                | Yes                | Yes                        | Yes                    |
+| Read own role assignments/requests                                                 | No     | Self    | Self               | Self               | Self                       | Self                   |
+| List all assignments, requests and role audit records for an organisation          | No     | No      | Own org            | Own org            | No                         | Stewardship-dependent  |
+| Grant/revoke existing organisation roles through authorised RPCs                   | No     | No      | Own org, ceiling 3 | Own org, ceiling 4 | No                         | Stewardship, ceiling 4 |
+| Review an organisation role request                                                | No     | No      | Own org            | Own org            | No                         | Stewardship-dependent  |
+| Open Admin task hub                                                                | No     | No      | No                 | No                 | Yes                        | Yes                    |
+| Inspect private import evidence, runs, matching candidates and review history      | No     | No      | No                 | No                 | Global                     | No                     |
+| Queue an acquisition with approved configuration; inspect jobs/failures            | No     | No      | No                 | No                 | Global                     | No                     |
+| Inspect staged validation issues; validate and record permitted resolutions        | No     | No      | No                 | No                 | Global                     | No                     |
+| Override scope, schema, licence/qualification or acquisition failures              | No     | No      | No                 | No                 | No                         | No                     |
+| Link/create/defer/reject a source-record proposal                                  | No     | No      | No                 | No                 | Global                     | No                     |
+| Approve selected eligible fields and explicitly publish saved approval             | No     | No      | No                 | No                 | Global                     | No                     |
+| Suppress an imported field or withdraw a linked organisation through review        | No     | No      | No                 | No                 | Global                     | No                     |
+| Enable/pause sources and inspect source approval history                           | No     | No      | No                 | No                 | No                         | Global                 |
+| Configure acquisition scope/licence and refresh schedule                           | No     | No      | No                 | No                 | No                         | Global                 |
+| Use portal governance tasks, including scope, role definitions and reserved slugs  | No     | No      | No                 | No                 | No                         | Global                 |
+| Appoint/revoke portal capabilities through bounded RPCs                            | No     | No      | No                 | No                 | No                         | Global                 |
+| Directly write staging, approval, publication or appointment tables from a browser | No     | No      | No                 | No                 | No                         | No                     |
 
 The creation row is a registered-account capability, also available to a registered
 reader without assignments. The normal creation trigger grants its creator an
@@ -75,11 +75,13 @@ remain self/manager scoped. Approved public register facts use a narrow public R
 and public projections. Raw evidence, internal identities, review notes, actor IDs
 and suppression reasons are excluded from that public surface.
 
-An operator's matching RPC can disclose candidate details for private organisations
+A Data Steward's matching RPC can disclose candidate details for private organisations
 across the portal. This is intentional review access and requires a trusted global
 appointment; it does not grant unrestricted private-page access or ordinary editing.
-Platform administrators currently receive effective owner access on all existing
-organisations and inherit operator capability, without requiring either assignment.
+Portal Administrators receive effective owner-level authority only where current
+stewardship is unclaimed, invitation-pending, or explicitly portal/co-managed. They
+do not inherit Data Steward capability and cannot automatically edit self-managed
+or suspended organisations.
 
 ## Session, assignment and action rules
 
@@ -116,13 +118,11 @@ organisations and inherit operator capability, without requiring either assignme
    must not be described as durable import suppression. Hard deletion is outside
    this pilot removal workflow. The seeded owner's `can_delete_organisation` flag
    alone is not evidence of a working deletion route or RLS policy.
-7. Platform appointments are controlled deployment operations. Neither organisation
-   role RPCs nor platform-admin status permits browser writes to appointment tables.
-   Record the authorising operator, target account, scope, reason and time for each
-   grant/revocation in deployment evidence. Current tables are not a complete audit
-   trail: administrators store a reason and grant time; operators store grant time;
-   deletion does not retain revocation history. An application appointment workflow
-   would require separate audited implementation.
+7. Portal capability appointments record the issuer, reason, approval reference,
+   validity and immutable issue/revoke events. Browser writes to their private tables
+   are denied; bounded Portal Administrator RPCs appoint and revoke capabilities,
+   with a last-administrator continuity safeguard. The invitation-led user journey
+   and administration UI remain to be implemented.
 
 ## Enforcement and implementation evidence
 
@@ -133,8 +133,8 @@ must fail closed. Browser handlers use the caller's client, not a service-role k
 | Boundary                                               | Repository evidence                                                                                                                                                                                                                                                                                         | Follow-up                                                                                    |
 | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Organisation levels and editor gate                    | [Role levels](../src/lib/role-levels.ts), [server authorization](../src/lib/server/authorization.ts), [RLS helpers](../supabase/migrations/20260904114029_rls_helpers_and_owner_grant.sql)                                                                                                                  | P07/P08 verify level checks agree with permission JSON and deployed role definitions         |
-| Separate platform administration                       | [Platform migration](../supabase/migrations/20260916015048_platform_administrators.sql), [request guard](../src/hooks.server.ts)                                                                                                                                                                            | P07 verify global tasks cannot be entered with organisation authority alone                  |
-| Separate operator and candidate access                 | [Review migration](../supabase/migrations/20260916020406_ingestion_review.sql), [review actions](../src/routes/admin/ingestion/+page.server.ts)                                                                                                                                                             | P07 exercise both route and direct-RPC denial paths                                          |
+| Separate portal administration                         | [Capability/stewardship migration](../supabase/migrations/20260924070000_portal_capabilities_and_stewardship.sql), [request guard](../src/hooks.server.ts)                                                                                                                                                  | Add invitation-led appointment administration UX                                             |
+| Separate Data Steward and candidate access             | [Review migration](../supabase/migrations/20260916020406_ingestion_review.sql), [review actions](../src/routes/admin/ingestion/+page.server.ts)                                                                                                                                                             | Preserve route and direct-RPC denial paths                                                   |
 | Role actor, hierarchy and MFA checks                   | [Role RPC migration](../supabase/migrations/20260914071835_fix_p1_sensitive_reads_and_role_rpc_mfa.sql), [assignment reads](../supabase/migrations/20260904111936_fix_user_organisation_roles_policy_recursion.sql), [request reads](../supabase/migrations/20260905033915_role_requests_read_policies.sql) | P08 build minimum assignment UI and validate actor/target scope                              |
 | Public facts and private review separation             | [Public facts RPC](../supabase/migrations/20260916090000_public_register_facts.sql), [journey removal contract](core-journeys.md)                                                                                                                                                                           | Preserve allowlisting, visibility and suppression gates                                      |
 | Source and job authority                               | [Source approval migration](../supabase/migrations/20260916060046_source_approval.sql), [acquisition RPCs](../supabase/migrations/20260917030000_acquisition_jobs.sql)                                                                                                                                      | Preserve operator queue versus administrator configuration split                             |
@@ -144,7 +144,7 @@ The acquisition worker is a separate machine identity. Its restricted database l
 assumes `ingestion_worker` and executes granted lease/checkpoint/staging RPCs; it
 cannot approve, publish, appoint users or configure sources. Cron uses a protected
 server endpoint and its granted scheduling/maintenance functions. Neither identity
-is an interactive platform administrator. See [worker deployment](acquisition-jobs.md).
+is an interactive Portal Administrator. See [worker deployment](acquisition-jobs.md).
 
 ## P07/P08 acceptance scenarios
 
@@ -162,8 +162,8 @@ this documentation change does not rerun or certify their coverage.
 | Admin in A, no assignment in B                                                | Edit/manage A within ceiling; deny edit/manage B and all ingestion/global admin actions                                                |
 | Owner in A                                                                    | Grant existing roles through owner level in A; no platform appointment or ingestion authority                                          |
 | Expired/revoked assignment, including mixed active assignments                | Ignore invalid assignments; retain only independently valid authority                                                                  |
-| Operator without organisation membership                                      | Review/queue/publish eligible data; private candidates available only through review; source configuration and ordinary editing denied |
-| Platform administrator without memberships                                    | Effective global owner and ingestion access; browser appointment-table writes still denied                                             |
+| Data Steward without organisation membership                                  | Review/queue/publish eligible data; private candidates available only through review; source configuration and ordinary editing denied |
+| Portal Administrator without memberships                                      | Edit unclaimed/approved portal-managed records; deny self-managed records and ingestion unless separately appointed                    |
 | Enrolled actor at AAL1, AAL2 and missing AAL; unenrolled actor at AAL1        | Conditional MFA enforced by direct RPC/table access as well as application routes                                                      |
 | Forged actor/org/role IDs; admin targeting an owner; direct role-table writes | Reject unauthorised change; audit successful RPC actions with actual caller                                                            |
 | Approved publication followed by stale replay or manual edit                  | No duplicate publication, silent overwrite or creator-owner grant                                                                      |

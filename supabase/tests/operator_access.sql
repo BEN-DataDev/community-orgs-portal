@@ -110,17 +110,20 @@ begin
     'is_anonymous',scenario='guest'))::text,true);
    set local role authenticated;
    if scenario in ('unenrolled','aal2') then
-    if not community_orgs.is_ingestion_operator() or community_orgs.is_platform_admin()<>(uid=admin_id) then
+    if community_orgs.is_ingestion_operator()<>(uid=operator_id)
+       or community_orgs.is_platform_admin()<>(uid=admin_id) then
      raise exception 'Appointment/MFA capability mismatch: %, %',uid,scenario;
     end if;
-    perform community_orgs.ingestion_review_queue();
-    perform community_orgs.acquisition_dashboard();
     if uid=operator_id then
+     perform community_orgs.ingestion_review_queue();
+     perform community_orgs.acquisition_dashboard();
      if community_orgs.can_view_org(org_a) or community_orgs.can_edit_org(org_a) then raise exception 'Operator obtained ordinary organisation access'; end if;
      perform pg_temp.expect_access_denied('select community_orgs.ingestion_source_approvals()');
      perform pg_temp.expect_access_denied('select community_orgs.set_ingestion_source_enabled(''acnc-register'',''p07'',true,''bad'',''P07'')');
      perform pg_temp.expect_access_denied('select community_orgs.configure_acnc_acquisition(''p07'',array[''2730''],''P07'',null,''0'')');
     else
+     perform pg_temp.expect_access_denied('select community_orgs.ingestion_review_queue()');
+     perform pg_temp.expect_access_denied('select community_orgs.acquisition_dashboard()');
      perform community_orgs.ingestion_source_approvals();
      if community_orgs.user_max_role_level(uid,org_b)<>4 or not community_orgs.can_edit_org(org_b) then raise exception 'Administrator lacks effective owner authority'; end if;
      select count(*) into actual from community_orgs.organisations where org_id in (org_a,org_b);

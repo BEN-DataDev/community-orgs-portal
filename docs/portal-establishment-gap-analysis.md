@@ -46,10 +46,10 @@ or change production state.
 | Versioned postcode scope            | Implemented         | Immutable portal scope revisions govern acquisition configuration and reconciliation compatibility                                   |
 | Fleet operations                    | Missing             | Provisioning, migrations, access, recovery and inventory are manual operational procedures                                           |
 | Provider abstraction                | Provider-bound      | Request auth, data API, storage, cron and generated types directly use Supabase; deployment directly uses Vercel cron                |
-| Portal Administrator                | Conflicting         | `platform_access.administrators` is a database-global appointment with effective owner and ingestion authority                       |
-| Data Steward / operator             | Partial             | Operator capability exists but is global within the database and has no application appointment workflow or revocation history       |
+| Portal Administrator                | Partial             | Explicit current appointments and revocation evidence replace the implicit capability union; invitation/administration UX remains    |
+| Data Steward / operator             | Partial             | Explicit Data Steward appointments retain revocation evidence and no longer derive from Portal Administrator authority               |
 | Organisation roles                  | Partial             | Strong grant/revoke safeguards exist; assignments use account UUIDs and no invitation/handoff workflow exists                        |
-| Stewardship                         | Missing             | No unclaimed, self-managed, portal-managed or co-managed state                                                                       |
+| Stewardship                         | Partial             | Current state and append-only events gate administrator editing; transactional invitation acceptance remains                         |
 | Record edit audit                   | Partial             | Domain rows retain editor/timestamps and roles/imports have events, but no uniform before/after audit for Portal Administrator edits |
 | Source releases and private staging | Implemented/partial | Strong per-source releases and runs exist; cross-source campaign aggregation is absent                                               |
 | Initial seed workflow               | Partial             | ABN seed candidate store exists; no complete multi-source seed campaign or initial release gate                                      |
@@ -179,26 +179,19 @@ before claiming provider portability.
 
 ### PEG05 — Portal Administrator conflicts with platform administrator
 
-**Priority: critical. Status: conflicting.**
+**Priority: critical. Status: partial.**
 
-`platform_access.administrators` grants effective owner access across every
-organisation and is folded into `is_ingestion_operator()`. Within a single database
-this currently supplies the escape hatch, but it cannot distinguish:
+Explicit `portal.capability_appointments` now separates `portal_administrator`
+from `data_steward`, and immutable issue/revoke events determine current authority.
+The legacy `is_platform_admin()` and `is_ingestion_operator()` functions remain as
+compatibility wrappers, but no longer form an implicit capability union. Controlled
+legacy-table operations are mirrored into the new evidence model during migration.
 
-- portal governance;
-- editing an unclaimed organisation;
-- continuing portal-managed stewardship;
-- technical support; or
-- infrastructure operation.
-
-Replace this implicit union with explicit portal capabilities. Because a database
-contains one portal, appointments need not carry `portal_id` locally, but must carry
-capability, issuer, reason, validity and revocation events. Retain a bootstrap path
-for the first appointment.
-
-The existing `is_platform_admin()` name and its effective-owner behaviour should be
-deprecated through compatibility wrappers, not changed silently beneath deployed
-policies.
+This resolves the previous behaviour in which `platform_access.administrators`
+granted effective owner and ingestion authority together. Remaining work is the
+invitation-based application workflow and administration UI, including a distinct
+time-bounded technical-support capability that remains separate from infrastructure
+operation.
 
 **Acceptance:** a Portal Administrator can govern the portal and edit an unclaimed
 organisation, cannot automatically edit a self-managed organisation, and does not
@@ -207,18 +200,18 @@ without a current appointment.
 
 ### PEG06 — Organisation stewardship and handoff
 
-**Priority: critical. Status: missing.**
+**Priority: critical. Status: partial.**
 
-Organisations have public visibility and role assignments but no governance state.
-Imported creation deliberately avoids granting an owner, which is the correct base
-behaviour, but the application cannot distinguish an unclaimed record from one the
-portal has agreed to manage.
+Organisations now have a protected current stewardship projection and append-only
+state events. Existing effective owners were baselined as `self_managed`; records
+without an owner were baselined as `unclaimed`. Imported creation remains unclaimed.
+The database authorization path grants automatic Portal Administrator editing only
+for `unclaimed` and `invitation_pending`, and requires approval-backed current
+evidence for `portal_managed` and `co_managed`. A transition to `self_managed`
+removes that automatic access immediately without a session refresh.
 
-Add current stewardship state plus append-only stewardship events. Update edit and
-role-management authorization so automatic Portal Administrator editing is derived
-from `unclaimed` or `invitation_pending`, while `portal_managed` and `co_managed`
-require explicit effective authority. Invitation acceptance must change state and
-grant ownership in one transaction.
+The remaining gap is the domain invitation workflow: acceptance must atomically
+grant ownership and record `self_managed` or an approved `co_managed` decision.
 
 **Acceptance:** handoff immediately removes automatic Portal Administrator edit
 authority from existing sessions; imported publication still creates no owner;
@@ -441,6 +434,8 @@ and recurring refresh campaigns.
 
 ## Immediate next slice
 
-Phase 1 is complete. The next slice is Phase 2: define explicit portal capability
-appointments and organisation stewardship state/events, then route unclaimed
-record editing through that authority decision before adding invitations.
+Phase 1 is complete. Phase 2 now has explicit Portal Administrator/Data Steward
+appointments, retained revocation evidence, stewardship state/events and
+stewardship-aware organisation authorization. The next slice is domain invitations:
+verified-email acceptance, atomic owner grant/handoff, cancellation, expiry and
+single-use event history.

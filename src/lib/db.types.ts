@@ -1708,6 +1708,39 @@ export type Database = {
 			};
 			is_platform_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
 			is_ingestion_operator: { Args: Record<PropertyKey, never>; Returns: boolean };
+			is_portal_administrator: { Args: Record<PropertyKey, never>; Returns: boolean };
+			is_data_steward: { Args: Record<PropertyKey, never>; Returns: boolean };
+			portal_administrator_can_edit_organisation: {
+				Args: { p_organisation_id: string };
+				Returns: boolean;
+			};
+			appoint_portal_capability: {
+				Args: {
+					p_user_id: string;
+					p_capability: string;
+					p_reason: string;
+					p_approval_reference: string;
+					p_starts_at?: string;
+					p_expires_at?: string | null;
+				};
+				Returns: string;
+			};
+			revoke_portal_capability: {
+				Args: { p_appointment_id: string; p_reason: string; p_approval_reference: string };
+				Returns: boolean;
+			};
+			set_organisation_stewardship: {
+				Args: {
+					p_organisation_id: string;
+					p_next_state: string;
+					p_reason: string;
+					p_approval_reference: string | null;
+					p_note: string;
+					p_related_reference?: string | null;
+					p_expected_revision?: number;
+				};
+				Returns: number;
+			};
 			validation_issue_queue: {
 				Args: { p_issue?: string; p_run?: string; p_release?: string; p_category?: string; p_decision?: string; p_offset?: number };
 				Returns: Json;

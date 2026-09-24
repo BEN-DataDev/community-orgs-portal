@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { TypedSupabaseClient } from '$lib/supabase-client';
 
 export async function isIngestionOperator(client: TypedSupabaseClient): Promise<boolean> {
-	const { data, error } = await client.rpc('is_ingestion_operator');
+	const { data, error } = await client.rpc('is_data_steward');
 	return !error && data === true;
 }
 const id = z.string().regex(/^[1-9][0-9]*$/);
