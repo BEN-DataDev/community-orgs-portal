@@ -4,7 +4,7 @@
 	import type { PageProps } from './$types';
 	let { data, form }: PageProps = $props();
 	const returnHref = $derived(
-		`${resolve('/admin/ingestion')}?${new URLSearchParams({ ...(data.run ? { run: data.run } : {}), ...(data.version ? { version: data.version } : {}) })}`
+		`${resolve('/admin/ingestion/identity')}?${new URLSearchParams({ ...(data.run ? { run: data.run } : {}), ...(data.version ? { version: data.version } : {}) })}`
 	);
 </script>
 
@@ -62,7 +62,7 @@
 				{#each source.runs as run}<li>
 						<a
 							class="anchor"
-							href={`${resolve('/admin/ingestion')}?${new URLSearchParams({ run: run.id, ...(run.id === data.run && data.version ? { version: data.version } : {}) })}`}
+							href={`${resolve('/admin/ingestion/identity')}?${new URLSearchParams({ run: run.id, ...(run.id === data.run && data.version ? { version: data.version } : {}) })}`}
 							>{run.run_key}</a
 						>
 						· <strong>{run.completion}</strong> · {run.observed_at}{#if run.id === data.run}

@@ -28,6 +28,22 @@
 		{/if}
 		{#if data.isSiteAdmin}
 			<a
+				href={resolve('/admin/stewardship')}
+				class="card border-surface-200-800 hover:preset-tonal space-y-3 border p-5 focus-visible:outline-2 focus-visible:outline-offset-2"
+			>
+				<h2 class="text-lg font-semibold">Stewardship</h2>
+				<p>Review organisation governance states and record evidence-backed transitions.</p>
+				<span class="font-medium">Open stewardship administration →</span>
+			</a>
+			<a
+				href={resolve('/admin/invitations')}
+				class="card border-surface-200-800 hover:preset-tonal space-y-3 border p-5 focus-visible:outline-2 focus-visible:outline-offset-2"
+			>
+				<h2 class="text-lg font-semibold">Owner invitations</h2>
+				<p>Track pending and completed handoffs across the portal.</p>
+				<span class="font-medium">Open invitation administration →</span>
+			</a>
+			<a
 				href={resolve('/admin/ingestion/releases')}
 				class="card border-surface-200-800 hover:preset-tonal space-y-3 border p-5 focus-visible:outline-2 focus-visible:outline-offset-2"
 			>
@@ -67,13 +83,13 @@
 				class="card border-surface-200-800 hover:preset-tonal space-y-3 border p-5 focus-visible:outline-2 focus-visible:outline-offset-2"
 			>
 				<FileInput size={24} aria-hidden="true" />
-				<h2 class="text-lg font-semibold">Import review</h2>
+				<h2 class="text-lg font-semibold">Ingestion work queues</h2>
 				<p class="text-surface-600-400">
-					Review imported records, compare organisation matches and approve selected changes for
-					publication.
+					Resolve validation, identity, field-change, release and suppression decisions in focused
+					queues.
 				</p>
 				<span class="flex items-center gap-2 font-medium"
-					>Open import review <ArrowRight size={16} aria-hidden="true" /></span
+					>Open work queues <ArrowRight size={16} aria-hidden="true" /></span
 				>
 			</a>
 		{:else}

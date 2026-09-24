@@ -1713,6 +1713,15 @@ export type Database = {
 				Args: { p_invitation_id: string };
 				Returns: Json;
 			};
+			stewardship_administration_queue: {
+				Args: {
+					p_search?: string;
+					p_state?: string;
+					p_invitation_status?: string;
+					p_offset?: number;
+				};
+				Returns: Json;
+			};
 			search_organisations: {
 				Args: { p_query?: string; p_offset?: number; p_limit?: number };
 				Returns: Json;

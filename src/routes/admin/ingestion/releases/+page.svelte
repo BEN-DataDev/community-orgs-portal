@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
+	import QueueNavigation from '$components/ingestion/QueueNavigation.svelte';
 	import type { PageProps } from './$types';
 	let { data, form }: PageProps = $props();
 
@@ -22,13 +23,15 @@
 <div class="space-y-6">
 	<header class="space-y-2">
 		<a class="anchor" href={resolve('/admin')}>Back to Admin</a>
-		{#if data.canSteward}<a class="anchor" href={resolve('/admin/ingestion')}>Import review</a>{/if}
+		{#if data.canSteward}<a class="anchor" href={resolve('/admin/ingestion')}>Ingestion queues</a
+			>{/if}
 		<h1 class="text-2xl font-bold">Publication releases</h1>
 		<p>
 			Approve and publish frozen release revisions. Initial and destructive work always requires a
 			different person.
 		</p>
 	</header>
+	<QueueNavigation current="releases" campaign={data.campaign} />
 	{#if form?.message}<p role="status" class="card preset-tonal p-4">{form.message}</p>{/if}
 
 	<section

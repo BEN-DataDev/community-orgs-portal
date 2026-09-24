@@ -55,7 +55,7 @@ or change production state.
 | Initial seed workflow               | Partial             | ABN candidates and a mandatory independent initial-release gate exist; multi-source seed campaigns remain absent                     |
 | Two-person approval                 | Implemented         | Frozen releases retain policy revisions and require a different approver for initial and destructive work                            |
 | Recurring updates                   | Partial             | ACNC scheduling, reconciliation and conflict protections exist; broader source and campaign orchestration is incomplete              |
-| Review UX                           | Conflicting         | Validation, record matching, field approval, publication and withdrawal share one large page                                         |
+| Review UX                           | Implemented         | Focused validation, identity, field-change, release and suppression queues retain campaign and record context                        |
 | Invitation evidence                 | Implemented         | Immutable email-bound terms and single-use events cover acceptance, cancellation and expiry independently of delivery provider       |
 | NSW state register                  | Missing             | No current adapter is integrated                                                                                                     |
 
@@ -311,17 +311,14 @@ approved writes, submitter, independent approver and publisher.
 
 ### PEG11 — Review information architecture
 
-**Priority: high. Status: dashboard implemented; queue split pending.**
+**Priority: high. Status: implemented.**
 
-The current `/admin/ingestion` route loads validation queues, run records, matching
-candidates, field previews, saved approvals and withdrawal state. The page presents
-validation, identity review, field approval, publication and suppression in one
-long workspace. Acquisition and source configuration are separate pages, but the
-overall flow is run-centric rather than campaign- or task-centric.
+The `/admin/ingestion` route is now a task index. Validation, identity and
+eligibility, field changes, release decisions, and suppression/withdrawal each have
+a focused route with an independently authorised loader and action boundary.
 
-The campaign dashboard now reports progress counts, role-labelled blockers, pinned
-contracts and publication state, with deep links to the existing screens. Continue
-the target navigation incrementally by splitting one decision queue at a time:
+The campaign dashboard reports progress counts, role-labelled blockers, pinned
+contracts and publication state, with campaign- and run-aware deep links to:
 
 1. validation issues;
 2. identity and eligibility;
@@ -329,11 +326,13 @@ the target navigation incrementally by splitting one decision queue at a time:
 4. release submission/approval; and
 5. suppression/withdrawal.
 
-Do not redesign the visual layer before the campaign and stewardship states exist;
-otherwise the same conceptual coupling will reappear across prettier screens.
+Stewardship and invitation administration are likewise separate Portal
+Administrator queues. The former records revision-fenced governance decisions; the
+latter provides a portal-wide invitation history and cancellation queue while
+retaining issuance and atomic handoff in the organisation access workflow.
 
-**Acceptance:** every screen has one primary decision type, preserves campaign and
-record context in navigation, and communicates the next blocker and responsible
+**Acceptance met:** every screen has one primary decision type, preserves campaign
+and record context in navigation, and communicates the next blocker and responsible
 role.
 
 ### PEG12 — Source and recurring-update completeness
@@ -424,7 +423,7 @@ Add publication releases, approval policies and actor separation. Wrap existing
 change sets and suppression actions rather than replacing their transactional
 checks. Make initial-seed and destructive dual control mandatory.
 
-### Phase 4 — Campaign orchestration and UX split
+### Phase 4 — Campaign orchestration and UX split (complete)
 
 Add campaigns referencing existing source artifacts. Build a progress dashboard,
 then split validation, identity, change and release queues out of the current Import
@@ -453,13 +452,13 @@ and recurring refresh campaigns.
 
 ## Immediate next slice
 
-Phases 1 through 3 are complete. Phase 3 now has immutable publication-release
-revisions, portal-configurable ordinary approval, mandatory independent approval for
-initial and destructive work, and exact-revision execution around the existing
-publication and suppression safeguards.
+Phases 1 through 4 are complete. Campaigns reference immutable source artifacts,
+derive role-labelled blockers and retain campaign context when entering the focused
+validation, identity, field-change, release and suppression queues. Portal
+Administrators have separate stewardship and invitation administration screens;
+elapsed invitations are materialised through the existing no-grant transition.
 
-The Phase 4 campaign foundation now references existing source artifacts, exposes
-derived readiness and blockers, and links publication releases without weakening
-their evidence boundaries. The next slice is the review information architecture:
-split validation, identity, field-change, release and suppression decisions into
-focused queues, then add stewardship and invitation administration screens.
+The next slice is Phase 5 fleet operations: a manifest-driven inventory and
+operator workflow for provisioning, migration verification, credential rotation,
+first-administrator bootstrap and append-only operation evidence across isolated
+portal deployments.

@@ -14,12 +14,14 @@
 		queue,
 		filter,
 		readiness,
-		form
+		form,
+		campaign = ''
 	}: {
 		queue: z.infer<typeof validationQueueSchema>;
 		filter: z.infer<typeof validationFilterInput>;
 		readiness: z.infer<typeof validationRunReadinessSchema> | null;
 		form: Record<string, unknown> | null | undefined;
+		campaign?: string;
 	} = $props();
 
 	function issueHref(issue: string, offset = filter.offset) {
@@ -28,7 +30,8 @@
 		if (filter.release) params.set('release', filter.release);
 		if (filter.category) params.set('category', filter.category);
 		if (filter.decision) params.set('issue_decision', filter.decision);
-		return `${resolve('/admin/ingestion')}?${params}`;
+		if (campaign) params.set('campaign', campaign);
+		return `${resolve('/admin/ingestion/validation')}?${params}`;
 	}
 	function display(value: unknown) {
 		return typeof value === 'string' ? value : JSON.stringify(value, null, 2);

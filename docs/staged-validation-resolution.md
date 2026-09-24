@@ -178,7 +178,7 @@ legacy diagnostics and recognises retained ACNC `Charity_Website` failures as
 field-addressable `website.format` issues; this is the path that will backfill run
 30 when the migration is applied to the hosted database.
 
-**Admin → Import review → Validation issues** provides filters, immutable evidence,
+**Admin → Ingestion work queues → Validation** provides filters, immutable evidence,
 server validation, permitted decisions, history and **Create corrected run**. The
 acquisition worker claims replay requests, verifies the exact issue revisions and
 raw-evidence hashes, re-runs the source adapter across every non-rejected retained

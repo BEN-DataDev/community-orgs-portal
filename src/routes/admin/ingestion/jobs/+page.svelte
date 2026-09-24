@@ -9,7 +9,7 @@
 <svelte:head><title>Acquisition jobs</title></svelte:head>
 <div class="space-y-6">
 	<header class="space-y-2">
-		<a class="anchor" href={resolve('/admin/ingestion')}>Back to import review</a>
+		<a class="anchor" href={resolve('/admin/ingestion')}>Back to ingestion queues</a>
 		<h1 class="text-2xl font-bold">Acquisition jobs</h1>
 		<p>
 			Fetch up to 1,000 ACNC records for a postcode cohort into private staging. Completed imports
@@ -127,8 +127,9 @@
 				{#if job.status === 'running'}<p>Worker lease ends: {job.lease_until}</p>{/if}
 				{#if job.acquired}<p>Acquisition evidence saved.</p>{/if}
 				{#if job.message}<p>{job.message}</p>{/if}
-				{#if job.run_id}<a class="anchor" href={resolve('/admin/ingestion') + `?run=${job.run_id}`}
-						>Review import</a
+				{#if job.run_id}<a
+						class="anchor"
+						href={resolve('/admin/ingestion/identity') + `?run=${job.run_id}`}>Review import</a
 					>{/if}
 			</article>
 		{:else}<p>No acquisition jobs yet.</p>{/each}

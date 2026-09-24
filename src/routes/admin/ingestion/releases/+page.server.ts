@@ -31,14 +31,17 @@ async function access(locals: App.Locals) {
 	return { canSteward, canAdmin };
 }
 
-export const load: PageServerLoad = async ({ locals, setHeaders }) => {
+export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
 	const authority = await access(locals);
 	const result = await locals.supabase.rpc('publication_release_queue');
 	const parsed = publicationReleaseQueueSchema.safeParse(result.data);
 	if (result.error || !parsed.success)
 		error(result.error?.code === '42501' ? 403 : 500, 'Could not load publication releases.');
-	return { ...authority, queue: parsed.data };
+	const campaign = url.searchParams.get('campaign') || '';
+	if (campaign && !z.string().uuid().safeParse(campaign).success)
+		error(400, 'Invalid campaign context.');
+	return { ...authority, queue: parsed.data, campaign };
 };
 
 export const actions: Actions = {

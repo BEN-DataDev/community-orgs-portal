@@ -143,9 +143,9 @@ Organisation admin/owner membership does not grant this capability. Operators
 have access to raw import evidence and matching organisation details across the
 portal, including non-public organisations. Appoint only accounts responsible for
 this platform-wide work. Enrolled MFA requires an AAL2 session; missing assurance
-claims fail closed. The navigation shows **Import review** to eligible operators.
+claims fail closed. The navigation shows **Ingestion work queues** to eligible operators.
 
-At `/admin/ingestion`, choose a run and record, inspect source fields/provenance,
+At `/admin/ingestion/identity`, choose a run and record, inspect source fields/provenance,
 compare candidates and save a reasoned link/create/defer/reject proposal. Exact
 ABN and name matches are labelled suggestions, including shared-ABN branches.
 Records from incomplete runs remain available for investigation. Decisions attach

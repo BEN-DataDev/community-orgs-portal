@@ -69,6 +69,7 @@ try:
                  'portal_scope_revisions.sql',
                  'portal_capabilities_and_stewardship.sql',
                  'organisation_invitations.sql',
+                 'stewardship_administration_queue.sql',
                  'publication_releases.sql',
                  'campaign_orchestration.sql',
                  'operator_access.sql', 'organisation_role_management.sql', 'p1_access_regression.sql', 'ingestion_review.sql', 'ingestion_publication.sql', 'private_raw_retention.sql', 'deterministic_identity.sql', 'ingestion_change_report.sql', 'registry_seed_candidates.sql']:

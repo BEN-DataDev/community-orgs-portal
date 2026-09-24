@@ -28,6 +28,21 @@
 		data_steward: 'Data Steward',
 		portal_administrator: 'Portal Administrator'
 	};
+	type QueuePath =
+		| '/admin/ingestion/validation'
+		| '/admin/ingestion/identity'
+		| '/admin/ingestion/changes'
+		| '/admin/ingestion/releases'
+		| '/admin/ingestion/suppressions';
+	function queueHref(path: QueuePath, campaign: (typeof data.campaigns)[number]) {
+		const params = new URLSearchParams({ campaign: campaign.campaign_id });
+		const run = campaign.artifacts.find((artifact) => artifact.kind === 'ingestion_run');
+		if (run) {
+			if (path.endsWith('/validation')) params.set('issue_run', run.artifact_key);
+			else params.set('run', run.artifact_key);
+		}
+		return `${resolve(path)}?${params}`;
+	}
 </script>
 
 <svelte:head><title>Campaigns</title></svelte:head>
@@ -43,13 +58,15 @@
 	</header>
 
 	<nav aria-label="Campaign work queues" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-		<a class="card preset-tonal p-4" href={resolve('/admin/ingestion')}>Validation</a>
-		<a class="card preset-tonal p-4" href={resolve('/admin/ingestion')}>Identity and eligibility</a>
-		<a class="card preset-tonal p-4" href={resolve('/admin/ingestion')}>Field changes</a>
+		<a class="card preset-tonal p-4" href={resolve('/admin/ingestion/validation')}>Validation</a>
+		<a class="card preset-tonal p-4" href={resolve('/admin/ingestion/identity')}
+			>Identity and eligibility</a
+		>
+		<a class="card preset-tonal p-4" href={resolve('/admin/ingestion/changes')}>Field changes</a>
 		<a class="card preset-tonal p-4" href={resolve('/admin/ingestion/releases')}
 			>Publication releases</a
 		>
-		<a class="card preset-tonal p-4" href={resolve('/admin/ingestion')}
+		<a class="card preset-tonal p-4" href={resolve('/admin/ingestion/suppressions')}
 			>Suppression and withdrawal</a
 		>
 	</nav>
@@ -71,6 +88,15 @@
 						{stateLabels[campaign.readiness.state]}
 					</span>
 				</header>
+				<nav aria-label={`Queues for ${campaign.name}`} class="flex flex-wrap gap-3 text-sm">
+					<a class="anchor" href={queueHref('/admin/ingestion/validation', campaign)}>Validation</a>
+					<a class="anchor" href={queueHref('/admin/ingestion/identity', campaign)}>Identity</a>
+					<a class="anchor" href={queueHref('/admin/ingestion/changes', campaign)}>Field changes</a>
+					<a class="anchor" href={queueHref('/admin/ingestion/releases', campaign)}>Releases</a>
+					<a class="anchor" href={queueHref('/admin/ingestion/suppressions', campaign)}
+						>Suppression</a
+					>
+				</nav>
 
 				<dl class="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
 					<div>

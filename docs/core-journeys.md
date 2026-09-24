@@ -17,7 +17,7 @@ blocks simplify existing layouts; illustrative values below are invented.
 | Public reader            | Organisation pages: read published facts, sources and dates                                                       | Cannot see raw evidence, review notes or removal reasons                                 |
 | Organisation member      | Read records permitted by their organisation role                                                                 | Membership alone does not permit editing or import review                                |
 | Organisation admin/owner | Existing organisation section forms: correct permitted facts; platform administrators have effective owner access | Organisation authority alone does not grant global ingestion access                      |
-| Ingestion operator       | Admin → Acquisition jobs / Import review: acquire, match, approve, publish and suppress                           | Server/database capability checks apply; an import does not grant organisation ownership |
+| Data Steward             | Admin → focused ingestion queues: validate, match, approve, publish and suppress                                  | Server/database capability checks apply; an import does not grant organisation ownership |
 | Platform administrator   | Admin → Source approvals and acquisition configuration                                                            | Source enablement and scheduling are separate from record approval/publication           |
 
 The [P06 capability matrix](capability-matrix.md) expands these task boundaries
@@ -57,7 +57,7 @@ flowchart TD
 ### A. Acquire and inspect the run
 
 ```text
-Admin / Acquisition jobs                         [Import review]
+Admin / Acquisition jobs                         [Ingestion queues]
 Source: ACNC Register   Status: Enabled   Schedule: Off
 Scope: configured pilot postcode
 [Queue acquisition]
@@ -65,13 +65,13 @@ Scope: configured pilot postcode
 Job          Status       Attempt     Result
 Selected job Complete     1           [Open run]
 
-Import review / Run
+Identity and eligibility / Run
 Source + resource | observed date | completion | reprocessing origin
 Staged records: [record name / native ID / review decision]
 ```
 
 **Existing:** bounded ACNC jobs at `/admin/ingestion/jobs`, source controls at
-`/admin/sources`, and run selection at `/admin/ingestion`. A queued or completed
+`/admin/sources`, and run selection at `/admin/ingestion/identity`. A queued or completed
 job does not publish. Failed/partial acquisition retains diagnostic evidence;
 incomplete runs cannot approve or publish. A paused source requires administrator
 review; enabling it does not repair an incomplete run. Preserve the run/record
@@ -103,7 +103,7 @@ must pass the authoritative server validator. Scope, schema, licence, mapping an
 acquisition failures are diagnostic only and cannot be manually accepted.
 
 ```text
-Import review / Validation issues
+Validation queue
 Source + run/release | blocking/deferred/non-resolvable counts | filters
 Record and field | raw value | failure reason | validator/version
 [Open safe candidate] [Enter correction] [Validate proposed value]
@@ -124,7 +124,7 @@ acquisition errors. Resolution and replay never approve or publish data.
 ### B. Check inclusion and matching
 
 ```text
-Import review / Selected source record
+Identity and eligibility / Selected source record
 Source, native ID, observation date, assertions, current source link
 Possible matches: [Search name or ABN] [Search]
 Candidate: name | ABN | address     [Compare fields] [View organisation]
@@ -242,7 +242,7 @@ record context; they are not a structured per-field conflict-resolution state.
 ## Journey 3: reject/withdraw → suppress
 
 **Goal:** distinguish a rejected version from a lasting block, and make the exact
-public impact visible before removal. Entry: the selected record in Import review,
+public impact visible before removal. Entry: the selected record in the suppression queue,
 including a previously published record linked to an existing organisation.
 
 ```mermaid
@@ -324,8 +324,10 @@ P05 is complete as a written journey/sketch deliverable. It does not complete th
 proposed CSV importer, entity mapping, conflict resolution or reconciliation work.
 Implementation references checked for this document:
 
-- [Import review page](../src/routes/admin/ingestion/+page.svelte) and
-  [server actions](../src/routes/admin/ingestion/+page.server.ts).
+- [Ingestion queue index](../src/routes/admin/ingestion/+page.svelte),
+  [identity decisions](../src/routes/admin/ingestion/identity/+page.server.ts),
+  [field changes](../src/routes/admin/ingestion/changes/+page.server.ts) and
+  [suppression decisions](../src/routes/admin/ingestion/suppressions/+page.server.ts).
 - [Saved approvals](../src/components/ingestion/SavedApprovals.svelte) and
   [withdrawal controls](../src/components/ingestion/WithdrawalControls.svelte).
 - [Organisation edit actions](../src/routes/organisations/[id]/+page.server.ts)
