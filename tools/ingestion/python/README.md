@@ -22,6 +22,14 @@ triage or publish data by itself. The first qualified release is assigned to the
 local operator workstation using an approved absolute path outside Git; Vercel is
 not the P33 runner or artifact store.
 
+Phase 7 adds `ingestion.live_nsw_associations`, a disabled, bounded adapter for the
+ordinary NSW Incorporated Associations Register postcode search. It validates
+ASP.NET state and current result markup on every page, paces requests, fails closed
+on partial pagination or duplicate jurisdiction-scoped identifiers, and emits only
+the private `registry-seed-v1` contract. Access/reuse approval and a live permitted
+markup qualification are still external gates. See the
+[NSW adapter guide](../../../docs/nsw-associations-adapter.md).
+
 P13 adds an explicit bounded bulk CSV fallback and acquisition manifests. Both
 paths were verified live against the six-record postcode 2730 cohort. See the
 [P13 operation and validation guide](../../../docs/acnc-acquisition.md) for commands,

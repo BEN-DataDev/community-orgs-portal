@@ -30,6 +30,7 @@
 	};
 	type QueuePath =
 		| '/admin/ingestion/validation'
+		| '/admin/ingestion/candidates'
 		| '/admin/ingestion/identity'
 		| '/admin/ingestion/changes'
 		| '/admin/ingestion/releases'
@@ -37,6 +38,10 @@
 	function queueHref(path: QueuePath, campaign: (typeof data.campaigns)[number]) {
 		const params = new URLSearchParams({ campaign: campaign.campaign_id });
 		const run = campaign.artifacts.find((artifact) => artifact.kind === 'ingestion_run');
+		const registry = campaign.artifacts.find(
+			(artifact) => artifact.kind === 'registry_seed_release'
+		);
+		if (path.endsWith('/candidates') && registry) params.set('release', registry.artifact_key);
 		if (run) {
 			if (path.endsWith('/validation')) params.set('issue_run', run.artifact_key);
 			else params.set('run', run.artifact_key);
@@ -57,8 +62,9 @@
 		</p>
 	</header>
 
-	<nav aria-label="Campaign work queues" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+	<nav aria-label="Campaign work queues" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
 		<a class="card preset-tonal p-4" href={resolve('/admin/ingestion/validation')}>Validation</a>
+		<a class="card preset-tonal p-4" href={resolve('/admin/ingestion/candidates')}>Seed triage</a>
 		<a class="card preset-tonal p-4" href={resolve('/admin/ingestion/identity')}
 			>Identity and eligibility</a
 		>
@@ -90,6 +96,8 @@
 				</header>
 				<nav aria-label={`Queues for ${campaign.name}`} class="flex flex-wrap gap-3 text-sm">
 					<a class="anchor" href={queueHref('/admin/ingestion/validation', campaign)}>Validation</a>
+					<a class="anchor" href={queueHref('/admin/ingestion/candidates', campaign)}>Seed triage</a
+					>
 					<a class="anchor" href={queueHref('/admin/ingestion/identity', campaign)}>Identity</a>
 					<a class="anchor" href={queueHref('/admin/ingestion/changes', campaign)}>Field changes</a>
 					<a class="anchor" href={queueHref('/admin/ingestion/releases', campaign)}>Releases</a>

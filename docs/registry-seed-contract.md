@@ -68,7 +68,8 @@ The current candidate states are:
 - `exclude`: not in the configured cohort;
 - `defer`: insufficient evidence or a later decision is required; and
 - `link`: include with exactly one explicit candidate or existing source-record
-  target. P35 will add the user-facing cross-source resolution workflow.
+  target. The P35 seed-candidate queue now exposes this as a revision-fenced,
+  redacted cross-source decision and labels weak name evidence explicitly.
 
 `save_registry_seed_triage` uses an expected revision, a required note and an
 immutable event record. Stale writes fail rather than overwriting another review.

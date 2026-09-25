@@ -57,7 +57,7 @@ or change production state.
 | Recurring updates                   | Partial             | ACNC scheduling, reconciliation and conflict protections exist; broader source and campaign orchestration is incomplete                                 |
 | Review UX                           | Implemented         | Focused validation, identity, field-change, release and suppression queues retain campaign and record context                                           |
 | Invitation evidence                 | Implemented         | Immutable email-bound terms and single-use events cover acceptance, cancellation and expiry independently of delivery provider                          |
-| NSW state register                  | Missing             | No current adapter is integrated                                                                                                                        |
+| NSW state register                  | Implemented/partial | A disabled bounded postcode-search adapter emits private seed candidates; approval and live qualification remain                                        |
 
 ## Reusable foundations
 
@@ -347,8 +347,10 @@ role.
 
 ACNC acquisition and scheduled reconciliation are implemented. The national ABN
 bulk release is privately staged but not triaged or published. Exact-ABN live
-qualification is externally gated. No current NSW incorporated-associations adapter
-is integrated. Other states will require separate qualified adapters.
+qualification is externally gated. A bounded NSW incorporated-associations adapter
+is integrated locally but remains disabled pending recorded access/reuse approval,
+live markup qualification and source enablement. Other states will require separate
+qualified adapters.
 
 Continue P34b–P36, but attach new work to the campaign and portal-scope contracts.
 Do not encode NSW or the current Snowy Valleys postcodes into the generic portal
@@ -456,6 +458,12 @@ Integrate the state-register adapter, cross-source resolution and bounded first
 cohort into an `initial_seed` campaign. Publish only through the new dual-controlled
 release, complete Portal Administrator handoff, then begin organisation invitations
 and recurring refresh campaigns.
+
+**In progress:** the state-register acquisition boundary and focused P35
+cross-source triage queue are implemented locally. The source remains disabled and
+produces private jurisdiction-scoped candidates with fail-closed pagination and no
+automatic name matching. A permitted live qualification, bounded cohort decisions,
+campaign assembly and operational handoff/publication remain.
 
 ## Immediate next slice
 

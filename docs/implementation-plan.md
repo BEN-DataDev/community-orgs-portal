@@ -111,23 +111,27 @@ automatically acquire other providers.
    complete locally. Apply the hosted migration and worker, backfill and replay run
    30 as the first production check, then verify approved CSV and registry-seed
    sources before adding another adapter.
-5. **P34b — Implement the NSW register scraper.** Use only the ordinary unauthenticated
-   postcode/suburb search flow, with conservative pacing, bounded retries,
-   pagination checks, duplicate detection and markup-change shutdown. Key records
-   by `(AU-NSW, association number)` and do not merge by name. Document the public
-   access/reuse basis and collect only the defined public register fields.
-6. **P35 — Add candidate triage and cross-source resolution.** Join only on qualified
-   identifiers; present name/address similarities as review candidates. Record why
-   each candidate is included, excluded, deferred or linked, and keep adjacent-area
-   records private until service relevance is evidenced.
+5. **P34b — Implement the NSW register scraper — implemented locally, operational
+   qualification pending.** The disabled adapter uses only the ordinary
+   unauthenticated postcode search flow, with conservative pacing, finite transport
+   limits, pagination checks, duplicate detection and markup-change shutdown. It
+   keys records by `(AU-NSW, association number)`, never merges by name and emits the
+   private registry-seed contract. Recorded access/reuse approval and the first
+   permitted live search remain gates; see [the adapter guide](nsw-associations-adapter.md).
+6. **P35 — Add candidate triage and cross-source resolution — implemented locally.**
+   The focused seed-candidate queue presents exact qualified identifiers first and
+   labels same-normalised-name suggestions as weak review evidence. Revision-fenced
+   include, exclude, defer and link decisions retain their reason and target. Raw
+   provider payloads remain private, adjacent-area evidence remains private, and
+   promotion into ordinary reviewed staging is a separate bounded action.
 7. **P36 — Publish and maintain the registry seed.** Review a bounded first cohort,
    publish attributable records, add source/postcode/freshness/failure reporting,
    then exercise unchanged refresh, status change, withdrawal, partial-run and
    rollback paths before enabling recurring ABN and NSW collection.
 
-P34a hosted rollout and run 30 validation are the next release gate and a
-prerequisite for P34b. P33 acquisition and private staging are complete; retained
-evidence remains on hold for P35/P36.
+P34a hosted rollout and run 30 validation remain release gates before the first P34b
+live search. P33 acquisition and private staging are complete; retained evidence
+remains on hold for P35/P36.
 P16 live exact-ABN qualification and the first scheduled ACNC observation continue as parallel
 operational tracks and do not block P31–P36.
 

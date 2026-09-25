@@ -18,6 +18,94 @@ export const reviewInput = z
 	.refine((x) => (x.decision === 'link') === (x.organisation !== ''), {
 		message: 'Choose an organisation only for a link decision.'
 	});
+
+export const registrySeedQueueSchema = z.object({
+	releases: z.array(
+		z.object({
+			id,
+			release_key: z.string(),
+			source_id: z.string(),
+			resource_id: z.string(),
+			observed_at: z.string(),
+			completion: z.enum(['complete', 'partial', 'failed']),
+			candidate_count: z.number(),
+			raw_removed_at: z.string().nullable()
+		})
+	),
+	release_id: id.nullable(),
+	total: z.number(),
+	offset: z.number(),
+	records: z.array(
+		z.object({
+			version_id: id,
+			native_id: z.string(),
+			name: z.string(),
+			decision: z.enum(['pending', 'include', 'exclude', 'defer', 'link']),
+			revision: z.number(),
+			in_scope: z.boolean(),
+			promoted: z.boolean()
+		})
+	),
+	detail: z
+		.object({
+			release_id: id,
+			version_id: id,
+			candidate_id: id,
+			native_id: z.string(),
+			source_id: z.string(),
+			resource_id: z.string(),
+			in_scope: z.boolean(),
+			selection_reasons: z.array(z.string()),
+			payload: z
+				.object({ assertions: z.array(z.object({ field: z.string(), value: z.unknown() })) })
+				.passthrough(),
+			promoted: z.boolean(),
+			triage: z
+				.object({
+					revision: z.number(),
+					decision: z.enum(['include', 'exclude', 'defer', 'link']),
+					target_candidate_id: id.nullable(),
+					target_record_id: id.nullable(),
+					note: z.string(),
+					reviewed_at: z.string()
+				})
+				.nullable(),
+			suggestions: z.array(
+				z.object({
+					kind: z.literal('candidate'),
+					id,
+					source_id: z.string(),
+					native_id: z.string(),
+					name: z.string(),
+					reason: z.string()
+				})
+			)
+		})
+		.nullable()
+});
+
+export const registrySeedTriageInput = z
+	.object({
+		release: id,
+		version: id,
+		revision: z.coerce.number().int().min(0).max(2147483646),
+		decision: z.enum(['include', 'exclude', 'defer', 'link']),
+		targetKind: z.enum(['', 'candidate', 'record']),
+		targetId: z.union([id, z.literal('')]),
+		note: z.string().trim().min(1).max(2000)
+	})
+	.refine((value) => (value.decision === 'link') === (value.targetId !== ''), {
+		message: 'A link decision requires exactly one target.'
+	})
+	.refine((value) => (value.targetId === '') === (value.targetKind === ''), {
+		message: 'Select the target type and ID together.'
+	});
+
+export const registrySeedPromotionInput = z.object({
+	release: id,
+	version: id,
+	reason: z.string().trim().min(1).max(2000)
+});
 export const queueSchema = z.object({
 	runs: z.array(
 		z.object({

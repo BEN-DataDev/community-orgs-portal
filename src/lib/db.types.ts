@@ -1610,6 +1610,25 @@ export type Database = {
 		};
 		Functions: {
 			campaign_dashboard: { Args: Record<PropertyKey, never>; Returns: Json };
+			registry_seed_triage_queue: {
+				Args: { p_release?: string; p_version?: string; p_decision?: string; p_offset?: number };
+				Returns: Json;
+			};
+			save_registry_seed_triage: {
+				Args: {
+					p_version: string;
+					p_revision: number;
+					p_decision: string;
+					p_target_candidate?: string;
+					p_target_record?: string;
+					p_note: string;
+				};
+				Returns: undefined;
+			};
+			promote_registry_seed_candidates: {
+				Args: { p_release: string; p_versions: string[]; p_reason: string };
+				Returns: string;
+			};
 			campaign_readiness: { Args: { p_campaign: string }; Returns: Json };
 			create_campaign: {
 				Args: {

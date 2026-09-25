@@ -8,6 +8,7 @@
 	}: { current: string; campaign?: string; run?: string; version?: string } = $props();
 	const queues = [
 		['validation', 'Validation', '/admin/ingestion/validation'],
+		['candidates', 'Seed candidates', '/admin/ingestion/candidates'],
 		['identity', 'Identity and eligibility', '/admin/ingestion/identity'],
 		['changes', 'Field changes', '/admin/ingestion/changes'],
 		['releases', 'Release decisions', '/admin/ingestion/releases'],
@@ -30,7 +31,7 @@
 		<a class="anchor" href={resolve('/admin/campaigns')}>Return to campaign dashboard</a>
 	</p>
 {/if}
-<nav aria-label="Ingestion decision queues" class="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+<nav aria-label="Ingestion decision queues" class="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
 	{#each queues as [key, label, path]}
 		<a
 			class={`card border-surface-200-800 block border p-3 ${key === current ? 'preset-filled-primary-500' : 'hover:preset-tonal'}`}

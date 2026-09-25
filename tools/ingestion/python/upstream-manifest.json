@@ -20,6 +20,20 @@
 			"sha256": "d812b8c7f43789f4e5eb9a16b4d67a0d44e9612145f56a71bfb675e26e6fb052",
 			"local_path": "ingestion/adapters/abn.py",
 			"use": "P16 adapts exact-ABN SOAP, namespace parsing and field extraction approach; replaces Zeep/runtime WSDL with pinned 202001 contract, injected credentials, bounded transport and stable arrays."
+		},
+		{
+			"source_path": "app/extractors/nsw_assoc_extractor.py",
+			"sha256": "67bc99a30f9dd5bb7a32d22b76a5f2a3cfeefe23ed52478c60ea8b4c01331948",
+			"local_path": "ingestion/adapters/nsw_associations.py",
+			"use": "P34b interface and ASP.NET result-field reference. Reimplemented with the standard library, injected transport, strict markup checks and no automatic name merge."
+		},
+		{
+			"repository": "https://github.com/BEN-DataDev/orgs-data-manager",
+			"commit": "dea271215b267097bc4364f562f62e784b2e1294",
+			"source_path": "web_worker/search_nsw_assoc_register.py",
+			"sha256": "19845f3636f2ab892e250f0063ce97ec64d701232a7bf30823b65092ba41300d",
+			"local_path": "ingestion/adapters/nsw_associations.py",
+			"use": "P34b comparison reference for top/bottom pagination visibility and failure handling."
 		}
 	],
 	"changes": [
@@ -33,11 +47,12 @@
 		"F02 acnc_transform.py adapts the recorded transformer/mappings inventories: all 69 organisation columns, corrected canonical keys, explicit Y/N, strict dates/calendar/count/URL, no truncation or ambiguous splitting; parser v2 quarantines invalid or unknown fields.",
 		"F05 reprocess_acnc.py is new local orchestration over the F02 normaliser, not an additional upstream adaptation: preserves retained observation/raw/page evidence, validates resource-scoped identity, quarantines invalid records and emits independent coverage states; no legacy loader writes.",
 		"Parser/mapping v3 qualifies bare ASCII DNS website names with an explicit inferred HTTPS scheme, preserved raw source text and normalisation warning; historical v2 contract remains retained. New local work, not an upstream adaptation.",
-		"P13 local extensions: live_acnc.py now qualifies the full mapped CKAN schema; acquisition_output.py writes private envelope/manifest artifacts; bulk_acnc.py adds bounded direct-resource CSV acquisition with independent resource-scoped identity, full-file scan, selected-record quarantine and raw-file hash. Reuses the adapted normaliser without inventing CKAN IDs; no legacy loader, automatic source switch or publication."
+		"P13 local extensions: live_acnc.py now qualifies the full mapped CKAN schema; acquisition_output.py writes private envelope/manifest artifacts; bulk_acnc.py adds bounded direct-resource CSV acquisition with independent resource-scoped identity, full-file scan, selected-record quarantine and raw-file hash. Reuses the adapted normaliser without inventing CKAN IDs; no legacy loader, automatic source switch or publication.",
+		"P34b reimplements the reviewed NSW search flow with standard-library HTML parsing and HTTP, per-postcode sessions, fail-closed ASP.NET state and markup checks, conservative pacing, jurisdiction-scoped identity, private registry-seed output and no publication."
 	],
 	"pending": [
 		"Code redistribution rights confirmation",
-		"NSW adapter and authenticated ABN live qualification; ABN offline implementation complete"
+		"NSW permitted live search and authenticated ABN live qualification; both adapters remain operationally gated"
 	],
 	"mapping_contract_references": [
 		{

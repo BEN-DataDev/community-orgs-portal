@@ -58,7 +58,17 @@ def validate(manifest, schema):
 
 
 def cell(value):
-    return str(value).replace('|', '\\|').replace('\n', ' ')
+    return ' '.join(str(value).split()).replace('|', '\\|')
+
+
+def markdown_table(rows):
+    """Render the same padded pipe-table shape enforced by repository Prettier."""
+    widths = [max(3, *(len(row[index]) for row in rows)) for index in range(len(rows[0]))]
+
+    def line(row):
+        return '| ' + ' | '.join(value.ljust(widths[index]) for index, value in enumerate(row)) + ' |'
+
+    return [line(rows[0]), line(['-' * width for width in widths]), *(line(row) for row in rows[1:])]
 
 
 def render(manifest):
@@ -78,10 +88,12 @@ def render(manifest):
         '## Destination design', '', manifest['destination_design'], '',
         '## Remaining qualification', '',
         *['- ' + gate for gate in manifest['qualification_gates']], '',
-        '## Column inventory', '',
-        '| Source column (type) | Meaning / public label | Canonical key (type) | Rule | Database destination | Public section | Review unit | Current support |',
-        '| --- | --- | --- | --- | --- | --- | --- | --- |'
+        '## Column inventory', ''
     ]
+    table = [[
+        'Source column (type)', 'Meaning / public label', 'Canonical key (type)', 'Rule',
+        'Database destination', 'Public section', 'Review unit', 'Current support'
+    ]]
     for f in fields:
         d = f['destination']
         target = f"{d['schema']}.{d['table']}.{d['column']}"
@@ -91,7 +103,8 @@ def render(manifest):
         values = [f"{f['source_key']} ({f['source_type']})", f['meaning'],
                   f"{f['canonical_key']} ({f['canonical_type']})", f['transform_rule'],
                   target, f['public']['section'], f['review_unit'], f['implementation_status']]
-        lines.append('| ' + ' | '.join(cell(v) for v in values) + ' |')
+        table.append([cell(v) for v in values])
+    lines += markdown_table(table)
     lines += ['', '## Transformation rules', '']
     lines += [f'- **{name}**: {text}' for name, text in manifest['rules'].items()]
     lines += ['', '## Shared contract', '',

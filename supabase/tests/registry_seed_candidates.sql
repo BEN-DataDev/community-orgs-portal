@@ -94,6 +94,14 @@ begin
   perform community_orgs.save_registry_seed_triage(included_version::text,0,'defer',null,null,'Stale revision');
   raise exception 'Stale triage revision accepted';
  exception when serialization_failure then null; end;
+ result:=community_orgs.registry_seed_triage_queue(
+  v_release::text,included_version::text,'all',0);
+ if result->>'release_id'<>v_release::text or result->>'total'<>'2'
+  or result#>>'{detail,version_id}'<>included_version::text
+  or result#>>'{detail,triage,decision}'<>'include'
+  or (result#>'{detail,payload}') ? 'raw'
+  or jsonb_array_length(result->'records')<>2 then
+  raise exception 'Redacted registry seed triage queue failed: %',result; end if;
  select count(*) into before_orgs from community_orgs.organisations;
  staged_run:=community_orgs.promote_registry_seed_candidates(v_release::text,array[included_version::text],
   'Bounded P31 promotion fixture');

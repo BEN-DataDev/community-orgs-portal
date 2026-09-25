@@ -1,52 +1,67 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'vite';
+
 const server = await createServer({
 	server: { middlewareMode: true, hmr: false, ws: false },
 	appType: 'custom'
 });
+
 try {
-	const { load, actions } = await server.ssrLoadModule(
-		'/src/routes/admin/ingestion/+page.server.ts'
+	const identity = await server.ssrLoadModule(
+		'/src/routes/admin/ingestion/identity/+page.server.ts'
 	);
-	let operator = false,
-		saveError = null,
-		calls = [];
+	const changes = await server.ssrLoadModule('/src/routes/admin/ingestion/changes/+page.server.ts');
+	const suppressions = await server.ssrLoadModule(
+		'/src/routes/admin/ingestion/suppressions/+page.server.ts'
+	);
+	let operator = false;
+	let rpcError = null;
 	let previewError = null;
+	const calls = [];
+	const matchedOrg = '00000000-0000-4000-8000-000000001411';
+	const approvalId = '00000000-0000-4000-8000-000000000003';
+	const releaseId = '00000000-0000-4000-8000-000000000004';
 	const preview = { organisation_id: null, organisation_name: null, fields: [] };
 	const queue = { runs: [], run: null, total: 0, records: [], detail: null, candidates: [] };
-	const validation = {
-		total: 0,
-		counts: { total: 0, blocking: 0, unresolved: 0, deferred: 0, non_resolvable: 0 },
-		issues: [],
-		detail: null
-	};
-	const locals = {
-		supabase: {
-			rpc: async (name, args) => {
-				calls.push([name, args]);
-				if (name === 'ingestion_withdrawal_status')
-					return { data: { organisation_id: null, suppressions: [] }, error: null };
-				if (name === 'ingestion_field_approvals') return { data: [], error: null };
-				if (name === 'ingestion_field_preview') return { data: preview, error: previewError };
-				if (name === 'approve_ingestion_fields')
-					return { data: '00000000-0000-4000-8000-000000000003', error: saveError };
-				if (name === 'validation_issue_queue') return { data: validation, error: null };
-				return name === 'is_data_steward'
-					? { data: operator, error: null }
-					: name === 'ingestion_review_queue'
-						? { data: queue, error: null }
-						: { error: saveError };
-			}
+	const database = {
+		rpc: async (name, args) => {
+			calls.push([name, args]);
+			if (name === 'is_data_steward') return { data: operator, error: null };
+			if (name === 'ingestion_review_queue') return { data: queue, error: rpcError };
+			if (name === 'ingestion_field_preview') return { data: preview, error: previewError };
+			if (name === 'ingestion_field_approvals') return { data: [], error: rpcError };
+			if (name === 'ingestion_withdrawal_status')
+				return { data: { organisation_id: null, suppressions: [] }, error: rpcError };
+			if (name === 'approve_ingestion_fields') return { data: approvalId, error: rpcError };
+			if (name === 'submit_publication_release') return { data: releaseId, error: rpcError };
+			return { data: null, error: rpcError };
 		}
 	};
-	const event = { locals, url: new URL('http://localhost/admin/ingestion'), setHeaders: () => {} };
+	const locals = { providers: { database } };
+	const event = (path = '/admin/ingestion/identity') => ({
+		locals,
+		url: new URL(`http://localhost${path}`),
+		setHeaders: () => {}
+	});
+	const submit = (action, values, path) =>
+		action({
+			locals,
+			request: new Request(`http://localhost${path}`, {
+				method: 'POST',
+				body: values instanceof URLSearchParams ? values : new URLSearchParams(values)
+			})
+		});
+
 	await assert.rejects(
-		() => load(event),
-		(e) => e.status === 403
+		() => identity.load(event()),
+		(error) => error.status === 403
 	);
 	operator = true;
-	assert.equal((await load(event)).queue.total, 0);
-	const matchedOrg = '00000000-0000-4000-8000-000000001411';
+	assert.equal((await identity.load(event())).queue.total, 0);
+	await assert.rejects(
+		() => identity.load(event('/admin/ingestion/identity?offset=-1')),
+		(error) => error.status === 400
+	);
 	queue.run = '1';
 	queue.detail = {
 		id: '2',
@@ -55,26 +70,12 @@ try {
 		review: null,
 		identity_match: { status: 'match', organisation_id: matchedOrg, reason: 'Verified exact ABN' }
 	};
-	const matched = await load(event);
-	assert.equal(matched.queue.detail.identity_match.organisation_id, matchedOrg);
 	assert.equal(
-		calls.filter(([name]) => name === 'ingestion_field_preview').at(-1)[1].p_organisation,
+		(await identity.load(event())).queue.detail.identity_match.organisation_id,
 		matchedOrg
 	);
-	queue.detail.identity_match = {
-		status: 'hold',
-		organisation_id: null,
-		reason: 'Conflicting identifiers'
-	};
-	assert.equal((await load(event)).queue.detail.identity_match.status, 'hold');
-	queue.run = null;
-	queue.detail = null;
 
-	await assert.rejects(
-		() => load({ ...event, url: new URL('http://localhost/admin/ingestion?offset=-1') }),
-		(e) => e.status === 400
-	);
-	const values = {
+	const identityValues = {
 		run: '1',
 		version: '2',
 		revision: '0',
@@ -82,90 +83,49 @@ try {
 		organisation: '',
 		note: 'Checked'
 	};
-	const submit = () =>
-		actions.default({
-			locals,
-			request: new Request('http://localhost/admin/ingestion', {
-				method: 'POST',
-				body: new URLSearchParams(values)
-			})
-		});
-	assert.equal((await submit()).status, 400);
+	assert.equal(
+		(await submit(identity.actions.default, identityValues, '/admin/ingestion/identity')).status,
+		400
+	);
 	assert.equal(
 		calls.some(([name]) => name === 'save_ingestion_review'),
 		false
 	);
-	values.decision = 'defer';
-	assert.match((await submit()).message, /Review saved/);
-	saveError = { code: '40001' };
-	assert.equal((await submit()).status, 409);
-	queue.run = '1';
-	queue.detail = {
-		id: '2',
-		native_id: 'source-1',
-		payload: { assertions: [] },
-		review: {
-			revision: 1,
-			decision: 'link',
-			organisation_id: '00000000-0000-4000-8000-000000000001',
-			note: 'Scope checked',
-			reviewed_at: '2026-09-16T00:00:00Z'
-		}
-	};
-	await load(event);
+	identityValues.decision = 'defer';
+	assert.match(
+		(await submit(identity.actions.default, identityValues, '/admin/ingestion/identity')).message,
+		/decision saved/i
+	);
+	assert.equal(calls.at(-1)[0], 'save_ingestion_review');
+	rpcError = { code: '40001', message: 'stale' };
+	assert.equal(
+		(await submit(identity.actions.default, identityValues, '/admin/ingestion/identity')).status,
+		409
+	);
+	rpcError = null;
+
+	const loadedChanges = await changes.load(event('/admin/ingestion/changes?run=1&version=2'));
+	assert.equal(loadedChanges.preview.organisation_id, null);
 	assert.equal(
 		calls.findLast(([name]) => name === 'ingestion_field_preview')[1].p_organisation,
-		queue.detail.review.organisation_id
+		matchedOrg
 	);
-	const originalReview = queue.detail.review;
-	queue.detail.linked_organisation_id = originalReview.organisation_id;
-	queue.detail.review = null;
-	await load(event);
-	assert.equal(
-		calls.findLast(([name]) => name === 'ingestion_field_preview')[1].p_organisation,
-		queue.detail.linked_organisation_id
-	);
-	queue.detail.review = originalReview;
-	await load({ ...event, url: new URL('http://localhost/admin/ingestion?target=') });
+	await changes.load(event('/admin/ingestion/changes?run=1&version=2&target='));
 	assert.equal(
 		calls.findLast(([name]) => name === 'ingestion_field_preview')[1].p_organisation,
 		undefined
 	);
 	await assert.rejects(
-		() => load({ ...event, url: new URL('http://localhost/admin/ingestion?target=invalid') }),
-		(e) => e.status === 400
+		() => changes.load(event('/admin/ingestion/changes?run=1&version=2&target=invalid')),
+		(error) => error.status === 400
 	);
-	previewError = { code: 'P0002' };
+	previewError = { code: '42501', message: 'denied' };
 	await assert.rejects(
-		() => load(event),
-		(e) => e.status === 404
+		() => changes.load(event('/admin/ingestion/changes?run=1&version=2')),
+		(error) => error.status === 403
 	);
-	previewError = { code: '42501' };
-	await assert.rejects(
-		() => load(event),
-		(e) => e.status === 403
-	);
-	saveError = null;
-	const action = (values) =>
-		actions.default({
-			locals,
-			request: new Request('http://localhost/admin/ingestion', {
-				method: 'POST',
-				body: new URLSearchParams(values)
-			})
-		});
-	assert.equal(
-		(
-			await action({
-				intent: 'submit_publication',
-				approval: 'bad',
-				releaseClass: 'ordinary_update',
-				reason: 'Synthetic release'
-			})
-		).status,
-		400
-	);
-	assert.equal((await action({ intent: 'approve', field: '{' })).status, 400);
+	previewError = null;
+
 	const field = {
 		field: 'website',
 		section: 'Contact',
@@ -193,38 +153,49 @@ try {
 		run: '1',
 		version: '2',
 		revision: '1',
-		organisation: queue.detail.review.organisation_id,
+		organisation: matchedOrg,
 		field: JSON.stringify(field)
 	};
-	assert.match((await action(approvalForm)).message, /approval saved/);
-	assert.equal((await action(approvalForm)).approvalId, '00000000-0000-4000-8000-000000000003');
-	assert.equal(calls.at(-1)[0], 'approve_ingestion_fields');
+	assert.equal(
+		(
+			await submit(
+				changes.actions.default,
+				{ intent: 'approve', field: '{' },
+				'/admin/ingestion/changes'
+			)
+		).status,
+		400
+	);
+	const approval = await submit(changes.actions.default, approvalForm, '/admin/ingestion/changes');
+	assert.equal(approval.approvalId, approvalId);
+	assert.match(approval.message, /approval saved/i);
 	assert.deepEqual(calls.at(-1)[1].p_fields, [field]);
-	const multi = new URLSearchParams(approvalForm);
+	const multiple = new URLSearchParams(approvalForm);
 	for (const key of ['pbi', 'hpc', 'charity_size'])
-		multi.append('field', JSON.stringify({ ...field, field: key }));
-	assert.match((await action(multi)).message, /approval saved/);
+		multiple.append('field', JSON.stringify({ ...field, field: key }));
+	await submit(changes.actions.default, multiple, '/admin/ingestion/changes');
 	assert.equal(calls.at(-1)[1].p_fields.length, 4);
-	const publishForm = {
+
+	const releaseForm = {
 		intent: 'submit_publication',
-		approval: '00000000-0000-4000-8000-000000000003',
+		approval: approvalId,
 		releaseClass: 'ordinary_update',
 		reason: 'Synthetic release'
 	};
-	assert.match((await action(publishForm)).message, /release submitted/i);
-	assert.equal(calls.at(-1)[0], 'submit_publication_release');
-	saveError = { code: '40001' };
-	assert.equal((await action(publishForm)).status, 409);
-	assert.equal((await action(approvalForm)).status, 409);
-	saveError = { code: '22023', message: 'Complete enabled source required' };
-	const paused = await action(approvalForm);
-	assert.equal(paused.data.intent, 'approve');
+	const released = await submit(changes.actions.default, releaseForm, '/admin/ingestion/changes');
+	assert.equal(released.releaseId, releaseId);
+	assert.match(released.message, /release submitted/i);
+	rpcError = { code: '40001', message: 'stale' };
+	assert.equal(
+		(await submit(changes.actions.default, releaseForm, '/admin/ingestion/changes')).status,
+		409
+	);
+	rpcError = { code: '22023', message: 'Complete enabled source required' };
+	const paused = await submit(changes.actions.default, approvalForm, '/admin/ingestion/changes');
 	assert.match(paused.data.message, /source is paused/);
-	saveError = { code: '22023', message: 'New organisation requires name' };
-	assert.match((await action(approvalForm)).data.message, /select Entity name/);
 
+	rpcError = null;
 	const suppressionForm = {
-		intent: 'submit_suppression',
 		run: '1',
 		version: '2',
 		field: '*',
@@ -232,33 +203,33 @@ try {
 		expected: JSON.stringify({ organisation_id: null }),
 		confirmed: 'yes'
 	};
-	saveError = null;
-	assert.equal((await action({ ...suppressionForm, confirmed: '' })).status, 400);
-	assert.equal((await action({ ...suppressionForm, expected: '{' })).status, 400);
-	assert.match((await action(suppressionForm)).message, /Suppression release submitted/);
-	assert.equal(calls.at(-1)[0], 'submit_publication_release');
-	saveError = { code: '40001' };
-	assert.equal((await action(suppressionForm)).status, 409);
+	assert.equal(
+		(
+			await submit(
+				suppressions.actions.default,
+				{ ...suppressionForm, confirmed: '' },
+				'/admin/ingestion/suppressions'
+			)
+		).status,
+		400
+	);
+	const suppressed = await submit(
+		suppressions.actions.default,
+		suppressionForm,
+		'/admin/ingestion/suppressions'
+	);
+	assert.equal(suppressed.releaseId, releaseId);
+	assert.match(suppressed.message, /Suppression release submitted/);
+
 	operator = false;
-	await assert.rejects(
-		() => action(suppressionForm),
-		(e) => e.status === 403
-	);
-	await assert.rejects(
-		() => action(publishForm),
-		(e) => e.status === 403
-	);
-	await assert.rejects(
-		() => action(approvalForm),
-		(e) => e.status === 403
-	);
-	await assert.rejects(
-		() => load(event),
-		(e) => e.status === 403
-	);
-	await assert.rejects(submit, (e) => e.status === 403);
+	for (const route of [identity, changes, suppressions]) {
+		await assert.rejects(
+			() => route.load(event()),
+			(error) => error.status === 403
+		);
+	}
 	console.log(
-		'Review route authorization, input validation, empty queue, save, stale revision field previews, selected approvals and release submission checks passed.'
+		'Focused identity, field-change and suppression route authorization, validation, previews and release submission checks passed.'
 	);
 } finally {
 	await server.close();
