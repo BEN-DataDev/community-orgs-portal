@@ -84,7 +84,7 @@ export const actions: Actions = {
 				}
 				const source = image ? 'upload' : intent === 'providerAvatar' ? 'provider' : 'initials';
 				const { cleanupPending } = await saveAccountAvatar(
-					locals.supabase,
+					locals.providers.avatars,
 					locals.user.id,
 					revision,
 					source,

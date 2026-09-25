@@ -24,7 +24,7 @@ const history = z.object({
 });
 
 async function loadHistory(locals: App.Locals) {
-	const result = await locals.supabase.rpc('portal_scope_history');
+	const result = await locals.providers.database.rpc('portal_scope_history');
 	if (result.error)
 		error(result.error.code === '42501' ? 403 : 500, 'Could not load portal scope.');
 	const parsed = history.safeParse(result.data);
@@ -34,13 +34,14 @@ async function loadHistory(locals: App.Locals) {
 
 export const load: PageServerLoad = async ({ locals, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
-	if (!(await isSiteAdmin(locals.supabase, locals.user?.id))) error(403, 'Administrator required.');
+	if (!(await isSiteAdmin(locals.providers.database, locals.user?.id)))
+		error(403, 'Administrator required.');
 	return loadHistory(locals);
 };
 
 export const actions: Actions = {
 	default: async ({ locals, request }) => {
-		if (!(await isSiteAdmin(locals.supabase, locals.user?.id)))
+		if (!(await isSiteAdmin(locals.providers.database, locals.user?.id)))
 			error(403, 'Administrator required.');
 		const formData = Object.fromEntries(await request.formData());
 		const postcodes = String(formData.postcodes ?? '')
@@ -67,7 +68,7 @@ export const actions: Actions = {
 					'Enter 1 to 500 unique four-digit postcodes plus policy, impact and approval reasons.'
 			});
 		}
-		const result = await locals.supabase.rpc('configure_portal_scope', {
+		const result = await locals.providers.database.rpc('configure_portal_scope', {
 			p_postcodes: canonical,
 			p_inclusion_policy_version: input.data.inclusionPolicyVersion,
 			p_reason: input.data.reason,

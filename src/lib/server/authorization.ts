@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import type { TypedSupabaseClient } from '$lib/supabase-client';
+import type { DomainDatabase } from '$lib/server/providers/contracts';
 import { EDITOR_LEVEL, ROLE_LEVEL } from '$lib/role-levels';
 
 export { EDITOR_LEVEL, ROLE_LEVEL };
@@ -15,7 +15,7 @@ export { EDITOR_LEVEL, ROLE_LEVEL };
  */
 
 export async function orgRoleLevel(
-	supabase: TypedSupabaseClient,
+	supabase: DomainDatabase,
 	userId: string | undefined,
 	orgId: string
 ): Promise<number> {
@@ -34,7 +34,7 @@ export async function orgRoleLevel(
 	return data ?? 0;
 }
 
-export async function userOrganisations(supabase: TypedSupabaseClient, userId: string) {
+export async function userOrganisations(supabase: DomainDatabase, userId: string) {
 	const { data, error: rpcError } = await supabase.rpc('get_user_organisations_with_roles', {
 		p_user_id: userId
 	});
@@ -52,7 +52,7 @@ export async function userOrganisations(supabase: TypedSupabaseClient, userId: s
  * holds any active role on it.
  */
 export async function requireOrgAccess(
-	supabase: TypedSupabaseClient,
+	supabase: DomainDatabase,
 	userId: string | undefined,
 	orgId: string,
 	isPublic: boolean
@@ -66,7 +66,7 @@ export async function requireOrgAccess(
 
 /** Changing an organisation's records requires admin or owner on it. */
 export async function requireOrgEditor(
-	supabase: TypedSupabaseClient,
+	supabase: DomainDatabase,
 	userId: string | undefined,
 	orgId: string
 ): Promise<number> {
@@ -79,7 +79,7 @@ export async function requireOrgEditor(
 
 /** Portal Administrators govern the portal; stewardship decides organisation access. */
 export async function isSiteAdmin(
-	supabase: TypedSupabaseClient,
+	supabase: DomainDatabase,
 	userId: string | undefined
 ): Promise<boolean> {
 	if (!userId) return false;

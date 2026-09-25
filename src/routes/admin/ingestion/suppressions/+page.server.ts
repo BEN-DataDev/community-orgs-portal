@@ -6,14 +6,16 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
-	if (!(await isIngestionOperator(locals.supabase))) error(403, 'Data Steward access required.');
-	const loaded = await loadReviewQueue(locals.supabase, url);
-	return { ...loaded, ...(await loadSuppressionContext(locals.supabase, url, loaded)) };
+	if (!(await isIngestionOperator(locals.providers.database)))
+		error(403, 'Data Steward access required.');
+	const loaded = await loadReviewQueue(locals.providers.database, url);
+	return { ...loaded, ...(await loadSuppressionContext(locals.providers.database, url, loaded)) };
 };
 
 export const actions: Actions = {
 	default: async ({ locals, request }) => {
-		if (!(await isIngestionOperator(locals.supabase))) error(403, 'Data Steward access required.');
+		if (!(await isIngestionOperator(locals.providers.database)))
+			error(403, 'Data Steward access required.');
 		const form = await request.formData();
 		let expected: unknown;
 		try {
@@ -24,7 +26,7 @@ export const actions: Actions = {
 		const input = suppressionInput.safeParse({ ...Object.fromEntries(form), expected });
 		if (!input.success)
 			return fail(400, { message: 'Choose a scope, provide a reason and confirm removal.' });
-		const result = await locals.supabase.rpc('submit_publication_release', {
+		const result = await locals.providers.database.rpc('submit_publication_release', {
 			p_release_class: 'suppression',
 			p_items: [
 				{

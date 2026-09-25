@@ -2,8 +2,47 @@ from __future__ import annotations
 
 import os
 import subprocess
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
+
+
+@dataclass(frozen=True)
+class ProviderCapabilities:
+    postgresql: str
+    verified_identity: str
+    private_storage: str
+    scheduler: str
+    secret_references: str
+    backup_restore: str
+    migrations: str
+
+    def as_dict(self) -> dict[str, str]:
+        return asdict(self)
+
+
+CAPABILITIES = {
+    "supabase_postgres": ProviderCapabilities(
+        postgresql="supported", verified_identity="supported", private_storage="supported",
+        scheduler="external", secret_references="external", backup_restore="external",
+        migrations="supported",
+    ),
+    "docker_postgres": ProviderCapabilities(
+        postgresql="supported", verified_identity="unsupported", private_storage="unsupported",
+        scheduler="external", secret_references="unsupported", backup_restore="external",
+        migrations="supported",
+    ),
+}
+
+
+class FleetProvider(Protocol):
+    adapter: str
+
+    def apply_migrations(self, migration_dir: Path, target_version: str) -> list[str]: ...
+    def establish(self) -> None: ...
+    def bootstrap_administrator(self) -> str | None: ...
+    def health(self) -> dict[str, str]: ...
+    def capabilities(self) -> ProviderCapabilities: ...
 
 
 class PostgresAdapter:
@@ -26,6 +65,9 @@ class PostgresAdapter:
                 raise ValueError(f"Required connection secret environment variable {variable} is not set")
             self.prefix = [provider.get("psql", "psql"), "-X", "-q", "-v", "ON_ERROR_STOP=1", url]
             self.env = {**os.environ, "PGAPPNAME": "community-orgs-fleet"}
+
+    def capabilities(self) -> ProviderCapabilities:
+        return CAPABILITIES[self.adapter]
 
     def sql(self, sql: str, *, tuples: bool = False) -> str:
         command = [*self.prefix]
@@ -111,3 +153,8 @@ class PostgresAdapter:
         versions = sorted(self.applied_versions())
         return {"portal_id": portal_id, "portal_key": portal_key, "lifecycle": lifecycle,
                 "schema_version": versions[-1] if versions else "unversioned"}
+
+
+def create_provider(portal: dict[str, Any]) -> FleetProvider:
+    """The only fleet construction point for deployment-provider adapters."""
+    return PostgresAdapter(portal)

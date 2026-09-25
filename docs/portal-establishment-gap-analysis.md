@@ -39,25 +39,25 @@ or change production state.
 
 ## Capability summary
 
-| Area                                | Status              | Main finding                                                                                                                                           |
-| ----------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Independent portal databases        | Partial             | One deployment already targets one database, but configuration and operations are hard-wired to one Supabase/Vercel project                            |
-| Portal identity and lifecycle       | Implemented         | Private singleton identity, deployment-manifest fencing, sponsor branding and append-only lifecycle events are enforced                                |
-| Versioned postcode scope            | Implemented         | Immutable portal scope revisions govern acquisition configuration and reconciliation compatibility                                                     |
-| Fleet operations                    | Implemented/partial | A manifest-driven CLI now inventories, migrates, verifies, bootstraps and audits isolated deployments; provider project creation remains adapter-bound |
-| Provider abstraction                | Provider-bound      | Request auth, data API, storage, cron and generated types directly use Supabase; deployment directly uses Vercel cron                                  |
-| Portal Administrator                | Partial             | Explicit current appointments and revocation evidence replace the implicit capability union; invitation/administration UX remains                      |
-| Data Steward / operator             | Partial             | Explicit Data Steward appointments retain revocation evidence and no longer derive from Portal Administrator authority                                 |
-| Organisation roles                  | Partial             | Strong grant/revoke safeguards exist; assignments use account UUIDs and no invitation/handoff workflow exists                                          |
-| Stewardship                         | Implemented         | Current state/events gate administrator editing; email-bound acceptance atomically grants ownership and completes the handoff                          |
-| Record edit audit                   | Partial             | Domain rows retain editor/timestamps and roles/imports have events, but no uniform before/after audit for Portal Administrator edits                   |
-| Source releases and private staging | Implemented/partial | Strong per-source releases and runs exist; cross-source campaign aggregation is absent                                                                 |
-| Initial seed workflow               | Partial             | ABN candidates and a mandatory independent initial-release gate exist; multi-source seed campaigns remain absent                                       |
-| Two-person approval                 | Implemented         | Frozen releases retain policy revisions and require a different approver for initial and destructive work                                              |
-| Recurring updates                   | Partial             | ACNC scheduling, reconciliation and conflict protections exist; broader source and campaign orchestration is incomplete                                |
-| Review UX                           | Implemented         | Focused validation, identity, field-change, release and suppression queues retain campaign and record context                                          |
-| Invitation evidence                 | Implemented         | Immutable email-bound terms and single-use events cover acceptance, cancellation and expiry independently of delivery provider                         |
-| NSW state register                  | Missing             | No current adapter is integrated                                                                                                                       |
+| Area                                | Status              | Main finding                                                                                                                                            |
+| ----------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Independent portal databases        | Implemented/partial | Isolated databases and manifests are tested; managed provider project creation remains external                                                         |
+| Portal identity and lifecycle       | Implemented         | Private singleton identity, deployment-manifest fencing, sponsor branding and append-only lifecycle events are enforced                                 |
+| Versioned postcode scope            | Implemented         | Immutable portal scope revisions govern acquisition configuration and reconciliation compatibility                                                      |
+| Fleet operations                    | Implemented/partial | A manifest-driven CLI now inventories, migrates, verifies, bootstraps and audits isolated deployments; provider project creation remains adapter-bound  |
+| Provider abstraction                | Implemented/partial | Application-owned ports cover domain RPCs, verified identity, private storage, maintenance and fleet operations; browser/auth UI remains provider-bound |
+| Portal Administrator                | Partial             | Explicit current appointments and revocation evidence replace the implicit capability union; invitation/administration UX remains                       |
+| Data Steward / operator             | Partial             | Explicit Data Steward appointments retain revocation evidence and no longer derive from Portal Administrator authority                                  |
+| Organisation roles                  | Partial             | Strong grant/revoke safeguards exist; assignments use account UUIDs and no invitation/handoff workflow exists                                           |
+| Stewardship                         | Implemented         | Current state/events gate administrator editing; email-bound acceptance atomically grants ownership and completes the handoff                           |
+| Record edit audit                   | Partial             | Domain rows retain editor/timestamps and roles/imports have events, but no uniform before/after audit for Portal Administrator edits                    |
+| Source releases and private staging | Implemented/partial | Strong per-source releases and runs exist; cross-source campaign aggregation is absent                                                                  |
+| Initial seed workflow               | Partial             | ABN candidates and a mandatory independent initial-release gate exist; multi-source seed campaigns remain absent                                        |
+| Two-person approval                 | Implemented         | Frozen releases retain policy revisions and require a different approver for initial and destructive work                                               |
+| Recurring updates                   | Partial             | ACNC scheduling, reconciliation and conflict protections exist; broader source and campaign orchestration is incomplete                                 |
+| Review UX                           | Implemented         | Focused validation, identity, field-change, release and suppression queues retain campaign and record context                                           |
+| Invitation evidence                 | Implemented         | Immutable email-bound terms and single-use events cover acceptance, cancellation and expiry independently of delivery provider                          |
+| NSW state register                  | Missing             | No current adapter is integrated                                                                                                                        |
 
 ## Reusable foundations
 
@@ -140,10 +140,12 @@ bootstraps the first Portal Administrator and exports hash-chained append-only
 operation evidence. Credential rotations retain versioned secret references but
 never values. Each portal can target an adjacent schema version for rolling upgrades.
 
-The first adapter targets Supabase-compatible PostgreSQL. Provider project creation,
-backup/restore execution and time-bounded infrastructure access remain provider
-operations and must be recorded with the CLI. They belong to the Phase 6 adapter
-contract rather than portal application authority. See [fleet operations](fleet-operations.md).
+The fleet provider protocol and capability matrix now distinguish supported,
+external and unsupported behavior for Supabase-compatible and Docker PostgreSQL
+adapters. Provider project creation, backup/restore execution and time-bounded
+infrastructure access remain provider operations rather than portal application
+authority. See [fleet operations](fleet-operations.md) and
+[provider adapters](provider-adapters.md).
 
 **Acceptance:** an operator can provision a second test portal, apply and verify the
 same schema, appoint its first Portal Administrator, rotate bootstrap credentials
@@ -151,16 +153,9 @@ and produce an operation log without changing the first portal.
 
 ### PEG04 — Provider boundary
 
-**Priority: high before a non-Supabase deployment. Status: provider-bound.**
+**Priority: high before a non-Supabase deployment. Status: implemented/partial.**
 
-The application constructs Supabase clients directly in `hooks.server.ts` and the
-root client layout, types `App.Locals` as a Supabase client, uses Supabase Auth and
-MFA claims, calls PostgREST RPCs throughout routes, uses Supabase Storage for
-avatars, and creates a service-role client in the Vercel cron handler. Static
-environment variables assume one project. Database authorization uses
-`auth.uid()` and Supabase JWT helpers.
-
-Introduce application-owned interfaces incrementally:
+Application-owned provider interfaces now cover:
 
 - verified identity and assurance;
 - portal database/domain services;
@@ -169,14 +164,24 @@ Introduce application-owned interfaces incrementally:
 - secret references; and
 - deployment/migration provider.
 
-The initial implementations may delegate completely to Supabase. PostgreSQL
-functions and RLS remain a valid data adapter; a different auth provider needs a
-trusted way to establish equivalent database identity and assurance.
+The Supabase adapter implements those ports, normalises provider failures and is
+the only server module that coordinates Supabase domain RPC, identity, avatar
+storage and maintenance behavior. Domain RPC loaders/actions use the application
+port rather than a Supabase type. Interactive Auth flows and browser-side queries
+remain deliberately Supabase-bound, while PostgreSQL functions and RLS remain the
+portable correctness boundary.
 
-**Acceptance:** domain loaders/actions no longer require a Supabase type merely to
-express business operations, and a provider capability matrix states what an
-adapter must implement. A second managed-PostgreSQL proof of concept should follow
-before claiming provider portability.
+An intentionally limited local adapter proves private-object and optimistic profile
+behavior without claiming verified identity or production operation. Both runtime
+and fleet descriptors fail closed by declaring unsupported capabilities. A second
+managed provider still requires qualification against the documented contract
+before it can be called production-portable.
+
+**Acceptance met for the proof:** domain RPC loaders/actions no longer require a
+Supabase type merely to express business operations; identity, storage and scheduled
+maintenance have application ports; and runtime and fleet capability matrices state
+what each adapter implements. Production support for another managed provider is
+not claimed.
 
 ### PEG05 — Portal Administrator conflicts with platform administrator
 
@@ -356,17 +361,15 @@ second release; state-specific absence or failure cannot erase organisations.
 
 ### PEG13 — Fleet-safe migrations and compatibility
 
-**Priority: high before operating multiple portals. Status: missing.**
+**Priority: high before operating multiple portals. Status: implemented.**
 
-The repository has ordered migrations and extensive disposable-database tests, but
-deployment records describe one linked hosted project and working-tree deployments.
-There is no fleet migration inventory, compatibility window, rolling-upgrade policy
-or automated preflight/rollback decision per portal.
-
-Define schema compatibility metadata and provider-neutral migration execution.
-Application releases should declare supported schema versions. Prefer expand/migrate/
-contract changes so portals can be upgraded independently. Destructive schema
-changes require fleet inventory and backup evidence.
+The fleet manifest pins each portal to a migration version, inventory records
+expected and observed schema versions, and the provider-neutral executor applies
+only the migrations at or below the target. Portals can intentionally run adjacent
+versions and health reports drift without opening a provider console. Failed
+operations remain in the hash-chained audit while their inventory projection rolls
+back. Destructive changes still require provider-owned backup evidence and the
+expand/migrate/contract policy.
 
 **Acceptance:** two portal databases can intentionally run adjacent supported
 schema versions; the operator can report drift and failed migration state without
@@ -376,9 +379,10 @@ opening each provider console.
 
 **Priority: high. Status: partial.**
 
-Current suites thoroughly test many authorization and ingestion invariants in one
-database. They do not exercise two isolated portals, manifest mismatch, provider
-adapters, stewardship handoff, invitations, dual approval or fleet operations.
+Current suites thoroughly test authorization and ingestion invariants, two isolated
+portal databases, manifest identity fencing, runtime and fleet provider contracts,
+stewardship handoff, invitations, dual approval and fleet operations. Full managed
+provider restore and technical-support expiry scenarios remain outstanding.
 
 Add contract tests for every provider adapter and end-to-end scenarios covering:
 
@@ -437,12 +441,14 @@ Automate provisioning, migration inventory, health, credential rotation, first
 administrator bootstrap and audit export. Retain provider-console access only as a
 recorded recovery path.
 
-### Phase 6 — Provider portability proof
+### Phase 6 — Provider portability proof (complete)
 
 Extract Supabase-owned interfaces, document the adapter contract and exercise a
 second managed-PostgreSQL provider or an intentionally limited local adapter.
-Portability is not complete until authentication identity, storage, scheduling,
-backups and migrations meet the same acceptance tests.
+The limited local adapter was selected and its unsupported capabilities are explicit;
+this completes the abstraction proof without claiming production portability for a
+second provider. Such a claim still requires verified identity, durable storage,
+scheduling, backups and migrations to meet the same acceptance tests.
 
 ### Phase 7 — Complete and operate the seed
 
@@ -453,11 +459,11 @@ and recurring refresh campaigns.
 
 ## Immediate next slice
 
-Phases 1 through 5 are complete. The fleet control plane now inventories isolated
-deployments from secret-free manifests, applies and verifies pinned schema versions,
-checks immutable portal identity, bootstraps the first Portal Administrator, records
-credential-reference rotations and exports tamper-evident operation history.
+Phases 1 through 6 are complete. Server-side domain RPC, verified request identity,
+private avatar storage and scheduled maintenance now use application-owned ports.
+The Supabase production adapter and deliberately limited local proof adapter publish
+tested capabilities, and the fleet uses the same explicit provider vocabulary.
 
-The next slice is Phase 6 provider portability: extract application-owned provider
-interfaces and prove the required identity, storage, scheduling, backup and migration
-capabilities against a second provider or an intentionally limited local adapter.
+The next slice is Phase 7: qualify and integrate the state-register source, resolve a
+bounded cross-source cohort inside an `initial_seed` campaign, publish it only through
+dual control, complete administrator handoff and begin organisation invitations.

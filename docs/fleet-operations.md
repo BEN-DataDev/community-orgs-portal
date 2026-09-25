@@ -17,6 +17,7 @@ environment.
 ```sh
 npm run fleet -- --manifest /operator/fleet.json validate
 npm run fleet -- --manifest /operator/fleet.json inventory
+npm run fleet -- --manifest /operator/fleet.json capabilities
 npm run fleet -- --manifest /operator/fleet.json provision snowy-valleys \
   --operator operator@example.org --purpose OPS-142
 npm run fleet -- --manifest /operator/fleet.json migrate snowy-valleys \
@@ -32,11 +33,16 @@ identity and schema. It is replay-safe. A database already bound to another
 portal fails closed. `migrate` supports rolling upgrades because each portal can
 pin an adjacent schema version independently.
 
+`capabilities` reports the application-owned provider contract for every bundled
+adapter. An `external` capability remains the deployment operator's responsibility;
+`unsupported` must never be interpreted as a best-effort implementation. See
+[provider adapters](provider-adapters.md).
+
 The `supabase_postgres` adapter expects a Supabase-compatible database with its
 Auth, Storage and extension schemas available. Project creation and the initial
-Auth account remain provider operations; Phase 6 will define broader provider
-contracts. `docker_postgres` exists for isolated acceptance environments and is
-not a production adapter.
+Auth account remain provider operations. `docker_postgres` exists for isolated
+acceptance environments and is not a production adapter; it explicitly lacks
+verified identity, object storage and managed secret capabilities.
 
 ## Credential rotation
 

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .control import ControlPlane
 from .manifest import SECRET, ensure_no_inline_secrets, load_manifest, portal_by_key
-from .provider import PostgresAdapter
+from .provider import CAPABILITIES, create_provider
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -23,6 +23,7 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--state", type=Path, default=ROOT / ".fleet/control.sqlite3")
     sub = p.add_subparsers(dest="command", required=True)
     sub.add_parser("validate")
+    sub.add_parser("capabilities")
     sub.add_parser("inventory")
     export = sub.add_parser("export-audit"); export.add_argument("--output", type=Path)
     for name in ("provision", "migrate", "health"):
@@ -44,6 +45,9 @@ def main(argv: list[str] | None = None) -> int:
         ensure_no_inline_secrets(manifest)
         if args.command == "validate":
             output({"valid": True, "manifest_sha256": digest, "portals": len(manifest["portals"])})
+            return 0
+        if args.command == "capabilities":
+            output({name: capabilities.as_dict() for name, capabilities in CAPABILITIES.items()})
             return 0
         control = ControlPlane(args.state)
         try:
@@ -68,8 +72,9 @@ def main(argv: list[str] | None = None) -> int:
                     details.update({"credential": args.credential, "secret_ref": args.new_secret_ref,
                                     "reference_revision": revision, "secret_value_stored": False})
                 output({"operation_id": op, "credential": args.credential, "revision": revision}); return 0
-            adapter = PostgresAdapter(portal)
+            adapter = create_provider(portal)
             with control.operation(portal, args.command, args.operator, args.purpose) as (op, details):
+                details["provider_capabilities"] = adapter.capabilities().as_dict()
                 if args.command in ("provision", "migrate"):
                     applied = adapter.apply_migrations(ROOT / "supabase/migrations", portal["schema_version"])
                     details["applied_migrations"] = applied

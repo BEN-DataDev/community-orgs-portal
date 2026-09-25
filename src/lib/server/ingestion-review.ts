@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import type { TypedSupabaseClient } from '$lib/supabase-client';
+import type { DomainDatabase } from '$lib/server/providers/contracts';
 
-export async function isIngestionOperator(client: TypedSupabaseClient): Promise<boolean> {
+export async function isIngestionOperator(client: DomainDatabase): Promise<boolean> {
 	const { data, error } = await client.rpc('is_data_steward');
 	return !error && data === true;
 }

@@ -4,7 +4,7 @@ import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ locals, url, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
-	if (!(await isIngestionOperator(locals.supabase)))
+	if (!(await isIngestionOperator(locals.providers.database)))
 		error(403, 'Ingestion operator access required.');
 	const run = url.searchParams.get('run') ?? '';
 	const baseline = url.searchParams.get('baseline') || undefined;
@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ locals, url, setHeaders }) => {
 		)
 	)
 		error(400, 'Invalid run ID.');
-	const result = await locals.supabase.rpc('ingestion_change_report', {
+	const result = await locals.providers.database.rpc('ingestion_change_report', {
 		p_run: run,
 		p_baseline: baseline
 	});

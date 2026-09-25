@@ -8,6 +8,11 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/db.types';
 import type { TypedSupabaseClient } from '$lib/supabase-client';
 import { PortalIdentityError, requirePortalIdentity } from '$lib/server/portal';
+import {
+	ProviderMaintenanceError,
+	SupabaseDomainDatabase,
+	SupabaseMaintenanceProvider
+} from '$lib/server/providers/supabase';
 
 /**
  * Compares two secrets without leaking their contents through timing. Both
@@ -52,11 +57,12 @@ export const GET: RequestHandler = async ({ request }) => {
 				auth: { persistSession: false, autoRefreshToken: false }
 			}
 		);
+		const domain = new SupabaseDomainDatabase(
+			supabase.schema('community_orgs') as unknown as TypedSupabaseClient
+		);
 		let portal;
 		try {
-			portal = await requirePortalIdentity(
-				supabase.schema('community_orgs') as unknown as TypedSupabaseClient
-			);
+			portal = await requirePortalIdentity(domain);
 		} catch (error) {
 			if (error instanceof PortalIdentityError) {
 				console.error('Cron portal identity check failed:', error.message);
@@ -64,44 +70,24 @@ export const GET: RequestHandler = async ({ request }) => {
 			}
 			throw error;
 		}
-		const { data, error } = await supabase.rpc('health_check');
-		if (error) {
-			console.error('Cron health check failed:', error);
-			return json({ success: false, stage: 'health_check' }, { status: 500 });
+		let maintenance;
+		try {
+			maintenance = await new SupabaseMaintenanceProvider(supabase).run();
+		} catch (error) {
+			if (error instanceof ProviderMaintenanceError) {
+				console.error(`Cron ${error.stage} failed:`, error.failure);
+				return json({ success: false, stage: error.stage }, { status: 500 });
+			}
+			throw error;
 		}
-
-		const { data: purged, error: purgeError } = await supabase
-			.schema('community_orgs')
-			.rpc('purge_stale_anonymous_users');
-		if (purgeError) {
-			console.error('Cron guest cleanup failed:', purgeError);
-			return json({ success: false, stage: 'guest_cleanup' }, { status: 500 });
-		}
-
-		const { data: abandoned, error: abandonedError } = await supabase
-			.schema('community_orgs')
-			.rpc('abandoned_account_avatars');
-		if (abandonedError) return json({ success: false, stage: 'avatar_cleanup' }, { status: 500 });
-		if (abandoned?.length) {
-			const { error: cleanupError } = await supabase.storage
-				.from('avatars')
-				.remove(abandoned.map((row: { path: string }) => row.path));
-			if (cleanupError) return json({ success: false, stage: 'avatar_cleanup' }, { status: 500 });
-		}
-
-		const { data: acquisitions, error: acquisitionError } = await supabase
-			.schema('community_orgs')
-			.rpc('enqueue_due_acquisitions');
-		if (acquisitionError)
-			return json({ success: false, stage: 'acquisition_queue' }, { status: 500 });
 
 		console.info('Cron completed:', {
 			completedAt: new Date().toISOString(),
-			purgedAnonymousUsers: purged
+			purgedAnonymousUsers: maintenance.purgedAnonymousUsers
 		});
 		return json({
 			success: true,
-			data,
+			data: maintenance.health,
 			portal: {
 				portalId: portal.portalId,
 				portalKey: portal.portalKey,
@@ -112,8 +98,8 @@ export const GET: RequestHandler = async ({ request }) => {
 				scopeRevision: portal.scopeRevision,
 				scopePostcodes: portal.scopePostcodes
 			},
-			purgedAnonymousUsers: purged,
-			acquisitions
+			purgedAnonymousUsers: maintenance.purgedAnonymousUsers,
+			acquisitions: maintenance.acquisitions
 		});
 	} catch (error) {
 		console.error('Cron execution failed:', error);

@@ -10,21 +10,23 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
-	if (!(await isIngestionOperator(locals.supabase))) error(403, 'Data Steward access required.');
-	const loaded = await loadReviewQueue(locals.supabase, url);
-	return { ...loaded, ...(await loadFieldContext(locals.supabase, url, loaded)) };
+	if (!(await isIngestionOperator(locals.providers.database)))
+		error(403, 'Data Steward access required.');
+	const loaded = await loadReviewQueue(locals.providers.database, url);
+	return { ...loaded, ...(await loadFieldContext(locals.providers.database, url, loaded)) };
 };
 
 export const actions: Actions = {
 	default: async ({ locals, request }) => {
-		if (!(await isIngestionOperator(locals.supabase))) error(403, 'Data Steward access required.');
+		if (!(await isIngestionOperator(locals.providers.database)))
+			error(403, 'Data Steward access required.');
 		const form = await request.formData();
 		const intent = form.get('intent');
 		if (intent === 'submit_publication') {
 			const input = releaseSubmissionInput.safeParse(Object.fromEntries(form));
 			if (!input.success)
 				return fail(400, { intent, message: 'Choose a release class and provide a reason.' });
-			const result = await locals.supabase.rpc('submit_publication_release', {
+			const result = await locals.providers.database.rpc('submit_publication_release', {
 				p_release_class: input.data.releaseClass,
 				p_items: [{ action: 'publish_change_set', change_set_id: input.data.approval }],
 				p_reason: input.data.reason
@@ -53,7 +55,7 @@ export const actions: Actions = {
 				intent,
 				message: 'Select eligible fields after saving a matching identity decision.'
 			});
-		const result = await locals.supabase.rpc('approve_ingestion_fields', {
+		const result = await locals.providers.database.rpc('approve_ingestion_fields', {
 			p_run: input.data.run,
 			p_version: input.data.version,
 			p_revision: input.data.revision,

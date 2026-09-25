@@ -5,6 +5,7 @@ from pathlib import Path
 
 from tools.fleet.control import ControlPlane
 from tools.fleet.manifest import ensure_no_inline_secrets, load_manifest
+from tools.fleet.provider import CAPABILITIES, FleetProvider, PostgresAdapter
 
 
 def portal(key="one", suffix="1"):
@@ -33,6 +34,19 @@ class ManifestTests(unittest.TestCase):
             manifest, digest = load_manifest(path)
             self.assertEqual(len(manifest["portals"]), 2)
             self.assertEqual(len(digest), 64)
+
+    def test_provider_capability_contract_is_explicit(self):
+        expected = {"postgresql", "verified_identity", "private_storage", "scheduler",
+                    "secret_references", "backup_restore", "migrations"}
+        self.assertEqual(set(CAPABILITIES), {"supabase_postgres", "docker_postgres"})
+        for capabilities in CAPABILITIES.values():
+            values = capabilities.as_dict()
+            self.assertEqual(set(values), expected)
+            self.assertTrue(set(values.values()) <= {"supported", "external", "unsupported"})
+
+    def test_postgres_adapter_satisfies_fleet_provider_protocol_shape(self):
+        required = {name for name in FleetProvider.__dict__ if not name.startswith("_")}
+        self.assertTrue(required <= set(dir(PostgresAdapter)))
 
 
 class ControlPlaneTests(unittest.TestCase):

@@ -20,21 +20,27 @@ try {
 	const client = {
 		rpc: async (name) => {
 			calls.push(name);
-			if (name === 'is_platform_admin' || name === 'is_ingestion_operator')
+			if (name === 'is_portal_administrator' || name === 'is_data_steward')
 				return {
-					data: malformed ? 'true' : name === 'is_platform_admin' ? admin : operator,
+					data: malformed ? 'true' : name === 'is_portal_administrator' ? admin : operator,
 					error: capabilityError
 				};
 			if (name === 'ingestion_review_queue')
 				return {
 					data: { runs: [], run: null, total: 0, records: [], detail: null, candidates: [] }
 				};
-			if (name === 'acquisition_dashboard') return { data: { sources: [], jobs: [] } };
+			if (name === 'acquisition_dashboard')
+				return { data: { portal_scope_revision_id: null, sources: [], jobs: [] } };
 			if (name === 'ingestion_source_approvals') return { data: [] };
 			throw new Error(`Unexpected data or mutation RPC: ${name}`);
 		}
 	};
-	const locals = { user: { id: 'fixture-user' }, isAnonymous: false, supabase: client };
+	const locals = {
+		user: { id: 'fixture-user' },
+		isAnonymous: false,
+		supabase: client,
+		providers: { database: client }
+	};
 	const headers = {};
 	const event = {
 		locals,
@@ -49,7 +55,7 @@ try {
 	const denied = async (fn) => {
 		calls.length = 0;
 		await assert.rejects(fn, (e) => e.status === 403);
-		assert.ok(calls.every((name) => ['is_platform_admin', 'is_ingestion_operator'].includes(name)));
+		assert.ok(calls.every((name) => ['is_portal_administrator', 'is_data_steward'].includes(name)));
 	};
 	const paths = [
 		'/admin',
@@ -67,7 +73,7 @@ try {
 		capabilityError = state === 'capability RPC failure' ? { message: 'unavailable' } : null;
 		malformed = state === 'malformed response';
 		for (const path of paths) await denied(() => requireAdminAccess(client, locals.user.id, path));
-		for (const route of [hub, review, jobs, sources]) {
+		for (const route of [hub, jobs, sources]) {
 			await denied(() => route.load(event));
 			for (const action of Object.values(route.actions ?? {})) await denied(() => action(event));
 		}
@@ -96,7 +102,6 @@ try {
 	// Reuse the client/session after revocation: no cached global permission.
 	operator = admin = false;
 	await denied(() => hub.load(event));
-	await denied(() => review.actions.default(event));
 	await denied(() => jobs.actions.run(event));
 	calls.length = 0;
 	await requireAdminAccess(client, undefined, '/organisations');

@@ -36,6 +36,7 @@ try {
 			}
 		}
 	};
+	locals.providers = { database: locals.supabase };
 	const invoke = (values, context = locals) => {
 		const fields = new FormData();
 		for (const [key, value] of Object.entries(values)) fields.set(key, value);

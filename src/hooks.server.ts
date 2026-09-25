@@ -9,6 +9,7 @@ import type { TypedSupabaseClient } from '$lib/supabase-client';
 import { requireAdminAccess } from '$lib/server/admin-access';
 import { guardRedirect } from '$lib/server/guard';
 import { PortalIdentityError, requirePortalIdentity } from '$lib/server/portal';
+import { supabaseRequestProviders } from '$lib/server/providers/supabase';
 
 /**
  * The cron endpoint authenticates with its own shared secret and talks to
@@ -49,9 +50,10 @@ const supabase: Handle = async ({ event, resolve }) => {
 			}
 		}
 	) as unknown as TypedSupabaseClient;
+	event.locals.providers = supabaseRequestProviders(event.locals.supabase);
 
 	try {
-		event.locals.portal = await requirePortalIdentity(event.locals.supabase);
+		event.locals.portal = await requirePortalIdentity(event.locals.providers.database);
 	} catch (error) {
 		if (error instanceof PortalIdentityError) {
 			console.error('Portal identity check failed:', error.message);
@@ -68,43 +70,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 	 * validating the JWT, this function also calls `getUser()` to validate the
 	 * JWT before returning the session.
 	 */
-	event.locals.safeGetSession = async () => {
-		const {
-			data: { session }
-		} = await event.locals.supabase.auth.getSession();
-		if (!session) {
-			return { session: null, user: null, aal: null, isAnonymous: false };
-		}
-
-		const {
-			data: { user },
-			error: getUserError
-		} = await event.locals.supabase.auth.getUser();
-		if (getUserError) {
-			// JWT validation has failed
-			return { session: null, user: null, aal: null, isAnonymous: false };
-		}
-
-		/**
-		 * Reads the `aal` and factor claims out of the access token that
-		 * `getUser()` just validated. No network round-trip of its own.
-		 */
-		const { data: aalData } = await event.locals.supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-
-		/**
-		 * `session.user` here still comes from cookie storage and is wrapped in a
-		 * warning proxy that fires the moment any of its properties are read —
-		 * which happens the instant this session is serialized into the page data
-		 * for hydration. Overwrite it with the copy `getUser()` just validated
-		 * against the Auth server before it goes anywhere.
-		 */
-		return {
-			session: { ...session, user: user! },
-			user,
-			aal: aalData ? { currentLevel: aalData.currentLevel, nextLevel: aalData.nextLevel } : null,
-			isAnonymous: user?.is_anonymous === true
-		};
-	};
+	event.locals.safeGetSession = () => event.locals.providers.identity.verifyRequest();
 
 	return resolve(event, {
 		filterSerializedResponseHeaders(name) {
@@ -160,7 +126,11 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	 * The Admin task hub also accepts ingestion operators. Individual tasks
 	 * retain their own capability checks.
 	 */
-	await requireAdminAccess(event.locals.supabase, isAnonymous ? undefined : user?.id, pathname);
+	await requireAdminAccess(
+		event.locals.providers.database,
+		isAnonymous ? undefined : user?.id,
+		pathname
+	);
 
 	return resolve(event);
 };

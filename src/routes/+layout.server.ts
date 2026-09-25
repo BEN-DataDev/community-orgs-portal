@@ -17,7 +17,7 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 	// lookup must remain distinguishable from an account with no memberships.
 	const membershipResult =
 		locals.user && !locals.isAnonymous
-			? await locals.supabase.rpc('get_user_organisations_with_roles', {
+			? await locals.providers.database.rpc('get_user_organisations_with_roles', {
 					p_user_id: locals.user.id
 				})
 			: { data: [], error: null };
@@ -33,7 +33,7 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 			}));
 	const avatar =
 		locals.user && !locals.isAnonymous
-			? await loadAccountAvatar(locals.supabase, locals.user)
+			? await loadAccountAvatar(locals.providers.avatars, locals.user)
 			: null;
 	return {
 		portal: {
@@ -47,7 +47,9 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 			scopePostcodes: locals.portal.scopePostcodes
 		},
 		isIngestionOperator:
-			locals.user && !locals.isAnonymous ? await isIngestionOperator(locals.supabase) : false,
+			locals.user && !locals.isAnonymous
+				? await isIngestionOperator(locals.providers.database)
+				: false,
 		avatar,
 		session: locals.session,
 		user: locals.user,
@@ -55,7 +57,7 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 		isAnonymous: locals.isAnonymous,
 		memberships,
 		isSiteAdmin: await isSiteAdmin(
-			locals.supabase,
+			locals.providers.database,
 			locals.isAnonymous ? undefined : locals.user?.id
 		),
 		cookies: cookies.getAll()

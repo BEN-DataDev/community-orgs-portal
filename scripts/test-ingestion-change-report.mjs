@@ -14,10 +14,11 @@ try {
 		supabase: {
 			rpc: async (name, args) => {
 				calls.push([name, args]);
-				return name === 'is_ingestion_operator' ? { data: operator } : { data, error: rpcError };
+				return name === 'is_data_steward' ? { data: operator } : { data, error: rpcError };
 			}
 		}
 	};
+	locals.providers = { database: locals.supabase };
 	const headers = {};
 	const event = (query) => ({
 		locals,

@@ -5,20 +5,22 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
-	if (!(await isIngestionOperator(locals.supabase))) error(403, 'Data Steward access required.');
-	return loadReviewQueue(locals.supabase, url);
+	if (!(await isIngestionOperator(locals.providers.database)))
+		error(403, 'Data Steward access required.');
+	return loadReviewQueue(locals.providers.database, url);
 };
 
 export const actions: Actions = {
 	default: async ({ locals, request }) => {
-		if (!(await isIngestionOperator(locals.supabase))) error(403, 'Data Steward access required.');
+		if (!(await isIngestionOperator(locals.providers.database)))
+			error(403, 'Data Steward access required.');
 		const parsed = reviewInput.safeParse(Object.fromEntries(await request.formData()));
 		if (!parsed.success)
 			return fail(400, {
 				message: 'Choose a decision, provide a note and select an organisation only when linking.'
 			});
 		const input = parsed.data;
-		const result = await locals.supabase.rpc('save_ingestion_review', {
+		const result = await locals.providers.database.rpc('save_ingestion_review', {
 			p_run: input.run,
 			p_version: input.version,
 			p_revision: input.revision,

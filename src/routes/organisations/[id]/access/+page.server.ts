@@ -38,7 +38,7 @@ async function requireManager({ locals, params }: RequestEvent) {
 	if (!locals.user || locals.isAnonymous)
 		error(403, 'A registered account with organisation management access is required.');
 	if (!z.string().uuid().safeParse(params.id).success) error(404, 'Organisation not found.');
-	const result = await locals.supabase.rpc('organisation_role_assignments', {
+	const result = await locals.providers.database.rpc('organisation_role_assignments', {
 		p_organisation_id: params.id
 	});
 	if (result.error) {
@@ -84,12 +84,12 @@ async function change(event: RequestEvent, revoke: boolean) {
 		p_organisation_id: event.params.id
 	};
 	const result = revoke
-		? await event.locals.supabase.rpc('revoke_user_role', {
+		? await event.locals.providers.database.rpc('revoke_user_role', {
 				...args,
 				p_revoked_by: event.locals.user!.id,
 				p_reason: typeof form.reason === 'string' ? form.reason.trim() : ''
 			})
-		: await event.locals.supabase.rpc('grant_user_role', {
+		: await event.locals.providers.database.rpc('grant_user_role', {
 				...args,
 				p_granted_by: event.locals.user!.id
 			});
@@ -136,7 +136,7 @@ export const actions: Actions = {
 		const expiresAt = new Date(
 			Date.now() + parsed.data.expiresInDays * 24 * 60 * 60 * 1000
 		).toISOString();
-		const result = await event.locals.supabase.rpc('issue_organisation_invitation', {
+		const result = await event.locals.providers.database.rpc('issue_organisation_invitation', {
 			p_organisation_id: event.params.id,
 			p_email: parsed.data.email,
 			p_target_stewardship: parsed.data.targetStewardship,
@@ -167,7 +167,7 @@ export const actions: Actions = {
 			.safeParse(form);
 		if (!parsed.success)
 			return fail(400, { success: false, message: 'A valid invitation and reason are required.' });
-		const result = await event.locals.supabase.rpc('cancel_organisation_invitation', {
+		const result = await event.locals.providers.database.rpc('cancel_organisation_invitation', {
 			p_invitation_id: parsed.data.invitationId,
 			p_reason: parsed.data.reason
 		});

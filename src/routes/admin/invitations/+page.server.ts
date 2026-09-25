@@ -8,7 +8,7 @@ import {
 import type { Actions, PageServerLoad } from './$types';
 
 async function requireAdministrator(locals: App.Locals) {
-	if (!(await isSiteAdmin(locals.supabase, locals.user?.id)))
+	if (!(await isSiteAdmin(locals.providers.database, locals.user?.id)))
 		error(403, 'Portal Administrator required.');
 }
 
@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 		offset: url.searchParams.get('offset') || 0
 	});
 	if (!filters.success) error(400, 'Invalid invitation filter.');
-	const result = await locals.supabase.rpc('stewardship_administration_queue', {
+	const result = await locals.providers.database.rpc('stewardship_administration_queue', {
 		p_search: filters.data.search,
 		p_invitation_status: filters.data.status,
 		p_offset: filters.data.offset
@@ -40,7 +40,7 @@ export const actions: Actions = {
 			.safeParse(Object.fromEntries(await request.formData()));
 		if (!input.success)
 			return fail(400, { message: 'A valid invitation and cancellation reason are required.' });
-		const result = await locals.supabase.rpc('cancel_organisation_invitation', {
+		const result = await locals.providers.database.rpc('cancel_organisation_invitation', {
 			p_invitation_id: input.data.invitationId,
 			p_reason: input.data.reason
 		});

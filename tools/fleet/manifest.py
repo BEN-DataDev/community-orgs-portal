@@ -6,6 +6,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from .provider import CAPABILITIES
+
 KEY = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 SECRET = re.compile(r"^(env|vault|aws-sm|gcp-sm|azure-kv):[^\s]+$")
 
@@ -50,7 +52,7 @@ def load_manifest(path: Path) -> tuple[dict[str, Any], str]:
         if not re.fullmatch(r"\d{14}", portal.get("schema_version", "")):
             errors.append(f"{label}.schema_version must be a 14-digit migration version")
         provider = portal.get("provider", {})
-        if provider.get("adapter") not in ("supabase_postgres", "docker_postgres"):
+        if provider.get("adapter") not in CAPABILITIES:
             errors.append(f"{label}.provider.adapter is unsupported")
         if not provider.get("region"):
             errors.append(f"{label}.provider.region is required")

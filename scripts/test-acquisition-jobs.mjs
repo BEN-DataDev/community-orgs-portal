@@ -18,8 +18,8 @@ try {
 		user: { id: 'operator' },
 		supabase: {
 			rpc: async (name, args) => {
-				if (name === 'is_ingestion_operator') return { data: operator };
-				if (name === 'is_platform_admin') return { data: admin };
+				if (name === 'is_data_steward') return { data: operator };
+				if (name === 'is_portal_administrator') return { data: admin };
 				if (name === 'acquisition_dashboard')
 					return { data: { portal_scope_revision_id: '1', sources: [], jobs: [] } };
 				writes.push({ name, args });
@@ -27,6 +27,7 @@ try {
 			}
 		}
 	};
+	locals.providers = { database: locals.supabase };
 	const headers = {};
 	const event = { locals, setHeaders: (h) => Object.assign(headers, h) };
 	const submit = (action, values) =>

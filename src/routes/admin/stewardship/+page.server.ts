@@ -18,7 +18,7 @@ const allowedTransitions: Record<string, string[]> = {
 };
 
 async function requireAdministrator(locals: App.Locals) {
-	if (!(await isSiteAdmin(locals.supabase, locals.user?.id)))
+	if (!(await isSiteAdmin(locals.providers.database, locals.user?.id)))
 		error(403, 'Portal Administrator required.');
 }
 
@@ -31,7 +31,7 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 		offset: url.searchParams.get('offset') || 0
 	});
 	if (!filters.success) error(400, 'Invalid stewardship filter.');
-	const result = await locals.supabase.rpc('stewardship_administration_queue', {
+	const result = await locals.providers.database.rpc('stewardship_administration_queue', {
 		p_search: filters.data.search,
 		p_state: filters.data.state,
 		p_offset: filters.data.offset
@@ -64,7 +64,7 @@ export const actions: Actions = {
 			return fail(400, {
 				message: 'An approval reference is required for this stewardship state.'
 			});
-		const currentResult = await locals.supabase.rpc('stewardship_administration_queue', {
+		const currentResult = await locals.providers.database.rpc('stewardship_administration_queue', {
 			p_search: input.data.organisationId,
 			p_offset: 0
 		});
@@ -82,7 +82,7 @@ export const actions: Actions = {
 						? 'Close the pending invitation through invitation administration before changing stewardship.'
 						: 'That stewardship transition is not available. Reload and review the current state.'
 			});
-		const result = await locals.supabase.rpc('set_organisation_stewardship', {
+		const result = await locals.providers.database.rpc('set_organisation_stewardship', {
 			p_organisation_id: input.data.organisationId,
 			p_next_state: input.data.nextState,
 			p_reason: input.data.reason,

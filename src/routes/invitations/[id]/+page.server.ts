@@ -16,7 +16,7 @@ const invitationSchema = z.object({
 export const load: PageServerLoad = async ({ locals, params, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
 	if (!z.string().uuid().safeParse(params.id).success) error(404, 'Invitation not found.');
-	const result = await locals.supabase.rpc('organisation_invitation', {
+	const result = await locals.providers.database.rpc('organisation_invitation', {
 		p_invitation_id: params.id
 	});
 	if (result.error) {
@@ -33,7 +33,7 @@ export const actions: Actions = {
 	accept: async ({ locals, params }) => {
 		if (!z.string().uuid().safeParse(params.id).success)
 			return fail(404, { success: false, message: 'Invitation not found.' });
-		const result = await locals.supabase.rpc('accept_organisation_invitation', {
+		const result = await locals.providers.database.rpc('accept_organisation_invitation', {
 			p_invitation_id: params.id
 		});
 		if (result.error)

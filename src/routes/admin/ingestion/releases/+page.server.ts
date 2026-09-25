@@ -24,8 +24,8 @@ const policyInput = z.object({
 
 async function access(locals: App.Locals) {
 	const [canSteward, canAdmin] = await Promise.all([
-		isIngestionOperator(locals.supabase),
-		isSiteAdmin(locals.supabase, locals.user?.id)
+		isIngestionOperator(locals.providers.database),
+		isSiteAdmin(locals.providers.database, locals.user?.id)
 	]);
 	if (!canSteward && !canAdmin) error(403, 'Release authority required.');
 	return { canSteward, canAdmin };
@@ -34,7 +34,7 @@ async function access(locals: App.Locals) {
 export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
 	const authority = await access(locals);
-	const result = await locals.supabase.rpc('publication_release_queue');
+	const result = await locals.providers.database.rpc('publication_release_queue');
 	const parsed = publicationReleaseQueueSchema.safeParse(result.data);
 	if (result.error || !parsed.success)
 		error(result.error?.code === '42501' ? 403 : 500, 'Could not load publication releases.');
@@ -54,7 +54,7 @@ export const actions: Actions = {
 			const parsed = policyInput.safeParse(Object.fromEntries(form));
 			if (!parsed.success)
 				return fail(400, { intent, message: 'Choose a policy and provide a reason.' });
-			const result = await locals.supabase.rpc('set_publication_approval_policy', {
+			const result = await locals.providers.database.rpc('set_publication_approval_policy', {
 				p_ordinary_requires_independent_approval: parsed.data.ordinaryApproval === 'two_person',
 				p_expected_revision: parsed.data.revision,
 				p_reason: parsed.data.reason
@@ -76,7 +76,7 @@ export const actions: Actions = {
 			const parsed = releaseDecisionInput.safeParse(Object.fromEntries(form));
 			if (!parsed.success)
 				return fail(400, { intent, message: 'Choose a decision and provide a note.' });
-			const result = await locals.supabase.rpc('decide_publication_release', {
+			const result = await locals.providers.database.rpc('decide_publication_release', {
 				p_release: parsed.data.release,
 				p_revision: parsed.data.revision,
 				p_decision: parsed.data.decision,
@@ -95,7 +95,7 @@ export const actions: Actions = {
 			if (!authority.canSteward) error(403, 'Data Steward required to publish.');
 			const parsed = releasePublicationInput.safeParse(Object.fromEntries(form));
 			if (!parsed.success) return fail(400, { intent, message: 'Invalid release revision.' });
-			const result = await locals.supabase.rpc('publish_publication_release', {
+			const result = await locals.providers.database.rpc('publish_publication_release', {
 				p_release: parsed.data.release,
 				p_revision: parsed.data.revision
 			});

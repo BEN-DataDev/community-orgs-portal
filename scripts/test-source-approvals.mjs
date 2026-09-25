@@ -13,13 +13,14 @@ try {
 		user: { id: 'admin' },
 		supabase: {
 			rpc: async (name) => {
-				if (name === 'is_platform_admin') return { data: admin, error: null };
+				if (name === 'is_portal_administrator') return { data: admin, error: null };
 				if (name === 'ingestion_source_approvals') return { data: [], error: null };
 				writes++;
 				return { error: rpcError };
 			}
 		}
 	};
+	locals.providers = { database: locals.supabase };
 	const event = {
 		locals,
 		url: new URL('http://localhost/admin/sources?run=6&version=7'),

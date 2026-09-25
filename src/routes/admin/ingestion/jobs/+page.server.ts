@@ -40,21 +40,26 @@ const dashboard = z.object({
 });
 export const load: PageServerLoad = async ({ locals, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
-	if (!(await isIngestionOperator(locals.supabase))) error(403, 'Ingestion operator required.');
-	const result = await locals.supabase.rpc('acquisition_dashboard');
+	if (!(await isIngestionOperator(locals.providers.database)))
+		error(403, 'Ingestion operator required.');
+	const result = await locals.providers.database.rpc('acquisition_dashboard');
 	if (result.error) error(500, 'Could not load acquisition jobs.');
 	const parsed = dashboard.safeParse(result.data);
 	if (!parsed.success) error(500, 'Unexpected acquisition response.');
-	return { ...parsed.data, canConfigure: await isSiteAdmin(locals.supabase, locals.user?.id) };
+	return {
+		...parsed.data,
+		canConfigure: await isSiteAdmin(locals.providers.database, locals.user?.id)
+	};
 };
 export const actions: Actions = {
 	run: async ({ locals, request }) => {
-		if (!(await isIngestionOperator(locals.supabase))) error(403, 'Ingestion operator required.');
+		if (!(await isIngestionOperator(locals.providers.database)))
+			error(403, 'Ingestion operator required.');
 		const input = z
 			.object({ resource: z.string().uuid() })
 			.safeParse(Object.fromEntries(await request.formData()));
 		if (!input.success) return fail(400, { message: 'Choose a configured ACNC resource.' });
-		const result = await locals.supabase.rpc('enqueue_acnc_acquisition', {
+		const result = await locals.providers.database.rpc('enqueue_acnc_acquisition', {
 			p_resource: input.data.resource
 		});
 		if (result.error)
@@ -68,7 +73,7 @@ export const actions: Actions = {
 		};
 	},
 	configure: async ({ locals, request }) => {
-		if (!(await isSiteAdmin(locals.supabase, locals.user?.id)))
+		if (!(await isSiteAdmin(locals.providers.database, locals.user?.id)))
 			error(403, 'Platform administrator required.');
 		const formData = Object.fromEntries(await request.formData());
 		const postcodes = String(formData.postcodes ?? '')
@@ -95,7 +100,7 @@ export const actions: Actions = {
 				message: 'Enter 1 to 50 unique four-digit postcodes, a reviewed licence title and schedule.'
 			});
 		const x = input.data;
-		const result = await locals.supabase.rpc('configure_acnc_acquisition', {
+		const result = await locals.providers.database.rpc('configure_acnc_acquisition', {
 			p_resource: x.resource,
 			p_postcodes: canonicalPostcodes,
 			p_licence: x.licence,

@@ -28,7 +28,16 @@ try {
 					calls.push({ name, args });
 					if (name === 'organisation_role_assignments')
 						return {
-							data: malformed ? {} : { name: 'Test', level: 4, roles: [], assignments: [] },
+							data: malformed
+								? {}
+								: {
+										name: 'Test',
+										level: 4,
+										canInvite: true,
+										roles: [],
+										assignments: [],
+										invitations: []
+									},
 							error: rosterError
 						};
 					return { data: mutationData, error: mutationError };
@@ -49,6 +58,7 @@ try {
 				)
 		}
 	};
+	event.locals.providers = { database: event.locals.supabase };
 	for (const method of [route.load, ...Object.values(route.actions)]) {
 		for (const locals of [
 			{ ...event.locals, user: null },
@@ -136,6 +146,7 @@ try {
 		roster: {
 			name: 'Fixture org',
 			level: 4,
+			canInvite: true,
 			roles: [{ id: role, name: 'member', level: 1 }],
 			assignments: [
 				{
@@ -150,7 +161,8 @@ try {
 					status: 'Active',
 					canRevoke: true
 				}
-			]
+			],
+			invitations: []
 		}
 	};
 	const html = render(Page, {

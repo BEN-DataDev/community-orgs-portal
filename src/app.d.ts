@@ -4,12 +4,14 @@ import type { Session, User } from '@supabase/supabase-js';
 import type { SafeSession, SessionAal } from '$lib/auth/session';
 import type { TypedSupabaseClient } from '$lib/supabase-client';
 import type { PortalIdentity } from '$lib/portal';
+import type { RequestProviders } from '$lib/server/providers/contracts';
 
 declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
 			supabase: TypedSupabaseClient;
+			providers: RequestProviders;
 			portal: PortalIdentity;
 			safeGetSession: () => Promise<SafeSession>;
 			session: Session | null;

@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { z } from 'zod';
-import type { TypedSupabaseClient } from '$lib/supabase-client';
+import type { DomainDatabase } from '$lib/server/providers/contracts';
 import {
 	approvalsSchema,
 	fieldPreviewSchema,
@@ -28,7 +28,7 @@ export function reviewQueueParams(url: URL) {
 	return { run, version, offset, search, campaign };
 }
 
-export async function loadReviewQueue(client: TypedSupabaseClient, url: URL) {
+export async function loadReviewQueue(client: DomainDatabase, url: URL) {
 	const params = reviewQueueParams(url);
 	const result = await client.rpc('ingestion_review_queue', {
 		p_run: params.run,
@@ -47,7 +47,7 @@ export async function loadReviewQueue(client: TypedSupabaseClient, url: URL) {
 }
 
 export async function loadFieldContext(
-	client: TypedSupabaseClient,
+	client: DomainDatabase,
 	url: URL,
 	loaded: Awaited<ReturnType<typeof loadReviewQueue>>
 ) {
@@ -78,7 +78,7 @@ export async function loadFieldContext(
 }
 
 export async function loadSuppressionContext(
-	client: TypedSupabaseClient,
+	client: DomainDatabase,
 	url: URL,
 	loaded: Awaited<ReturnType<typeof loadReviewQueue>>
 ) {

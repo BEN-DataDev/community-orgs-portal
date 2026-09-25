@@ -31,9 +31,9 @@ const sourcesSchema = z.array(
 );
 export const load: PageServerLoad = async ({ locals, setHeaders, url }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
-	if (!(await isSiteAdmin(locals.supabase, locals.user?.id)))
+	if (!(await isSiteAdmin(locals.providers.database, locals.user?.id)))
 		error(403, 'Platform administrator required.');
-	const result = await locals.supabase.rpc('ingestion_source_approvals');
+	const result = await locals.providers.database.rpc('ingestion_source_approvals');
 	if (result.error) error(500, 'Could not load source approvals.');
 	const parsed = sourcesSchema.safeParse(result.data);
 	if (!parsed.success) error(500, 'Unexpected source approval response.');
@@ -57,7 +57,7 @@ export const load: PageServerLoad = async ({ locals, setHeaders, url }) => {
 };
 export const actions: Actions = {
 	default: async ({ locals, request }) => {
-		if (!(await isSiteAdmin(locals.supabase, locals.user?.id)))
+		if (!(await isSiteAdmin(locals.providers.database, locals.user?.id)))
 			error(403, 'Platform administrator required.');
 		const parsed = z
 			.object({
@@ -72,7 +72,7 @@ export const actions: Actions = {
 		if (!parsed.success)
 			return fail(400, { message: 'Enter a reason and confirm the source status change.' });
 		const x = parsed.data;
-		const result = await locals.supabase.rpc('set_ingestion_source_enabled', {
+		const result = await locals.providers.database.rpc('set_ingestion_source_enabled', {
 			p_source: x.source,
 			p_resource: x.resource,
 			p_enabled: x.enabled === 'true',

@@ -13,7 +13,8 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
-	if (!(await isIngestionOperator(locals.supabase))) error(403, 'Data Steward access required.');
+	if (!(await isIngestionOperator(locals.providers.database)))
+		error(403, 'Data Steward access required.');
 	const filter = validationFilterInput.safeParse({
 		issue: url.searchParams.get('issue') || '',
 		run: url.searchParams.get('issue_run') || url.searchParams.get('run') || '',
@@ -25,7 +26,7 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	const campaign = url.searchParams.get('campaign') || '';
 	if (!filter.success || (campaign && !z.string().uuid().safeParse(campaign).success))
 		error(400, 'Invalid validation queue filter.');
-	const result = await locals.supabase.rpc('validation_issue_queue', {
+	const result = await locals.providers.database.rpc('validation_issue_queue', {
 		p_issue: filter.data.issue || undefined,
 		p_run: filter.data.run || undefined,
 		p_release: filter.data.release || undefined,
@@ -41,7 +42,7 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 		);
 	let readiness: z.infer<typeof validationRunReadinessSchema> | null = null;
 	if (queue.data.detail?.run_id) {
-		const response = await locals.supabase.rpc('validation_run_readiness', {
+		const response = await locals.providers.database.rpc('validation_run_readiness', {
 			p_run: queue.data.detail.run_id
 		});
 		const parsed = validationRunReadinessSchema.safeParse(response.data);
@@ -53,14 +54,15 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 
 export const actions: Actions = {
 	default: async ({ locals, request }) => {
-		if (!(await isIngestionOperator(locals.supabase))) error(403, 'Data Steward access required.');
+		if (!(await isIngestionOperator(locals.providers.database)))
+			error(403, 'Data Steward access required.');
 		const form = await request.formData();
 		const intent = form.get('intent');
 		if (intent === 'validate_issue') {
 			const input = validationAttemptInput.safeParse(Object.fromEntries(form));
 			if (!input.success)
 				return fail(400, { intent, message: 'Enter a proposed value to validate.' });
-			const result = await locals.supabase.rpc('validate_issue_value', {
+			const result = await locals.providers.database.rpc('validate_issue_value', {
 				p_issue: input.data.issue,
 				p_value: input.data.proposed as Json
 			});
@@ -81,7 +83,7 @@ export const actions: Actions = {
 			const input = validationResolutionInput.safeParse(Object.fromEntries(form));
 			if (!input.success)
 				return fail(400, { intent, message: 'Choose an allowed decision and provide a note.' });
-			const result = await locals.supabase.rpc('save_validation_resolution', {
+			const result = await locals.providers.database.rpc('save_validation_resolution', {
 				p_issue: input.data.issue,
 				p_revision: input.data.revision,
 				p_decision: input.data.decision,
@@ -109,7 +111,9 @@ export const actions: Actions = {
 				.regex(/^[1-9][0-9]*$/)
 				.safeParse(form.get('run'));
 			if (!run.success) return fail(400, { intent, message: 'Invalid parent run.' });
-			const result = await locals.supabase.rpc('create_corrected_run', { p_run: run.data });
+			const result = await locals.providers.database.rpc('create_corrected_run', {
+				p_run: run.data
+			});
 			if (result.error)
 				return fail(
 					result.error.code === '40001' ? 409 : result.error.code === '42501' ? 403 : 400,

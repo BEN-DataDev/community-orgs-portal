@@ -25,7 +25,8 @@
 		"test:sessions": "node scripts/test-sessions.mjs",
 		"fleet": "python3 -m tools.fleet",
 		"test:fleet": "python3 -m unittest discover -s tools/fleet/tests -v",
-		"test:fleet:db": "python3 scripts/test-fleet-operations.py"
+		"test:fleet:db": "python3 scripts/test-fleet-operations.py",
+		"test:providers": "node scripts/test-provider-contracts.mjs"
 	},
 	"dependencies": {
 		"@skeletonlabs/skeleton": "5.0.1",

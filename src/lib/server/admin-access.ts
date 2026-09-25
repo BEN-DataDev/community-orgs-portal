@@ -1,11 +1,11 @@
 import { error } from '@sveltejs/kit';
-import type { TypedSupabaseClient } from '$lib/supabase-client';
+import type { DomainDatabase } from '$lib/server/providers/contracts';
 import { isSiteAdmin } from '$lib/server/authorization';
 import { isIngestionOperator } from '$lib/server/ingestion-review';
 
 /** Global task access never derives from an organisation's role level. */
 export async function requireAdminAccess(
-	client: TypedSupabaseClient,
+	client: DomainDatabase,
 	userId: string | undefined,
 	pathname: string
 ): Promise<void> {

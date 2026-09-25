@@ -85,41 +85,28 @@ try {
 		};
 		const calls = [];
 
-		const selection = {
-			single: async () => ({ data: profile }),
-			maybeSingle: async () => ({ data: profile })
-		};
-		const update = (values) => {
-			const query = {
-				eq: () => query,
-				select: () => query,
-				maybeSingle: async () => {
-					calls.push('save');
-					if (saveError) return { error: new Error('network') };
-					if (conflict) return { data: null };
-					profile = values;
-					return { data: { id } };
-				}
-			};
-			return query;
-		};
 		const client = {
-			schema: () => ({ from: () => ({ select: () => ({ eq: () => selection }), update }) }),
-			storage: {
-				from: () => ({
-					upload: async (path, bytes, options) => {
-						calls.push('upload');
-						assert.ok(path.startsWith(id + '/avatar-'));
-						assert.equal(options.upsert, false);
-						return { error: uploadError ? new Error('upload') : null };
-					},
-					remove: async (paths) => {
-						calls.push(['remove', ...paths]);
-						return { error: deleteError ? new Error('delete') : null };
-					},
-					createSignedUrl: async () => ({ data: { signedUrl: 'https://example.invalid/signed' } })
-				})
-			}
+			readProfile: async () => ({ data: profile, error: null }),
+			compareAndSwapProfile: async (_userId, revision, values) => {
+				calls.push('save');
+				if (saveError) return { data: null, error: new Error('network') };
+				if (conflict || profile.avatar_revision !== revision) return { data: null, error: null };
+				profile = { ...profile, ...values };
+				return { data: { id }, error: null };
+			},
+			upload: async (path) => {
+				calls.push('upload');
+				assert.ok(path.startsWith(id + '/avatar-'));
+				return { data: null, error: uploadError ? new Error('upload') : null };
+			},
+			remove: async (paths) => {
+				calls.push(['remove', ...paths]);
+				return { data: null, error: deleteError ? new Error('delete') : null };
+			},
+			signedUrl: async () => ({
+				data: { signedUrl: 'https://example.invalid/signed' },
+				error: null
+			})
 		};
 		return { client, calls, getProfile: () => profile };
 	}

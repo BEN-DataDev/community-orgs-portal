@@ -143,6 +143,8 @@ See [`src/hooks.server.ts`](src/hooks.server.ts), [`src/lib/server/authorization
 | `npm run check:watch`        | Run type checks in watch mode                                       |
 | `npm run lint`               | Check formatting, then run ESLint                                   |
 | `npm run format`             | Format the repository                                               |
+| `npm run test:providers`     | Check provider contracts and the limited local proof adapter        |
+| `npm run test:fleet`         | Check fleet inventory, capability and audit contracts               |
 | `npm run update-db-types`    | Regenerate `src/lib/db.types.ts` from the configured hosted project |
 | `npm run docs:skeleton:sync` | Refresh the official Skeleton v5 Svelte documentation snapshot      |
 
@@ -174,7 +176,7 @@ src/
   components/             Forms, tables, navigation, maps, and visualisations
   lib/
     auth/                 Auth schemas, providers, CAPTCHA, and session helpers
-    server/               Authorization, validation, and redirect helpers
+    server/               Authorization, provider ports, validation, and redirects
     db.types.ts           Generated database types
   hooks.server.ts         Request-scoped Supabase client and access guards
 supabase/

@@ -1,5 +1,5 @@
 import { env } from '$env/dynamic/private';
-import type { TypedSupabaseClient } from '$lib/supabase-client';
+import type { DomainDatabase } from '$lib/server/providers/contracts';
 import {
 	PORTAL_LIFECYCLE_STATES,
 	portalManifestError,
@@ -20,7 +20,7 @@ export class PortalIdentityError extends Error {
  * reliable one-off startup phase, and a deployment must fail closed after a
  * database target or manifest changes.
  */
-export async function requirePortalIdentity(client: TypedSupabaseClient): Promise<PortalIdentity> {
+export async function requirePortalIdentity(client: DomainDatabase): Promise<PortalIdentity> {
 	const { data, error } = await client.rpc('get_portal_identity');
 	if (error) throw new PortalIdentityError(`Could not read the portal identity: ${error.message}`);
 	if ((data?.length ?? 0) > 1)
