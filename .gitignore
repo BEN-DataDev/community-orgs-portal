@@ -9,6 +9,8 @@ node_modules
 # Caches
 .eslintcache
 *.tsbuildinfo
+__pycache__/
+*.py[cod]
 
 # Logs
 *.log
@@ -34,6 +36,7 @@ todo.txt
 
 # Local
 /documentation
+/.fleet/
 
 # Generated Skeleton documentation snapshot
 /docs/vendor/skeleton/

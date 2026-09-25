@@ -39,25 +39,25 @@ or change production state.
 
 ## Capability summary
 
-| Area                                | Status              | Main finding                                                                                                                         |
-| ----------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Independent portal databases        | Partial             | One deployment already targets one database, but configuration and operations are hard-wired to one Supabase/Vercel project          |
-| Portal identity and lifecycle       | Implemented         | Private singleton identity, deployment-manifest fencing, sponsor branding and append-only lifecycle events are enforced              |
-| Versioned postcode scope            | Implemented         | Immutable portal scope revisions govern acquisition configuration and reconciliation compatibility                                   |
-| Fleet operations                    | Missing             | Provisioning, migrations, access, recovery and inventory are manual operational procedures                                           |
-| Provider abstraction                | Provider-bound      | Request auth, data API, storage, cron and generated types directly use Supabase; deployment directly uses Vercel cron                |
-| Portal Administrator                | Partial             | Explicit current appointments and revocation evidence replace the implicit capability union; invitation/administration UX remains    |
-| Data Steward / operator             | Partial             | Explicit Data Steward appointments retain revocation evidence and no longer derive from Portal Administrator authority               |
-| Organisation roles                  | Partial             | Strong grant/revoke safeguards exist; assignments use account UUIDs and no invitation/handoff workflow exists                        |
-| Stewardship                         | Implemented         | Current state/events gate administrator editing; email-bound acceptance atomically grants ownership and completes the handoff        |
-| Record edit audit                   | Partial             | Domain rows retain editor/timestamps and roles/imports have events, but no uniform before/after audit for Portal Administrator edits |
-| Source releases and private staging | Implemented/partial | Strong per-source releases and runs exist; cross-source campaign aggregation is absent                                               |
-| Initial seed workflow               | Partial             | ABN candidates and a mandatory independent initial-release gate exist; multi-source seed campaigns remain absent                     |
-| Two-person approval                 | Implemented         | Frozen releases retain policy revisions and require a different approver for initial and destructive work                            |
-| Recurring updates                   | Partial             | ACNC scheduling, reconciliation and conflict protections exist; broader source and campaign orchestration is incomplete              |
-| Review UX                           | Implemented         | Focused validation, identity, field-change, release and suppression queues retain campaign and record context                        |
-| Invitation evidence                 | Implemented         | Immutable email-bound terms and single-use events cover acceptance, cancellation and expiry independently of delivery provider       |
-| NSW state register                  | Missing             | No current adapter is integrated                                                                                                     |
+| Area                                | Status              | Main finding                                                                                                                                           |
+| ----------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Independent portal databases        | Partial             | One deployment already targets one database, but configuration and operations are hard-wired to one Supabase/Vercel project                            |
+| Portal identity and lifecycle       | Implemented         | Private singleton identity, deployment-manifest fencing, sponsor branding and append-only lifecycle events are enforced                                |
+| Versioned postcode scope            | Implemented         | Immutable portal scope revisions govern acquisition configuration and reconciliation compatibility                                                     |
+| Fleet operations                    | Implemented/partial | A manifest-driven CLI now inventories, migrates, verifies, bootstraps and audits isolated deployments; provider project creation remains adapter-bound |
+| Provider abstraction                | Provider-bound      | Request auth, data API, storage, cron and generated types directly use Supabase; deployment directly uses Vercel cron                                  |
+| Portal Administrator                | Partial             | Explicit current appointments and revocation evidence replace the implicit capability union; invitation/administration UX remains                      |
+| Data Steward / operator             | Partial             | Explicit Data Steward appointments retain revocation evidence and no longer derive from Portal Administrator authority                                 |
+| Organisation roles                  | Partial             | Strong grant/revoke safeguards exist; assignments use account UUIDs and no invitation/handoff workflow exists                                          |
+| Stewardship                         | Implemented         | Current state/events gate administrator editing; email-bound acceptance atomically grants ownership and completes the handoff                          |
+| Record edit audit                   | Partial             | Domain rows retain editor/timestamps and roles/imports have events, but no uniform before/after audit for Portal Administrator edits                   |
+| Source releases and private staging | Implemented/partial | Strong per-source releases and runs exist; cross-source campaign aggregation is absent                                                                 |
+| Initial seed workflow               | Partial             | ABN candidates and a mandatory independent initial-release gate exist; multi-source seed campaigns remain absent                                       |
+| Two-person approval                 | Implemented         | Frozen releases retain policy revisions and require a different approver for initial and destructive work                                              |
+| Recurring updates                   | Partial             | ACNC scheduling, reconciliation and conflict protections exist; broader source and campaign orchestration is incomplete                                |
+| Review UX                           | Implemented         | Focused validation, identity, field-change, release and suppression queues retain campaign and record context                                          |
+| Invitation evidence                 | Implemented         | Immutable email-bound terms and single-use events cover acceptance, cancellation and expiry independently of delivery provider                         |
+| NSW state register                  | Missing             | No current adapter is integrated                                                                                                                       |
 
 ## Reusable foundations
 
@@ -132,17 +132,18 @@ cover the boundary.
 
 ### PEG03 — Fleet operations and technical access
 
-**Priority: critical. Status: missing.**
+**Priority: critical. Status: implemented/partial.**
 
-Current provisioning, hosted migration, source enablement, worker deployment and
-production verification are recorded as manual project operations. There is no
-fleet inventory, provider adapter, just-in-time access, credential rotation workflow
-or cross-deployment schema reporting.
+The separate fleet CLI now validates secret-free manifests, maintains a SQLite
+inventory, applies pinned migration targets, verifies portal identity and schema,
+bootstraps the first Portal Administrator and exports hash-chained append-only
+operation evidence. Credential rotations retain versioned secret references but
+never values. Each portal can target an adjacent schema version for rolling upgrades.
 
-Build a separate control plane or operator CLI/service before the portal count makes
-manual operation unsafe. Its first version can be manifest- and CLI-driven, but it
-must maintain an inventory and append-only operation records. Portal databases must
-not store fleet-wide secrets.
+The first adapter targets Supabase-compatible PostgreSQL. Provider project creation,
+backup/restore execution and time-bounded infrastructure access remain provider
+operations and must be recorded with the CLI. They belong to the Phase 6 adapter
+contract rather than portal application authority. See [fleet operations](fleet-operations.md).
 
 **Acceptance:** an operator can provision a second test portal, apply and verify the
 same schema, appoint its first Portal Administrator, rotate bootstrap credentials
@@ -429,7 +430,7 @@ Add campaigns referencing existing source artifacts. Build a progress dashboard,
 then split validation, identity, change and release queues out of the current Import
 Review page. Add stewardship and invitation administration.
 
-### Phase 5 — Fleet operations
+### Phase 5 — Fleet operations (complete)
 
 Build the manifest-driven operator capability and a second isolated test portal.
 Automate provisioning, migration inventory, health, credential rotation, first
@@ -452,13 +453,11 @@ and recurring refresh campaigns.
 
 ## Immediate next slice
 
-Phases 1 through 4 are complete. Campaigns reference immutable source artifacts,
-derive role-labelled blockers and retain campaign context when entering the focused
-validation, identity, field-change, release and suppression queues. Portal
-Administrators have separate stewardship and invitation administration screens;
-elapsed invitations are materialised through the existing no-grant transition.
+Phases 1 through 5 are complete. The fleet control plane now inventories isolated
+deployments from secret-free manifests, applies and verifies pinned schema versions,
+checks immutable portal identity, bootstraps the first Portal Administrator, records
+credential-reference rotations and exports tamper-evident operation history.
 
-The next slice is Phase 5 fleet operations: a manifest-driven inventory and
-operator workflow for provisioning, migration verification, credential rotation,
-first-administrator bootstrap and append-only operation evidence across isolated
-portal deployments.
+The next slice is Phase 6 provider portability: extract application-owned provider
+interfaces and prove the required identity, storage, scheduling, backup and migration
+capabilities against a second provider or an intentionally limited local adapter.

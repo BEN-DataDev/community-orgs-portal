@@ -1,0 +1,25 @@
+{
+	"manifest_version": "fleet-v1",
+	"application_version": "0.0.1",
+	"portals": [
+		{
+			"portal_id": "10000000-0000-4000-8000-000000000101",
+			"portal_key": "example-community",
+			"display_name": "Example Community Directory",
+			"short_name": "Example Directory",
+			"sponsor_name": "Example Sponsor",
+			"establishment_reason": "Approved portal establishment",
+			"schema_version": "20260925020000",
+			"provider": {
+				"adapter": "supabase_postgres",
+				"region": "ap-southeast-2",
+				"connection_secret_ref": "env:EXAMPLE_PORTAL_DATABASE_URL"
+			},
+			"credentials": {
+				"application": "vault:community-portals/example/application@1",
+				"worker": "vault:community-portals/example/worker@1",
+				"bootstrap": "vault:community-portals/example/bootstrap@1"
+			}
+		}
+	]
+}

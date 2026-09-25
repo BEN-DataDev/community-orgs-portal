@@ -22,7 +22,10 @@
 		"update-db-types": "npx supabase gen types typescript --project-id \"gqltsfijginclwszrcfj\" --schema community_orgs,public > src/lib/db.types.ts",
 		"test:avatars": "node scripts/test-avatars.mjs",
 		"test:email-changes": "node scripts/test-email-changes.mjs",
-		"test:sessions": "node scripts/test-sessions.mjs"
+		"test:sessions": "node scripts/test-sessions.mjs",
+		"fleet": "python3 -m tools.fleet",
+		"test:fleet": "python3 -m unittest discover -s tools/fleet/tests -v",
+		"test:fleet:db": "python3 scripts/test-fleet-operations.py"
 	},
 	"dependencies": {
 		"@skeletonlabs/skeleton": "5.0.1",
