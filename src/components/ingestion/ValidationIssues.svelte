@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type {
 		validationQueueSchema,
@@ -9,6 +10,7 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { z } from 'zod';
 	let creatingRun = $state(false);
+	let savingResolution = $state(false);
 
 	let {
 		queue,
@@ -86,6 +88,25 @@
 				await update();
 			} finally {
 				creatingRun = false;
+			}
+		};
+	};
+	const saveResolution: SubmitFunction = ({ cancel }) => {
+		if (savingResolution) {
+			cancel();
+			return;
+		}
+		savingResolution = true;
+		return async ({ result, update }) => {
+			try {
+				await update();
+				if (result.type !== 'success' || !queue.detail) return;
+				const next = queue.issues.find(
+					(issue) => issue.id !== queue.detail?.id && issue.decision === 'unresolved'
+				);
+				await goto(issueHref(next?.id ?? ''), { replaceState: true, invalidateAll: true });
+			} finally {
+				savingResolution = false;
 			}
 		};
 	};
@@ -258,7 +279,12 @@
 					</form>
 				{/if}
 				{#if issue.allowed_resolutions.length}
-					<form method="POST" use:enhance class="card border-surface-200-800 space-y-3 border p-4">
+					<form
+						method="POST"
+						use:enhance={saveResolution}
+						class="card border-surface-200-800 space-y-3 border p-4"
+						aria-busy={savingResolution}
+					>
 						<h3 class="font-semibold">Record resolution</h3>
 						<input type="hidden" name="intent" value="save_resolution" /><input
 							type="hidden"
@@ -304,7 +330,9 @@
 								maxlength="2000"
 							/></label
 						>
-						<button class="btn preset-filled-primary-500">Save resolution</button>
+						<button class="btn preset-filled-primary-500" disabled={savingResolution}
+							>{savingResolution ? 'Saving resolution…' : 'Save resolution'}</button
+						>
 						{#if form?.intent === 'save_resolution'}<p role="status">
 								{form.message as string}
 							</p>{/if}

@@ -41,3 +41,36 @@
 		display: none;
 	}
 }
+
+/*
+ * All ordinary POST forms receive the same immediate submission affordance.
+ * The root FormFeedback component sets these attributes before SvelteKit (or a
+ * native navigation) begins the request and clears them when the result lands.
+ */
+form[data-submitting='true'] [data-submit-trigger='true'] {
+	pointer-events: none;
+	opacity: 0.75;
+}
+
+form[data-submitting='true'] button[data-submit-trigger='true']::before {
+	display: inline-block;
+	width: 1rem;
+	height: 1rem;
+	content: '';
+	border: 2px solid currentColor;
+	border-top-color: transparent;
+	border-radius: 9999px;
+	animation: form-submit-spin 0.75s linear infinite;
+}
+
+@keyframes form-submit-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	form[data-submitting='true'] button[data-submit-trigger='true']::before {
+		animation-duration: 1.5s;
+	}
+}

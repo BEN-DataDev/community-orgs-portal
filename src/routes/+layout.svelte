@@ -9,6 +9,7 @@
 	import AppNavigation from '$components/layout/AppNavigation.svelte';
 	import GuestBanner from '$components/ui/auth/GuestBanner.svelte';
 	import AccountMenu from '$components/ui/AccountMenu.svelte';
+	import FormFeedback from '$components/ui/FormFeedback.svelte';
 	import { minWidth } from '$lib/media.svelte';
 	import { theme } from '$lib/theme.svelte';
 
@@ -131,3 +132,5 @@
 		</div>
 	</footer>
 </div>
+
+<FormFeedback />
