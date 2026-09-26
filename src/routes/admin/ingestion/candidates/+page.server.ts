@@ -1,4 +1,5 @@
 import { error, fail } from '@sveltejs/kit';
+import { z } from 'zod';
 import {
 	isIngestionOperator,
 	registrySeedPromotionInput,
@@ -6,6 +7,20 @@ import {
 	registrySeedTriageInput
 } from '$lib/server/ingestion-review';
 import type { Actions, PageServerLoad } from './$types';
+
+const filterSchema = z.object({
+	search: z.string().trim().max(100),
+	entityType: z.enum([
+		'all',
+		'exclude_private_company',
+		'private_company',
+		'other_incorporated_entity',
+		'public_company'
+	]),
+	postcode: z.union([z.literal(''), z.string().regex(/^[0-9]{4}$/)]),
+	dgr: z.enum(['all', 'present', 'absent']),
+	match: z.enum(['all', 'strong', 'weak', 'any', 'none'])
+});
 
 const id = /^[1-9][0-9]*$/;
 
@@ -17,22 +32,38 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	const version = url.searchParams.get('version') ?? undefined;
 	const decision = url.searchParams.get('decision') ?? undefined;
 	const offsetValue = Number(url.searchParams.get('offset') ?? '0');
+	const filters = filterSchema.safeParse({
+		search: url.searchParams.get('search') ?? '',
+		entityType: url.searchParams.get('entity') ?? 'all',
+		postcode: url.searchParams.get('postcode') ?? '',
+		dgr: url.searchParams.get('dgr') ?? 'all',
+		match: url.searchParams.get('match') ?? 'all'
+	});
 	if ((release && !id.test(release)) || (version && !id.test(version)))
 		error(400, 'Invalid queue ID.');
 	if (decision && !['all', 'pending', 'include', 'exclude', 'defer', 'link'].includes(decision))
 		error(400, 'Invalid decision filter.');
 	if (!Number.isInteger(offsetValue) || offsetValue < 0 || offsetValue > 1_000_000)
 		error(400, 'Invalid queue offset.');
+	if (!filters.success) error(400, 'Invalid registry candidate filter.');
 	const result = await locals.providers.database.rpc('registry_seed_triage_queue', {
 		p_release: release,
 		p_version: version,
 		p_decision: decision,
-		p_offset: offsetValue
+		p_offset: offsetValue,
+		p_search: filters.data.search,
+		p_entity_type: filters.data.entityType,
+		p_postcode: filters.data.postcode,
+		p_dgr: filters.data.dgr,
+		p_match: filters.data.match
 	});
 	const parsed = registrySeedQueueSchema.safeParse(result.data);
 	if (result.error || !parsed.success)
 		error(result.error?.code === '42501' ? 403 : 500, 'Could not load registry seed candidates.');
-	return { queue: parsed.data, decision: decision ?? 'all' };
+	return {
+		queue: parsed.data,
+		filters: { ...filters.data, decision: decision ?? 'all' }
+	};
 };
 
 export const actions: Actions = {

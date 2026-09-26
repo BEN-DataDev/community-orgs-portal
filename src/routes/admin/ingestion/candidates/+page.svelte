@@ -5,18 +5,17 @@
 
 	let { data, form }: PageProps = $props();
 	const pageSize = 50;
-	function href(options: {
-		release?: string;
-		version?: string;
-		decision?: string;
-		offset?: number;
-	}) {
+	function href(options: { release?: string; version?: string; offset?: number }) {
 		const params = new URLSearchParams();
 		const release = options.release ?? data.queue.release_id;
 		if (release) params.set('release', release);
 		if (options.version) params.set('version', options.version);
-		const decision = options.decision ?? data.decision;
-		if (decision !== 'all') params.set('decision', decision);
+		if (data.filters.decision !== 'all') params.set('decision', data.filters.decision);
+		if (data.filters.search) params.set('search', data.filters.search);
+		if (data.filters.entityType !== 'all') params.set('entity', data.filters.entityType);
+		if (data.filters.postcode) params.set('postcode', data.filters.postcode);
+		if (data.filters.dgr !== 'all') params.set('dgr', data.filters.dgr);
+		if (data.filters.match !== 'all') params.set('match', data.filters.match);
 		if (options.offset) params.set('offset', String(options.offset));
 		return `${resolve('/admin/ingestion/candidates')}?${params}`;
 	}
@@ -45,7 +44,7 @@
 
 	<section class="card preset-outlined space-y-4 p-4" aria-labelledby="filters-heading">
 		<h2 id="filters-heading" class="font-semibold">Queue filters</h2>
-		<form method="GET" class="grid gap-3 md:grid-cols-[2fr_1fr_auto] md:items-end">
+		<form method="GET" class="grid gap-3 md:grid-cols-2 xl:grid-cols-4 xl:items-end">
 			<label>
 				<span class="mb-1 block text-sm font-medium">Seed release</span>
 				<select class="select" name="release">
@@ -57,14 +56,70 @@
 				</select>
 			</label>
 			<label>
+				<span class="mb-1 block text-sm font-medium">Name or ABN</span>
+				<input
+					class="input"
+					type="search"
+					name="search"
+					maxlength="100"
+					value={data.filters.search}
+					placeholder="Name or 11-digit ABN"
+				/>
+			</label>
+			<label>
+				<span class="mb-1 block text-sm font-medium">Entity type</span>
+				<select class="select" name="entity" value={data.filters.entityType}>
+					<option value="all">All entity types</option>
+					<option value="exclude_private_company">Exclude Australian Private Companies</option>
+					<option value="private_company">Australian Private Company only</option>
+					<option value="other_incorporated_entity">Other Incorporated Entity only</option>
+					<option value="public_company">Australian Public Company only</option>
+				</select>
+			</label>
+			<label>
+				<span class="mb-1 block text-sm font-medium">Main-business postcode</span>
+				<input
+					class="input"
+					name="postcode"
+					inputmode="numeric"
+					pattern="[0-9]{4}"
+					maxlength="4"
+					value={data.filters.postcode}
+					placeholder="e.g. 2720"
+				/>
+			</label>
+			<label>
+				<span class="mb-1 block text-sm font-medium">DGR evidence</span>
+				<select class="select" name="dgr" value={data.filters.dgr}>
+					<option value="all">All</option>
+					<option value="present">Present</option>
+					<option value="absent">Absent</option>
+				</select>
+			</label>
+			<label>
+				<span class="mb-1 block text-sm font-medium">Cross-source match</span>
+				<select class="select" name="match" value={data.filters.match}>
+					<option value="all">All</option>
+					<option value="strong">Exact identifier</option>
+					<option value="weak">Same normalised name only</option>
+					<option value="any">Any suggestion</option>
+					<option value="none">No suggestion</option>
+				</select>
+			</label>
+			<label>
 				<span class="mb-1 block text-sm font-medium">Decision</span>
 				<select class="select" name="decision">
 					{#each ['all', 'pending', 'include', 'exclude', 'defer', 'link'] as decision}
-						<option value={decision} selected={decision === data.decision}>{decision}</option>
+						<option value={decision} selected={decision === data.filters.decision}
+							>{decision}</option
+						>
 					{/each}
 				</select>
 			</label>
-			<button class="btn preset-filled-primary-500" type="submit">Apply</button>
+			<div class="flex gap-2">
+				<button class="btn preset-filled-primary-500" type="submit">Apply filters</button>
+				<a class="btn preset-tonal" href={resolve('/admin/ingestion/candidates')}>Clear</a>
+			</div>
 		</form>
 	</section>
 
@@ -80,6 +135,18 @@
 						>
 							<span class="block font-medium">{candidate.name}</span>
 							<span class="text-surface-600-400 block text-sm">{candidate.native_id}</span>
+							<span class="text-surface-600-400 block text-sm">
+								{candidate.entity_type ?? 'Unknown entity type'} · {candidate.postcode ??
+									'No postcode'}
+							</span>
+							<span class="text-surface-600-400 block text-sm">
+								{candidate.has_dgr ? 'DGR evidence' : 'No DGR evidence'} · {candidate.match_strength ===
+								'strong'
+									? 'exact-identifier suggestion'
+									: candidate.match_strength === 'weak'
+										? 'same-name suggestion'
+										: 'no cross-source suggestion'}
+							</span>
 							<span class="text-sm"
 								>{candidate.decision}{candidate.promoted ? ' · promoted' : ''}</span
 							>

@@ -22,8 +22,8 @@ declare
    {"part_id":"part-2.xml","ordinal":2,"status":"complete","expected_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","record_count":1}],
   "errors":[],"retention":{"class":"hold","basis":"P31 fixture hold pending reviewed promotion"}}';
  candidates jsonb := '[
-  {"source_id":"abr-bulk","resource_id":"p31-fixture","release_id":"2026-09-21","parser_version":"abr-xml-v1","observed_at":"2026-09-21T00:00:00Z","native_id":"51824753556","raw":{"ABN":"51824753556","name":"Included Association"},"assertions":[{"field":"entity_name","value":"Included Association"},{"field":"abn","value":"51824753556"}],"selection":{"in_scope":true,"reasons":["registered postcode 2730"]}},
-  {"source_id":"abr-bulk","resource_id":"p31-fixture","release_id":"2026-09-21","parser_version":"abr-xml-v1","observed_at":"2026-09-21T00:00:00Z","native_id":"11000000000","raw":{"ABN":"11000000000","name":"Adjacent Association"},"assertions":[{"field":"entity_name","value":"Adjacent Association"},{"field":"abn","value":"11000000000"}],"selection":{"in_scope":false,"reasons":["adjacent-area evidence only"]}}]';
+  {"source_id":"abr-bulk","resource_id":"p31-fixture","release_id":"2026-09-21","parser_version":"abr-xml-v1","observed_at":"2026-09-21T00:00:00Z","native_id":"51824753556","raw":{"ABN":"51824753556","name":"Included Association"},"assertions":[{"field":"entity_name","value":"Included Association"},{"field":"abn","value":"51824753556"},{"field":"abr_entity_type","value":{"code":"OIE","text":"Other Incorporated Entity"}},{"field":"abr_main_business_location","value":{"state":"NSW","postcode":"2730"}},{"field":"abr_dgr","value":[{"name":"Included Association Gift Fund"}]}],"selection":{"in_scope":true,"reasons":["registered postcode 2730"]}},
+  {"source_id":"abr-bulk","resource_id":"p31-fixture","release_id":"2026-09-21","parser_version":"abr-xml-v1","observed_at":"2026-09-21T00:00:00Z","native_id":"11000000000","raw":{"ABN":"11000000000","name":"Adjacent Association"},"assertions":[{"field":"entity_name","value":"Adjacent Association"},{"field":"abn","value":"11000000000"},{"field":"abr_entity_type","value":{"code":"PRV","text":"Australian Private Company"}},{"field":"abr_main_business_location","value":{"state":"NSW","postcode":"2720"}}],"selection":{"in_scope":false,"reasons":["adjacent-area evidence only"]}}]';
  v_release bigint; replay bigint; included_version bigint; adjacent_version bigint; staged_run text;
  partial_manifest jsonb; partial_release bigint; expired_manifest jsonb; expired_release bigint;
  expired_candidates jsonb; before_orgs bigint; result jsonb;
@@ -100,8 +100,17 @@ begin
   or result#>>'{detail,version_id}'<>included_version::text
   or result#>>'{detail,triage,decision}'<>'include'
   or (result#>'{detail,payload}') ? 'raw'
-  or jsonb_array_length(result->'records')<>2 then
+ or jsonb_array_length(result->'records')<>2 then
   raise exception 'Redacted registry seed triage queue failed: %',result; end if;
+ result:=community_orgs.registry_seed_triage_queue(
+  v_release::text,null,'all',0,'Included','exclude_private_company','2730','present','none');
+ if result->>'total'<>'1'
+  or result#>>'{records,0,native_id}'<>'51824753556'
+  or result#>>'{records,0,entity_type}'<>'Other Incorporated Entity'
+  or result#>>'{records,0,postcode}'<>'2730'
+  or result#>>'{records,0,has_dgr}'<>'true'
+  or result#>>'{records,0,match_strength}'<>'none' then
+  raise exception 'Registry seed cohort filters failed: %',result; end if;
  select count(*) into before_orgs from community_orgs.organisations;
  staged_run:=community_orgs.promote_registry_seed_candidates(v_release::text,array[included_version::text],
   'Bounded P31 promotion fixture');

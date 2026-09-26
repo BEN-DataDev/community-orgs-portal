@@ -1611,7 +1611,17 @@ export type Database = {
 		Functions: {
 			campaign_dashboard: { Args: Record<PropertyKey, never>; Returns: Json };
 			registry_seed_triage_queue: {
-				Args: { p_release?: string; p_version?: string; p_decision?: string; p_offset?: number };
+				Args: {
+					p_release?: string;
+					p_version?: string;
+					p_decision?: string;
+					p_offset?: number;
+					p_search?: string;
+					p_entity_type?: string;
+					p_postcode?: string;
+					p_dgr?: string;
+					p_match?: string;
+				};
 				Returns: Json;
 			};
 			save_registry_seed_triage: {
