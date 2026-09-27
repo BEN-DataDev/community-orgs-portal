@@ -2,6 +2,7 @@ import { error, fail } from '@sveltejs/kit';
 import { z } from 'zod';
 import {
 	isIngestionOperator,
+	registrySeedReadinessSchema,
 	registrySeedPromotionInput,
 	registrySeedQueueSchema,
 	registrySeedTriageInput
@@ -11,10 +12,12 @@ import type { Actions, PageServerLoad } from './$types';
 const filterSchema = z.object({
 	search: z.string().trim().max(100),
 	entityType: z.enum([
+		'community_candidate',
 		'all',
 		'exclude_private_company',
 		'private_company',
 		'other_incorporated_entity',
+		'other_unincorporated_entity',
 		'public_company'
 	]),
 	postcode: z.union([z.literal(''), z.string().regex(/^[0-9]{4}$/)]),
@@ -34,7 +37,7 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	const offsetValue = Number(url.searchParams.get('offset') ?? '0');
 	const filters = filterSchema.safeParse({
 		search: url.searchParams.get('search') ?? '',
-		entityType: url.searchParams.get('entity') ?? 'all',
+		entityType: url.searchParams.get('entity') ?? 'community_candidate',
 		postcode: url.searchParams.get('postcode') ?? '',
 		dgr: url.searchParams.get('dgr') ?? 'all',
 		match: url.searchParams.get('match') ?? 'all'
@@ -46,6 +49,27 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	if (!Number.isInteger(offsetValue) || offsetValue < 0 || offsetValue > 1_000_000)
 		error(400, 'Invalid queue offset.');
 	if (!filters.success) error(400, 'Invalid registry candidate filter.');
+	const readinessResult = await locals.providers.database.rpc('registry_seed_vetting_readiness');
+	const readiness = registrySeedReadinessSchema.safeParse(readinessResult.data);
+	if (readinessResult.error || !readiness.success)
+		error(
+			readinessResult.error?.code === '42501' ? 403 : 500,
+			'Could not check acquisition readiness.'
+		);
+	if (!readiness.data.ready) {
+		return {
+			queue: {
+				releases: [],
+				release_id: null,
+				total: 0,
+				offset: 0,
+				records: [],
+				detail: null
+			},
+			filters: { ...filters.data, decision: decision ?? 'all' },
+			readiness: readiness.data
+		};
+	}
 	const result = await locals.providers.database.rpc('registry_seed_triage_queue', {
 		p_release: release,
 		p_version: version,
@@ -62,7 +86,8 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 		error(result.error?.code === '42501' ? 403 : 500, 'Could not load registry seed candidates.');
 	return {
 		queue: parsed.data,
-		filters: { ...filters.data, decision: decision ?? 'all' }
+		filters: { ...filters.data, decision: decision ?? 'all' },
+		readiness: readiness.data
 	};
 };
 

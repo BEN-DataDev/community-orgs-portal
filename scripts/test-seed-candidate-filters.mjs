@@ -48,6 +48,22 @@ try {
 		rpc: async (name, args) => {
 			calls.push([name, args]);
 			if (name === 'is_data_steward') return { data: true, error: null };
+			if (name === 'registry_seed_vetting_readiness')
+				return {
+					data: {
+						ready: true,
+						sources: [
+							{ source_id: 'abr-bulk', artifact_kind: 'registry_seed_release', ready: true },
+							{ source_id: 'acnc-register', artifact_kind: 'ingestion_run', ready: true },
+							{
+								source_id: 'nsw-incorporated-associations',
+								artifact_kind: 'registry_seed_release',
+								ready: true
+							}
+						]
+					},
+					error: null
+				};
 			if (name === 'registry_seed_triage_queue') return { data: queue, error: null };
 			return { data: null, error: null };
 		}
@@ -78,6 +94,10 @@ try {
 	assert.equal(args.p_postcode, '2730');
 	assert.equal(args.p_dgr, 'present');
 	assert.equal(args.p_match, 'strong');
+
+	await load(event(''));
+	const defaultArgs = calls.filter(([name]) => name === 'registry_seed_triage_queue').at(-1)[1];
+	assert.equal(defaultArgs.p_entity_type, 'community_candidate');
 
 	await assert.rejects(
 		() => load(event('postcode=273&entity=all&dgr=all&match=all')),

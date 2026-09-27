@@ -76,7 +76,7 @@ export const registrySeedQueueSchema = z.object({
 				.nullable(),
 			suggestions: z.array(
 				z.object({
-					kind: z.literal('candidate'),
+					kind: z.enum(['candidate', 'record']),
 					id,
 					source_id: z.string(),
 					native_id: z.string(),
@@ -86,6 +86,17 @@ export const registrySeedQueueSchema = z.object({
 			)
 		})
 		.nullable()
+});
+
+export const registrySeedReadinessSchema = z.object({
+	ready: z.boolean(),
+	sources: z.array(
+		z.object({
+			source_id: z.string(),
+			artifact_kind: z.enum(['ingestion_run', 'registry_seed_release']),
+			ready: z.boolean()
+		})
+	)
 });
 
 export const registrySeedTriageInput = z

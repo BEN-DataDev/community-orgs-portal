@@ -8,7 +8,10 @@ insert into auth.users(id) values
  ('00000000-0000-4000-8000-000000003102');
 insert into ingestion.operators(user_id) values ('00000000-0000-4000-8000-000000003101');
 insert into ingestion.sources(source_id,resource_id,metadata,enabled) values
- ('abr-bulk','p31-fixture','{"synthetic":true}',true);
+ ('abr-bulk','p31-fixture','{"synthetic":true}',true),
+ ('acnc-register','p31-acnc-fixture','{"synthetic":true}',true);
+update ingestion.sources set enabled=true
+where source_id='nsw-incorporated-associations' and resource_id='public-register-search';
 
 do $$
 declare
@@ -25,6 +28,7 @@ declare
   {"source_id":"abr-bulk","resource_id":"p31-fixture","release_id":"2026-09-21","parser_version":"abr-xml-v1","observed_at":"2026-09-21T00:00:00Z","native_id":"51824753556","raw":{"ABN":"51824753556","name":"Included Association"},"assertions":[{"field":"entity_name","value":"Included Association"},{"field":"abn","value":"51824753556"},{"field":"abr_entity_type","value":{"code":"OIE","text":"Other Incorporated Entity"}},{"field":"abr_main_business_location","value":{"state":"NSW","postcode":"2730"}},{"field":"abr_dgr","value":[{"name":"Included Association Gift Fund"}]}],"selection":{"in_scope":true,"reasons":["registered postcode 2730"]}},
   {"source_id":"abr-bulk","resource_id":"p31-fixture","release_id":"2026-09-21","parser_version":"abr-xml-v1","observed_at":"2026-09-21T00:00:00Z","native_id":"11000000000","raw":{"ABN":"11000000000","name":"Adjacent Association"},"assertions":[{"field":"entity_name","value":"Adjacent Association"},{"field":"abn","value":"11000000000"},{"field":"abr_entity_type","value":{"code":"PRV","text":"Australian Private Company"}},{"field":"abr_main_business_location","value":{"state":"NSW","postcode":"2720"}}],"selection":{"in_scope":false,"reasons":["adjacent-area evidence only"]}}]';
  v_release bigint; replay bigint; included_version bigint; adjacent_version bigint; staged_run text;
+ acnc_run bigint; acnc_record bigint; acnc_version bigint; nsw_release bigint;
  partial_manifest jsonb; partial_release bigint; expired_manifest jsonb; expired_release bigint;
  expired_candidates jsonb; before_orgs bigint; result jsonb;
  chunk_manifest jsonb; chunk_candidates jsonb; upload bigint; chunk_release bigint; cleared integer;
@@ -45,6 +49,31 @@ begin
   or (select count(*) from ingestion.registry_seed_release_parts where registry_seed_release_parts.release_id=v_release)<>2
   or (select count(*) from ingestion.registry_seed_release_candidates where registry_seed_release_candidates.release_id=v_release)<>2 then
   raise exception 'Release replay or inventory invariant failed'; end if;
+
+ insert into ingestion.ingestion_runs(source_id,resource_id,run_key,completion,observed_at,envelope)
+ values('acnc-register','p31-acnc-fixture','p31-three-source','complete',now(),'{}')
+ returning id into acnc_run;
+ insert into ingestion.source_records(source_id,resource_id,native_id)
+ values('acnc-register','p31-acnc-fixture','acnc-private-match') returning id into acnc_record;
+ insert into ingestion.source_record_versions(record_id,parser_version,content_hash,payload)
+ values(acnc_record,'fixture','cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc','{}')
+ returning id into acnc_version;
+ insert into ingestion.run_records(run_id,version_id) values(acnc_run,acnc_version);
+ insert into ingestion.field_assertions(version_id,field,value) values
+  (acnc_version,'entity_name','"Adjacent Association"'),
+  (acnc_version,'abn','"11000000000"');
+
+ set local role ingestion_worker;
+ nsw_release:=ingestion.stage_registry_seed(
+  jsonb_set(jsonb_set(jsonb_set(jsonb_set(manifest,'{source_id}',
+   '"nsw-incorporated-associations"'),'{resource_id}','"public-register-search"'),
+   '{release_id}','"2026-09-21-nsw"'),'{scope,snapshot_series}','"nsw-p31-fixture"'),
+  jsonb_build_array(jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(candidates->0,
+   '{source_id}','"nsw-incorporated-associations"'),'{resource_id}','"public-register-search"'),
+   '{release_id}','"2026-09-21-nsw"'),'{native_id}','"AU-NSW:Y000001"'),'{assertions}',
+   '[{"field":"entity_name","value":"Unrelated NSW Association"},{"field":"csv_incorporation_jurisdiction","value":"NSW"},{"field":"csv_incorporation_number","value":"Y000001"}]'))
+ );
+ reset role;
  set local role ingestion_worker;
  begin
   perform ingestion.stage_registry_seed(manifest,jsonb_set(candidates,'{0,raw,name}','"Changed replay"'));
@@ -86,6 +115,8 @@ begin
   join ingestion.registry_seed_candidates c on c.id=cv.candidate_id where c.native_id='11000000000';
  perform set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000003101","aal":"aal2"}',true);
  set local role authenticated;
+ if community_orgs.registry_seed_vetting_readiness()->>'ready'<>'true' then
+  raise exception 'Three-source acquisition gate did not open'; end if;
  perform community_orgs.save_registry_seed_triage(included_version::text,0,'include',null,null,
   'Postcode is configured; send this bounded candidate to ordinary reviewed staging');
  perform community_orgs.save_registry_seed_triage(adjacent_version::text,0,'exclude',null,null,
@@ -111,6 +142,13 @@ begin
   or result#>>'{records,0,has_dgr}'<>'true'
   or result#>>'{records,0,match_strength}'<>'none' then
   raise exception 'Registry seed cohort filters failed: %',result; end if;
+ result:=community_orgs.registry_seed_triage_queue(
+  v_release::text,adjacent_version::text,'all',0,'','community_candidate','','all','all');
+ if result->>'total'<>'2'
+  or result#>>'{detail,version_id}'<>adjacent_version::text
+  or result#>>'{detail,suggestions,0,kind}'<>'record'
+  or result#>>'{detail,suggestions,0,source_id}'<>'acnc-register' then
+  raise exception 'Three-source community candidate rule failed: %',result; end if;
  select count(*) into before_orgs from community_orgs.organisations;
  staged_run:=community_orgs.promote_registry_seed_candidates(v_release::text,array[included_version::text],
   'Bounded P31 promotion fixture');

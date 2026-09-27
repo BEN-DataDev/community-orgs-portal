@@ -1610,6 +1610,10 @@ export type Database = {
 		};
 		Functions: {
 			campaign_dashboard: { Args: Record<PropertyKey, never>; Returns: Json };
+			registry_seed_vetting_readiness: {
+				Args: Record<PropertyKey, never>;
+				Returns: Json;
+			};
 			registry_seed_triage_queue: {
 				Args: {
 					p_release?: string;

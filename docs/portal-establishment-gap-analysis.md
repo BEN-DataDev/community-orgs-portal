@@ -465,6 +465,14 @@ produces private jurisdiction-scoped candidates with fail-closed pagination and 
 automatic name matching. A permitted live qualification, bounded cohort decisions,
 campaign assembly and operational handoff/publication remain.
 
+Candidate vetting is now gated on complete acquisition artifacts from all three
+establishment sources: an ABR registry-seed release, an ACNC ingestion run and a NSW
+incorporated-associations registry-seed release. Once ready, the default ABR cohort
+contains Other Incorporated Entities and Other Unincorporated Entities, plus other
+entity types only when an ACNC or NSW record provides an exact identifier or clearly
+labelled normalised-name suggestion. An explicit all-entity-types view remains for
+audit; suggestions never auto-link or publish a record.
+
 ## Immediate next slice
 
 Phases 1 through 6 are complete. Server-side domain RPC, verified request identity,
