@@ -2,6 +2,8 @@
 -- release in SQL before pagination. Provider raw payloads remain inaccessible;
 -- filters operate only on the redacted mapped assertions already exposed by the
 -- triage queue.
+begin;
+
 drop function community_orgs.registry_seed_triage_queue(text, text, text, integer);
 
 create function community_orgs.registry_seed_triage_queue(
@@ -250,3 +252,5 @@ grant execute on function community_orgs.registry_seed_triage_queue(
 comment on function community_orgs.registry_seed_triage_queue(
   text, text, text, integer, text, text, text, text, text
 ) is 'Redacted bounded registry seed review queue with server-side cohort filters and cross-source suggestions.';
+
+commit;
