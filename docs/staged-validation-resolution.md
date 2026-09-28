@@ -2,8 +2,8 @@
 
 Decision date: 23 September 2026
 
-Status: implemented and verified locally on 23 September 2026; hosted migration,
-worker rollout and run 30 production replay remain pending
+Status: deployed and production-verified on 26 September 2026. Run 30 remains
+immutable; its latest resolution set produced complete private derived run 34.
 
 ## Decision and scope
 
@@ -168,7 +168,7 @@ P34a is implemented in these increments:
    structured issues directly.
 7. Apply retention, suppression, access, concurrency and browser regression suites.
 
-## Local implementation
+## Implementation
 
 Migration `20260924010000_staged_validation_resolution` implements the five-table
 private model, structured-issue staging for ordinary and registry-seed artifacts,
@@ -190,6 +190,29 @@ Local verification covers database access denial, structured staging, stale
 revision rejection, immutable history, non-overridable failures, fenced replay,
 parent/derived lineage, publication isolation and retention redaction. The Python
 suite covers ACNC and approved-CSV structured issues and full-record replay.
+
+## Hosted run 30 verification
+
+The rollout materialised seven blocking `Charity_Website` issues from retained run
+30 evidence. The Data Steward recorded six validated corrections and one explicit
+`reject_record` decision for native record `45545`, whose current parent website did
+not corroborate the source branch. Nine append-only resolution events retain the
+decision history; the current rejection is revision 3.
+
+Replay `63195aba-2bd9-475c-8b60-dfd30ccd0c47` completed as private derived run 34
+on 26 September 2026. It retained the same source, observation, filters, parser and
+mapping lineage; accepted 624 of 625 source records; retained the one rejection in
+replay evidence; and produced zero quarantine and zero acquisition errors. The
+derived run is `complete` and `publication_eligible=false`. Its
+`complete_snapshot` flag is false by design, so it cannot drive absence
+reconciliation.
+
+The parent remains partial run 30 with 618 accepted records and seven quarantined
+records. Its retained envelope hash is
+`3c8723b0f49521df824c45a8f58f4e2387e17e80ca55392f1f0b214f4957d682`, which is
+also pinned in run 34's replay evidence. Run 34 has explicit reprocessing lineage
+to run 30, contains 624 staged records, has no validation issues of its own and did
+not publish or modify any portal organisation.
 
 ## Acceptance
 

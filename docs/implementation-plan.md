@@ -1,7 +1,8 @@
 # Portal implementation plan
 
-Prepared: 15 September 2026. Updated: 24 September 2026 for the approved
-postcode-defined, independently deployed portal architecture.
+Prepared: 15 September 2026. Updated: 29 September 2026 for the hosted P34a
+run 30 validation result and the approved postcode-defined, independently deployed
+portal architecture.
 
 The approved long-term portal boundary, governance handoff, stewardship,
 dual-approval and provider-portability decisions are recorded in
@@ -23,9 +24,9 @@ schedule is enabled. Exact-ABN live qualification remains externally gated. The
 national ABN bulk adapter is implemented and its first qualified release is held in
 private production staging. The first expanded 23-postcode ACNC run exposed seven
 field-validation failures. P34a's generic operator resolution and derived-run
-workflow is implemented and verified locally; its hosted migration, worker rollout
-and run 30 production replay remain before the public NSW
-incorporated-associations adapter and candidate triage.
+workflow is deployed and production-verified: the retained issues were resolved
+and replayed into complete private run 34 without changing partial run 30. Candidate
+triage remains separate.
 
 ## Current priorities: registry seeding and directory usability
 
@@ -64,8 +65,8 @@ automatically acquire other providers.
 
 | Source                                                      | Current status                                                                                                                                                                                                                 | Remaining work                                                                                                                                                                                 |
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ACNC Register                                               | CKAN worker and 23-postcode Snowy Valleys configuration deployed; [P13 bulk fallback](acnc-acquisition.md) and complete-field reviewed publication implemented; first expanded manual run retained privately as partial run 30 | Deploy [P34a validation resolution](staged-validation-resolution.md), resolve and replay its seven failed website fields; then observe the first scheduled job after the October 2026 due time |
-| Approved CSV files (P12)                                    | Implemented, deployed and hosted database verification passed; [CLI and verification](approved-csv-import.md); structured P34a issues/replay implemented locally                                                               | Deploy and verify P34a before onboarding a real provider CSV; receipt of an approved export remains deferred                                                                                   |
+| ACNC Register                                               | CKAN worker and 23-postcode Snowy Valleys configuration deployed; [P13 bulk fallback](acnc-acquisition.md) and complete-field reviewed publication implemented; partial run 30 retained unchanged and resolved into complete private derived run 34 | Use run 34 as the ACNC establishment artifact; then observe the first scheduled job after the October 2026 due time                                                                            |
+| Approved CSV files (P12)                                    | Implemented and deployed; hosted database verification passed; [CLI and verification](approved-csv-import.md); shared structured P34a issues/replay boundary deployed and production-verified with ACNC run 30                    | Receipt and controlled onboarding of an approved provider export remain deferred                                                                                                                |
 | Exact-ABN Lookup (P16)                                      | [Bounded adapter implemented](exact-abn-lookup.md); live qualification pending                                                                                                                                                 | Provision access GUID and approved exact-ABN set; complete live/withdrawal checks                                                                                                              |
 | ABN public bulk extract                                     | P33 complete: approved workstation release `2026-09-23` validated 20,545,089 records; 157,156 scoped candidates finalized as private hosted release `2`; source enabled at revision 1; nothing triaged, promoted or published  | Retain evidence under hold; P35 defines reviewed candidate triage and cross-source resolution before any separately authorised promotion                                                       |
 | NSW incorporated associations                               | Bounded public-register adapter qualified and enabled; the complete 1,420-candidate registered-only release is hosted private release 3; the 2,519-candidate full-status artifact remains qualification evidence               | Perform P35 review and bounded cross-source resolution before any promotion; retain non-current statuses as private qualification evidence                                                     |
@@ -102,15 +103,17 @@ automatically acquire other providers.
    triage, promotion or publication; see [the P33 guide](abn-bulk-seed.md). Hosted
    migrations `20260923010117_register_abr_bulk_source` and
    `20260923014057_chunked_registry_seed_staging` are recorded.
-4. **P34a — Add cross-source staged validation resolution — implemented locally.** The approved
+4. **P34a — Add cross-source staged validation resolution — deployed.** The approved
    [validation model](staged-validation-resolution.md): structured field/record
    issues, revision-fenced operator decisions, server validation, immutable audit
    history and separately versioned derived runs. Scope/schema/licence/acquisition
    failures remain non-overridable. Migration, operator UI, ACNC/approved-CSV issue
    emission, fenced worker replay, registry-seed gates and regression coverage are
-   complete locally. Apply the hosted migration and worker, backfill and replay run
-   30 as the first production check, then verify approved CSV and registry-seed
-   sources before adding another adapter.
+   complete. The hosted migration and worker materialised run 30's seven website
+   issues. Six validated corrections and one explicit record rejection produced
+   complete private derived run 34 with 624 accepted records, zero quarantine and
+   zero acquisition errors. Run 30 remains unchanged and run 34 is not publication
+   eligible; its intentional rejection also sets `complete_snapshot=false`.
 5. **P34b — Implement the NSW register scraper — complete for the configured
    23-postcode acquisition.** The adapter uses only the ordinary
    unauthenticated postcode search flow, with conservative pacing, finite transport
@@ -152,8 +155,8 @@ automatically acquire other providers.
    task, not an automatic status change or removal, because an office move can take
    an association outside the configured postcode scope.
 
-P34a hosted rollout and run 30 validation remain release gates before NSW candidate
-promotion. P33 acquisition and private staging are complete. The P34b acquisition
+P34a hosted rollout and run 30 validation are complete. P33 acquisition and private
+staging are complete. The P34b acquisition
 engine and full-status evidence release are complete; the registered-only production
 release and restricted private staging are complete. Retained evidence remains on
 hold for P35/P36 review and publication decisions.
@@ -242,8 +245,8 @@ have already happened.
   delivery within it, as defined in the completed [P01 inclusion policy](pilot-inclusion-policy.md).
   Candidate discovery targets the documented [23 postcodes](snowy-valleys-postcode-scope.md)
   that overlap or directly border the LGA. Multi-postcode configuration and the
-  rebuilt worker are deployed. The first expanded manual acquisition is partial
-  run 30 and is the initial P34a validation-resolution case.
+  rebuilt worker are deployed. The first expanded manual acquisition is retained
+  as partial run 30; its P34a resolutions produced complete private derived run 34.
 - First publication target: a bounded, reviewable slice of the registry-derived
   candidates, including existing records, duplicate candidates and groups without
   ABNs. Candidate acquisition may be much larger than the publication batch.

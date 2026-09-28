@@ -1,9 +1,10 @@
 # Public-source data ingestion and maintenance strategy
 
-Prepared: 15 September 2026. Updated: 23 September 2026 for the approved
-cross-source staged-validation model.
-Status: active strategy; P34a validation resolution is implemented locally and
-awaits hosted migration, worker rollout and run 30 validation.
+Prepared: 15 September 2026. Updated: 29 September 2026 for the hosted P34a
+run 30 validation result.
+Status: active strategy; P34a validation resolution is deployed and
+production-verified. Complete private derived ACNC run 34 retains immutable
+lineage to partial run 30.
 
 ## 1. Recommended approach
 

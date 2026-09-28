@@ -484,9 +484,13 @@ and recurring refresh campaigns.
 cross-source triage queue are implemented locally. The source is qualified and
 enabled, and both the complete full-status qualification acquisition and complete
 registered-only initial-seed acquisition remain private. The registered-only release
-is now staged as hosted release 3. Bounded cohort decisions, campaign assembly and
-operational handoff/publication remain. Pagination and cap handling fail closed, and
-there is no automatic name matching or absence-driven withdrawal.
+is now staged as hosted release 3. P34a is deployed and production-verified: partial
+ACNC run 30 remains unchanged, while its seven resolved website issues produced
+complete private derived run 34 with zero quarantine and zero acquisition errors.
+One intentional record rejection is retained in its replay evidence, so the derived
+run cannot drive absence reconciliation. Bounded cohort decisions, campaign assembly
+and operational handoff/publication remain. Pagination and cap handling fail closed,
+and there is no automatic name matching or absence-driven withdrawal.
 
 Candidate vetting is now gated on complete acquisition artifacts from all three
 establishment sources: an ABR registry-seed release, an ACNC ingestion run and a NSW
