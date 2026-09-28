@@ -1,0 +1,228 @@
+{
+	"reviewed_at": "2026-09-28T09:50:21+10:00",
+	"source_id": "nsw-incorporated-associations",
+	"resource_id": "public-register-search",
+	"operation": "Qualified bounded acquisition from the ordinary public postcode search; retained privately with no staging or publication",
+	"decision": {
+		"transport_and_markup": "qualified_for_current_observed_interface",
+		"access_and_reuse": "approved_by_portal_owner_under_nsw_open_data_policy",
+		"approval_reference": "OWNER-2026-09-27-NSW-OPEN-DATA",
+		"source_enabled": true,
+		"source_approval_revision": 1,
+		"retained_acquisition_complete": true,
+		"configured_23_postcode_acquisition_complete": true,
+		"registered_only_acquisition_complete": true,
+		"database_staging_complete": true
+	},
+	"access_review": {
+		"register_description": "https://www.nsw.gov.au/business-and-economy/incorporated-associations/nsw-incorporated-associations-register",
+		"search_url": "https://applications.fairtrading.nsw.gov.au/assocregister/",
+		"linked_notice": "https://www.service.nsw.gov.au/copyright-and-disclaimer",
+		"robots_url_status": 404,
+		"open_data_policy": "https://arp.nsw.gov.au/dfsi-2016-04-open-data-policy",
+		"open_data_definition": "https://data.nsw.gov.au/open-data/what-is-open-data",
+		"finding": "The portal owner confirmed that manual search and copying are permitted and authorised bounded collection and reuse of the public register facts under the active NSW Open Data Policy. The project must preserve attribution, avoid implied endorsement, exclude non-public or sensitive information, pace requests conservatively, and honour corrections or removal requests."
+	},
+	"qualification": {
+		"release_id": "2026-09-27T052345Z",
+		"postcode": "2730",
+		"completion": "complete",
+		"complete_for_configured_scope": true,
+		"http_requests": 5,
+		"page_count": 4,
+		"candidate_count": 40,
+		"native_ids_unique": true,
+		"errors": [],
+		"page_evidence": [
+			{
+				"part_id": "postcode-2730-page-1",
+				"record_count": 10,
+				"sha256": "5bbc9056f44d8be095c10c4faa78d61daa0ca06e23dce604feb23b32fdb196b1"
+			},
+			{
+				"part_id": "postcode-2730-page-2",
+				"record_count": 10,
+				"sha256": "766d4cac51ab12a852d4a43159faea877229c48b8ed95eae824784ea93f22f98"
+			},
+			{
+				"part_id": "postcode-2730-page-3",
+				"record_count": 10,
+				"sha256": "f9bfa59f013f1255fa7f05b7895fef1e036204d1dec6da021536ab24fcdb83be"
+			},
+			{
+				"part_id": "postcode-2730-page-4",
+				"record_count": 10,
+				"sha256": "4a8065a36de68e73c721961c696be0cd4c095095ba509a32b493a80f9abeec3a"
+			}
+		],
+		"assertion_fields": [
+			"csv_incorporation_jurisdiction",
+			"csv_incorporation_number",
+			"entity_name",
+			"nsw_association_status",
+			"nsw_association_type",
+			"nsw_date_registered",
+			"nsw_date_removed",
+			"nsw_registered_office_address"
+		]
+	},
+	"privacy": {
+		"provider_records_retained": true,
+		"provider_records_location": "/home/akeown/private/community-orgs/nsw/outputs/20260928-partitioned-full-20",
+		"summary_contains_names_identifiers_or_addresses": false
+	},
+	"initial_retained_acquisition": {
+		"release_id": "nsw-e5f968e2-1cc2-400d-a8bd-6615756e787e",
+		"observed_at": "2026-09-27T06:18:15.855422+00:00",
+		"snapshot_series": "nsw-associations-snowy-valleys-initial-2730",
+		"postcodes": ["2730"],
+		"completion": "complete",
+		"page_count": 4,
+		"candidate_count": 40,
+		"errors": [],
+		"artifact_directory_mode": "0700",
+		"artifact_file_mode": "0600",
+		"database_staging": "not_staged_superseded_qualification_sample"
+	},
+	"expanded_scope_attempt": {
+		"postcodes": 23,
+		"completion": "partial_unstaged",
+		"finding": "Superseded qualification evidence: postcodes 2620, 2640 and 2650 terminated at exactly 200 records, establishing the need for status/date partitions.",
+		"maximum_retained_candidate_count": 904
+	},
+	"retained_acquisition": {
+		"release_id": "nsw-694bfbc3-d570-4c05-8a17-1596df5126b0",
+		"observed_at": "2026-09-27T07:11:48.905417+00:00",
+		"completed_on": "2026-09-28",
+		"snapshot_series": "nsw-associations-snowy-valleys-partitioned-v1",
+		"postcodes": 23,
+		"organisation_type": "INCORASSOC",
+		"statuses": ["AMALG", "CANCELLED", "LIQUIDATIN", "REGISTERED", "TRANSFER", "ADMNSTRATN"],
+		"query_plan_version": "incorporated-association-status-date-v1",
+		"completion": "complete",
+		"complete_for_configured_scope": true,
+		"candidate_count": 2519,
+		"native_ids_unique": true,
+		"terminal_part_count": 373,
+		"partition_split_count": 10,
+		"final_errors": [],
+		"postcode_counts": {
+			"2582": 184,
+			"2611": 3,
+			"2620": 287,
+			"2624": 2,
+			"2627": 76,
+			"2628": 53,
+			"2629": 12,
+			"2640": 426,
+			"2642": 110,
+			"2644": 62,
+			"2649": 0,
+			"2650": 793,
+			"2652": 132,
+			"2653": 71,
+			"2720": 147,
+			"2722": 76,
+			"2727": 13,
+			"2729": 32,
+			"2730": 40,
+			"3707": 0,
+			"3708": 0,
+			"3709": 0,
+			"3900": 0
+		},
+		"status_counts": {
+			"AMALG": 28,
+			"CANCELLED": 1055,
+			"LIQUIDATIN": 2,
+			"REGISTERED": 1420,
+			"TRANSFER": 14,
+			"ADMNSTRATN": 0
+		},
+		"provider_records_location": "/home/akeown/private/community-orgs/nsw/outputs/20260928-partitioned-full-20",
+		"artifact_directory_mode": "0700",
+		"artifact_file_mode": "0600",
+		"manifest_sha256": "59cb5a54b466e4dec3cfd28ab626ef68f299227b8eb973f05dfda55ec27725d0",
+		"candidates_sha256": "bccc070d64ed930928ab74718a3b411ba9e22c12e8b12c2b1412d6fdcfda2563",
+		"stage_sql_sha256": "7d1a01063ac29f2772fcd16e4d08c769dd17f409e0d47743bbd95893ecb8876a",
+		"database_staging": "not_staged_full_status_qualification_evidence"
+	},
+	"registered_only_acquisition": {
+		"release_id": "nsw-01804a60-a82d-4135-9d0f-cee6d300c7e5",
+		"observed_at": "2026-09-28T03:40:22.860511+00:00",
+		"completed_on": "2026-09-28",
+		"snapshot_series": "nsw-associations-snowy-valleys-registered-v1",
+		"postcodes": 23,
+		"organisation_type": "INCORASSOC",
+		"statuses": ["REGISTERED"],
+		"query_plan_version": "incorporated-association-status-date-v1",
+		"completion": "complete",
+		"complete_for_configured_scope": true,
+		"candidate_count": 1420,
+		"native_ids_unique": true,
+		"matches_full_status_release_registered_subset": true,
+		"terminal_part_count": 161,
+		"partition_split_count": 7,
+		"resume_attempts": 4,
+		"final_errors": [],
+		"provider_records_location": "/home/akeown/private/community-orgs/nsw/outputs/20260928-registered-only-05",
+		"artifact_directory_mode": "0700",
+		"artifact_file_mode": "0600",
+		"manifest_sha256": "8c6206dde4468c9b51a8705b33572301a6ca166d9ca2a30c9dc9b80405be2259",
+		"candidates_sha256": "b49cbe5ca3ecb36ddf34bf15e0a010d0d8002eb37d201b874e1f2320c91ddcd1",
+		"stage_sql_sha256": "249a31ce7f10f7163ec7925cb3263e0a727d581a4de2bd77422d400444a32cd4",
+		"database_staging": "complete_private_hosted_release_3"
+	},
+	"registered_only_staging": {
+		"completed_at": "2026-09-28T17:22:12+10:00",
+		"hosted_release_id": 3,
+		"candidate_count": 1420,
+		"method": "six-batch resumable registry seed upload",
+		"session_user": "community_orgs_acquisition",
+		"assumed_role": "ingestion_worker",
+		"direct_private_table_select": false,
+		"replay_verified_same_release": true,
+		"finalized_upload_candidates_cleared": true,
+		"publication_or_promotion_performed": false,
+		"first_script": {
+			"sha256": "d6def01e872cf084ad712cdfed80589702be6eb5f5bebd164e574a58a1a8eb9c",
+			"result": "release finalized; post-finalization replay assertion failed because psql variables are not substituted inside a dollar-quoted DO body"
+		},
+		"corrected_script": {
+			"sha256": "ed077d87ab4ebcc28b258cb56b56383436aad92e5a2f512af49567aa32de8c47",
+			"result": "idempotent replay returned release 3 and cleared finalized upload candidates"
+		}
+	},
+	"approved_operation": {
+		"permitted_fields": [
+			"association name",
+			"incorporation number",
+			"registration date",
+			"registration status",
+			"organisation type",
+			"removal date when publicly displayed",
+			"registered office address when publicly displayed"
+		],
+		"attribution": "© State of New South Wales. Source: NSW Fair Trading Incorporated Associations Register. Adapted by Community Organisations Portal.",
+		"retention": "Private hold through candidate review; retained copies remain subject to correction, suppression and removal controls.",
+		"contact": "https://github.com/BEN-DataDev/community-orgs-portal"
+	},
+	"seed_and_refresh_profile": {
+		"decided_on": "2026-09-28",
+		"initial_seed_organisation_type": "INCORASSOC",
+		"initial_seed_status": "REGISTERED",
+		"initial_seed_candidate_count_in_completed_evidence": 1420,
+		"full_status_release_role": "private_qualification_and_audit_evidence",
+		"non_registered_initial_seed_eligible": false,
+		"recurring_baseline": "latest complete comparable registered-only release",
+		"new_native_id": "new_private_candidate",
+		"existing_native_id": "compare_public_fields",
+		"missing_native_id": "verification_required",
+		"missing_record_rule": "Absence from a postcode harvest does not prove status change or removal because the registered office may have moved outside scope; verify by exact incorporation number before any status, suppression or withdrawal action.",
+		"partial_or_failed_absence_inference": false
+	},
+	"remaining_enablement_steps": [
+		"Review the private hosted registered-only release through the authorised P35 candidate queue",
+		"Resolve a bounded cross-source cohort before any promotion or publication"
+	]
+}

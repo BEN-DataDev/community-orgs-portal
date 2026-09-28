@@ -12,10 +12,10 @@ from html.parser import HTMLParser
 
 SOURCE_ID = "nsw-incorporated-associations"
 RESOURCE_ID = "public-register-search"
-PARSER_VERSION = "nsw-associations-html-v1"
+PARSER_VERSION = "nsw-associations-html-v2"
 REGISTER_URL = "https://applications.fairtrading.nsw.gov.au/assocregister/"
 NUMBER = re.compile(r"[A-Z0-9][A-Z0-9 ./_-]{0,99}")
-DATE = re.compile(r"\d{2}/\d{2}/\d{4}")
+DATE = re.compile(r"\d{1,2}/\d{1,2}/\d{4}")
 ORG_ID = re.compile(r"(?:Organisationid|OrganisationID)=(\d+)", re.I)
 
 
@@ -107,9 +107,29 @@ def form_fields(html):
     return fields
 
 
-def _label(text, label):
+def _flat_label(text, label):
     match = re.search(re.escape(label) + r"\s*:\s*(.*?)(?=\s+[A-Z][A-Za-z ]+\s*:|$)", text)
     return match.group(1).strip() if match else None
+
+
+def _label(node, label):
+    """Read a label's sibling text without flattening reordered DOM content."""
+    matches = []
+
+    def visit(current):
+        for child in current.children:
+            child_label = child.content().strip().rstrip(":")
+            if child.tag in {"span", "label", "strong"} and child_label == label:
+                value = " ".join(" ".join(current.text).split())
+                matches.append(None if value in {"", "-"} else value)
+            visit(child)
+
+    visit(node)
+    if len(matches) > 1:
+        raise ValueError(f"result row repeats {label}")
+    if matches:
+        return matches[0]
+    return _flat_label(node.content(), label)
 
 
 def parse_page(html):
@@ -122,11 +142,25 @@ def parse_page(html):
     style = result_region[0].attrs.get("style", "").replace(" ", "").lower()
     if "display:none" in style:
         raise ValueError("page is not a completed register search")
+    empty_contract = False
     if len(containers) == 1:
         rows = containers[0].find_all(
             lambda n: n.tag == "div" and "row" in _classes(n)
             and any(c.tag == "div" and "col-md-10" in _classes(c) for c in n.children)
         )
+    elif not containers:
+        refine = root.find_all(
+            lambda n: n.attrs.get("id") == "ctl00_MainArea_RefineSearchSection"
+        )
+        refine_style = refine[0].attrs.get("style", "").replace(" ", "").lower() if refine else ""
+        result_links = result_region[0].find_all(
+            lambda n: n.tag == "a" and ORG_ID.search(n.attrs.get("href", ""))
+        )
+        if len(refine) != 1 or "display:none" in refine_style or result_links:
+            raise ValueError("expected one result container; markup contract changed")
+        # The live register's qualified zero-result state has a visible populated
+        # refine-search section, no result container and no organisation links.
+        rows, empty_contract = [], True
     else:
         raise ValueError("expected one result container; markup contract changed")
     records = []
@@ -142,17 +176,16 @@ def parse_page(html):
             raise ValueError("result row identity/status markup changed")
         org_match = ORG_ID.search(links[0].attrs["href"])
         name = links[0].content()
-        text = main.content()
         status = status_box.content()
         record = {
             "organisation_id": org_match.group(1),
             "name": name,
-            "organisation_number": _label(text, "Organisation Number"),
-            "organisation_type": _label(text, "Organisation Type"),
+            "organisation_number": _label(main, "Organisation Number"),
+            "organisation_type": _label(main, "Organisation Type"),
             "status": status,
-            "date_registered": _label(text, "Date Registered"),
-            "date_removed": _label(text, "Date Removed"),
-            "registered_office_address": _label(text, "Registered Office Address"),
+            "date_registered": _label(main, "Date Registered"),
+            "date_removed": _label(main, "Date Removed"),
+            "registered_office_address": _label(main, "Registered Office Address"),
         }
         if not name or not record["organisation_number"] or not status:
             raise ValueError("result row is missing required public fields")
@@ -161,19 +194,31 @@ def parse_page(html):
         lambda n: n.tag == "a"
         and n.attrs.get("id", "").endswith(("PageNextLink", "PageNextBottomLink"))
     )
-    enabled = []
+    enabled = {}
     for link in next_links:
         href = link.attrs.get("href", "")
         style = link.attrs.get("style", "").replace(" ", "").lower()
-        parent_disabled = False
         if "display:none" in style or "disabled" in _classes(link):
             continue
         match = re.search(r"__doPostBack\(['\"]([^'\"]+)", href)
-        if match and not parent_disabled:
-            enabled.append(match.group(1))
-    if len(set(enabled)) > 1:
-        raise ValueError("top and bottom next-page controls disagree")
-    return records, next(iter(set(enabled)), None)
+        if match:
+            enabled[link.attrs.get("id", "")] = match.group(1)
+    expected = {
+        "ctl00_MainArea_PageNextLink": "ctl00$MainArea$PageNextLink",
+        "ctl00_MainArea_PageNextBottomLink": "ctl00$MainArea$PageNextBottomLink",
+    }
+    if any(expected.get(identifier) != target for identifier, target in enabled.items()):
+        raise ValueError("next-page control target changed")
+    if len(enabled) not in {0, 1, 2}:
+        raise ValueError("unexpected next-page controls")
+    # The live register renders a top and bottom control with distinct, equivalent
+    # ASP.NET targets. Prefer the top target when both are visible.
+    target = enabled.get("ctl00_MainArea_PageNextLink") or enabled.get(
+        "ctl00_MainArea_PageNextBottomLink"
+    )
+    if empty_contract and target:
+        raise ValueError("empty result state exposes a next-page control")
+    return records, target
 
 
 def normalise(raw, *, release_id, observed_at, postcodes):
@@ -216,7 +261,7 @@ class NSWAssociationsExtractor:
             raise ValueError("max_pages must be between 1 and 100")
         self.fetch_initial, self.fetch_next, self.max_pages = fetch_initial, fetch_next, max_pages
 
-    def extract(self, *, postcodes, release_id, observed_at):
+    def extract(self, *, query, postcodes, release_id, observed_at):
         if (not postcodes or len(postcodes) > 50 or postcodes != sorted(set(postcodes))
                 or any(not re.fullmatch(r"[0-9]{4}", p) for p in postcodes)):
             raise ValueError("1 to 50 sorted unique ASCII postcodes are required")
@@ -228,7 +273,7 @@ class NSWAssociationsExtractor:
         for page_number in range(1, self.max_pages + 1):
             try:
                 html = (
-                    self.fetch_initial(postcodes)
+                    self.fetch_initial(query)
                     if page_number == 1 else self.fetch_next(target)
                 )
                 page_hash = hashlib.sha256(html.encode()).hexdigest()

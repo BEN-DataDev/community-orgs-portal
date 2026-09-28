@@ -68,7 +68,7 @@ automatically acquire other providers.
 | Approved CSV files (P12)                                    | Implemented, deployed and hosted database verification passed; [CLI and verification](approved-csv-import.md); structured P34a issues/replay implemented locally                                                               | Deploy and verify P34a before onboarding a real provider CSV; receipt of an approved export remains deferred                                                                                   |
 | Exact-ABN Lookup (P16)                                      | [Bounded adapter implemented](exact-abn-lookup.md); live qualification pending                                                                                                                                                 | Provision access GUID and approved exact-ABN set; complete live/withdrawal checks                                                                                                              |
 | ABN public bulk extract                                     | P33 complete: approved workstation release `2026-09-23` validated 20,545,089 records; 157,156 scoped candidates finalized as private hosted release `2`; source enabled at revision 1; nothing triaged, promoted or published  | Retain evidence under hold; P35 defines reviewed candidate triage and cross-source resolution before any separately authorised promotion                                                       |
-| NSW incorporated associations                               | No bulk feed; upstream scrapers assessed but no current adapter is integrated                                                                                                                                                  | Build a bounded scraper over the ordinary public postcode/suburb search interface, using conservative request pacing, current markup fixtures and jurisdiction-scoped association identifiers  |
+| NSW incorporated associations                               | Bounded public-register adapter qualified and enabled; the complete 1,420-candidate registered-only release is hosted private release 3; the 2,519-candidate full-status artifact remains qualification evidence               | Perform P35 review and bounded cross-source resolution before any promotion; retain non-current statuses as private qualification evidence                                                     |
 | Landcare, neighbourhood houses, sports and arts directories | Expansion backlog                                                                                                                                                                                                              | Select pilot providers, qualify access/reuse and implement provider mappings/adapters                                                                                                          |
 | My Community Directory                                      | Planned; not integrated                                                                                                                                                                                                        | Obtain partner agreement and technical documentation before implementing the adapter                                                                                                           |
 | ACNC AIS financial history                                  | Deferred beyond the initial release                                                                                                                                                                                            | Separate adapter and reporting-period schema with explicit financial-measure definitions                                                                                                       |
@@ -111,27 +111,52 @@ automatically acquire other providers.
    complete locally. Apply the hosted migration and worker, backfill and replay run
    30 as the first production check, then verify approved CSV and registry-seed
    sources before adding another adapter.
-5. **P34b — Implement the NSW register scraper — implemented locally, operational
-   qualification pending.** The disabled adapter uses only the ordinary
+5. **P34b — Implement the NSW register scraper — complete for the configured
+   23-postcode acquisition.** The adapter uses only the ordinary
    unauthenticated postcode search flow, with conservative pacing, finite transport
    limits, pagination checks, duplicate detection and markup-change shutdown. It
    keys records by `(AU-NSW, association number)`, never merges by name and emits the
-   private registry-seed contract. Recorded access/reuse approval and the first
-   permitted live search remain gates; see [the adapter guide](nsw-associations-adapter.md).
+   private registry-seed contract. A non-retained postcode 2730 run completed all
+   four pages and 40 candidates on 27 September 2026 after qualifying the current
+   redirect, pagination and field markup. The portal owner recorded the NSW Open
+   Data Policy basis as `OWNER-2026-09-27-NSW-OPEN-DATA`. The hosted source is
+   enabled at approval revision 1. The initial expanded attempt exposed a silent
+   200-record provider cap. The adapter now fixes organisation type to incorporated
+   associations, searches all six statuses and recursively splits capped results by
+   non-overlapping registration-date ranges. Retained release
+   `nsw-694bfbc3-d570-4c05-8a17-1596df5126b0` completed all query leaves for the 23
+   declared postcodes with 2,519 unique candidates, 373 terminal pages, 10 cap splits
+   and no final errors. This full-status release is qualification/audit evidence,
+   not the initial seed cohort. The adapter now accepts a required ordered status
+   subset. Registered-only release `nsw-01804a60-a82d-4135-9d0f-cee6d300c7e5`
+   completed all 23 postcodes with 1,420 unique `INCORASSOC` + `REGISTERED`
+   candidates, 161 terminal parts, 7 cap splits and no final errors. The existing
+   restricted worker staged it privately as hosted registry-seed release 3 through
+   the resumable six-batch boundary. No triage, promotion or publication occurred.
+   See the [adapter guide](nsw-associations-adapter.md).
 6. **P35 — Add candidate triage and cross-source resolution — implemented locally.**
    The focused seed-candidate queue presents exact qualified identifiers first and
    labels same-normalised-name suggestions as weak review evidence. Revision-fenced
    include, exclude, defer and link decisions retain their reason and target. Raw
    provider payloads remain private, adjacent-area evidence remains private, and
-   promotion into ordinary reviewed staging is a separate bounded action.
+   promotion into ordinary reviewed staging is a separate bounded action. For the
+   initial NSW cohort, only `INCORASSOC` + `REGISTERED` candidates may enter this
+   seed review; historical/non-current statuses remain private evidence and default
+   to exclusion from the initial seed.
 7. **P36 — Publish and maintain the registry seed.** Review a bounded first cohort,
    publish attributable records, add source/postcode/freshness/failure reporting,
-   then exercise unchanged refresh, status change, withdrawal, partial-run and
-   rollback paths before enabling recurring ABN and NSW collection.
+   then exercise unchanged refresh, field change, missing-record verification,
+   confirmed status change, withdrawal, partial-run and rollback paths before
+   enabling recurring ABN and NSW collection. NSW refresh comparison uses complete
+   like-for-like `REGISTERED` snapshots. A missing native ID creates a verification
+   task, not an automatic status change or removal, because an office move can take
+   an association outside the configured postcode scope.
 
-P34a hosted rollout and run 30 validation remain release gates before the first P34b
-live search. P33 acquisition and private staging are complete; retained evidence
-remains on hold for P35/P36.
+P34a hosted rollout and run 30 validation remain release gates before NSW candidate
+promotion. P33 acquisition and private staging are complete. The P34b acquisition
+engine and full-status evidence release are complete; the registered-only production
+release and restricted private staging are complete. Retained evidence remains on
+hold for P35/P36 review and publication decisions.
 P16 live exact-ABN qualification and the first scheduled ACNC observation continue as parallel
 operational tracks and do not block P31–P36.
 
@@ -158,6 +183,14 @@ register scraping from conditional expansion to the active registry-seeding phas
 The NSW register has no bulk feed; collection uses its ordinary public postcode or
 suburb searches without bypassing access controls. Public search results and ABN
 bulk records are discovery candidates, not automatic public organisations.
+
+**Decision — 28 September 2026:** use only current NSW incorporated associations
+(`Organisationtype=INCORASSOC`, `Organisationstatus=REGISTERED`) for the initial
+seed. The broader completed acquisition remains private qualification/audit evidence.
+Recurring NSW harvests repeat the registered-only scope and compare only complete,
+compatible releases. Disappearance creates an exact-number verification task; it
+does not by itself prove cancellation, transfer, amalgamation, address removal or
+withdrawal.
 
 **Decision — 18 September 2026:** P12 is complete, deployed and verified.
 Real-provider CSV onboarding is deferred at the user's request until approved CSV
@@ -218,6 +251,9 @@ have already happened.
   incorporated-associations public search. Approved CSV remains available for later
   providers; exact-ABN verification proceeds when access is available. No AIS
   financial-history import is included in this phase.
+- NSW initial-seed profile: only current `INCORASSOC` + `REGISTERED` records. Other
+  statuses may be retained privately as qualification or later verification evidence
+  but are not members of the initial seed campaign.
 - Access: retain current organisation roles; add a distinct platform ingestion role.
 - Publication: operators approve new records and changes during the pilot.
 - UI: extend the current Svelte/Skeleton interface and navigation conventions.

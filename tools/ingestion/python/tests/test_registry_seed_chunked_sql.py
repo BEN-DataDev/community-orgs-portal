@@ -21,6 +21,11 @@ class RegistrySeedChunkedSQLTests(unittest.TestCase):
         self.assertIn("finalize_registry_seed_upload", sql)
         self.assertIn("clear_finalized_registry_seed_upload", sql)
         self.assertIn("\\if :p33_finalized", sql)
+        self.assertIn("p33_replay_checked", sql)
+        self.assertNotIn("DO $replay$", sql)
+        self.assertEqual(sql.count("\\endif"), 1)
+        self.assertLess(sql.rindex("AS p33_release_id \\gset"), sql.index("\\endif"))
+        self.assertLess(sql.index("\\endif"), sql.index("p33_replay_checked"))
         self.assertNotIn("Private candidate", sql)
 
     def test_writes_private_file_once(self):

@@ -41,13 +41,12 @@ def statements(manifest: dict, candidates: list, batch_size: int = 250):
         "SELECT ingestion.finalize_registry_seed_upload(:p33_upload_id) "
         "AS p33_release_id \\gset\nCOMMIT;\n"
     )
-    yield "BEGIN;\nSET LOCAL ROLE ingestion_worker;\n"
+    yield "\\endif\nBEGIN;\nSET LOCAL ROLE ingestion_worker;\n"
     yield (
-        "DO $replay$ BEGIN IF ingestion.finalize_registry_seed_upload(:p33_upload_id) "
-        "<> CAST(:p33_release_id AS bigint) THEN RAISE EXCEPTION "
-        "'Chunked registry seed replay changed release'; END IF; END $replay$;\n"
+        "SELECT 1 / CASE WHEN ingestion.finalize_registry_seed_upload(:p33_upload_id) "
+        "= CAST(:p33_release_id AS bigint) THEN 1 ELSE 0 END AS p33_replay_checked;\n"
         "SELECT ingestion.clear_finalized_registry_seed_upload(:p33_upload_id) "
-        "AS p33_cleared \\gset\nCOMMIT;\n\\endif\n"
+        "AS p33_cleared \\gset\nCOMMIT;\n"
         "SELECT CAST(:p33_release_id AS bigint);\n"
     )
 

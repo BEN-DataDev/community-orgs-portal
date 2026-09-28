@@ -57,7 +57,7 @@ or change production state.
 | Recurring updates                   | Partial             | ACNC scheduling, reconciliation and conflict protections exist; broader source and campaign orchestration is incomplete                                 |
 | Review UX                           | Implemented         | Focused validation, identity, field-change, release and suppression queues retain campaign and record context                                           |
 | Invitation evidence                 | Implemented         | Immutable email-bound terms and single-use events cover acceptance, cancellation and expiry independently of delivery provider                          |
-| NSW state register                  | Implemented/partial | A disabled bounded postcode-search adapter emits private seed candidates; approval and live qualification remain                                        |
+| NSW state register                  | Implemented/private | Complete 23-postcode evidence release has 2,519 candidates; initial seed is restricted to its 1,420 current `REGISTERED` incorporated associations      |
 
 ## Reusable foundations
 
@@ -348,9 +348,30 @@ role.
 ACNC acquisition and scheduled reconciliation are implemented. The national ABN
 bulk release is privately staged but not triaged or published. Exact-ABN live
 qualification is externally gated. A bounded NSW incorporated-associations adapter
-is integrated locally but remains disabled pending recorded access/reuse approval,
-live markup qualification and source enablement. Other states will require separate
-qualified adapters.
+is integrated and technically qualified. The portal owner recorded the NSW Open Data
+Policy access/reuse basis and the hosted source is enabled. After detecting the
+provider's silent 200-result cap, the adapter was qualified to search incorporated
+associations by all six statuses and recursively split capped searches into
+non-overlapping registration-date ranges. Release
+`nsw-694bfbc3-d570-4c05-8a17-1596df5126b0` completed all leaves for the configured
+23-postcode scope with 2,519 unique private candidates and no final errors.
+That full-status artifact is qualification/audit evidence, not the initial seed.
+Initial NSW seed eligibility is restricted to the 1,420 candidates whose type is
+`INCORASSOC` and current status is `REGISTERED`. The adapter now accepts a required
+ordered status subset, and registered-only release
+`nsw-01804a60-a82d-4135-9d0f-cee6d300c7e5` completed all 23 postcodes with 1,420
+unique candidates and no final errors. Its native-ID set exactly matches the
+`REGISTERED` subset of the full-status evidence. It is staged privately as hosted
+registry-seed release 3 through the restricted worker; candidate review remains
+pending. Other states will require separate qualified adapters.
+
+Recurring NSW comparison must use complete registered-only harvests with identical
+postcode and query-plan scope. Presence in both permits field comparison and a newly
+present native ID is a new candidate. Absence creates a verification task rather
+than a status/removal inference: an association may have moved its registered office
+outside the postcode scope. Exact-number verification against the current register
+is required before recording cancellation, transfer, amalgamation, another status,
+suppression or withdrawal. Partial/failed runs cannot drive absence processing.
 
 Continue P34b–P36, but attach new work to the campaign and portal-scope contracts.
 Do not encode NSW or the current Snowy Valleys postcodes into the generic portal
@@ -460,10 +481,12 @@ release, complete Portal Administrator handoff, then begin organisation invitati
 and recurring refresh campaigns.
 
 **In progress:** the state-register acquisition boundary and focused P35
-cross-source triage queue are implemented locally. The source remains disabled and
-produces private jurisdiction-scoped candidates with fail-closed pagination and no
-automatic name matching. A permitted live qualification, bounded cohort decisions,
-campaign assembly and operational handoff/publication remain.
+cross-source triage queue are implemented locally. The source is qualified and
+enabled, and both the complete full-status qualification acquisition and complete
+registered-only initial-seed acquisition remain private. The registered-only release
+is now staged as hosted release 3. Bounded cohort decisions, campaign assembly and
+operational handoff/publication remain. Pagination and cap handling fail closed, and
+there is no automatic name matching or absence-driven withdrawal.
 
 Candidate vetting is now gated on complete acquisition artifacts from all three
 establishment sources: an ABR registry-seed release, an ACNC ingestion run and a NSW
@@ -480,6 +503,8 @@ private avatar storage and scheduled maintenance now use application-owned ports
 The Supabase production adapter and deliberately limited local proof adapter publish
 tested capabilities, and the fleet uses the same explicit provider vocabulary.
 
-The next slice is Phase 7: qualify and integrate the state-register source, resolve a
-bounded cross-source cohort inside an `initial_seed` campaign, publish it only through
-dual control, complete administrator handoff and begin organisation invitations.
+The next slice is Phase 7: review hosted NSW release 3, resolve a bounded cross-source
+cohort inside an `initial_seed` campaign, publish it only through dual control,
+complete administrator handoff and begin organisation invitations. Recurring
+comparison follows only after a second complete comparable registered-only harvest
+and exact-number verification of disappearances.

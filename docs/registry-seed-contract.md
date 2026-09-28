@@ -82,6 +82,29 @@ ordinary source records, versions and assertions. The run remains
 still mandatory. The promoted scope is deliberately marked non-complete so a
 bounded promotion can never drive absence reconciliation for the source release.
 
+### NSW initial-seed profile
+
+The complete NSW full-status acquisition is provider qualification and audit
+evidence. It is not itself the initial seed cohort. NSW initial-seed eligibility is
+limited to organisation type `INCORASSOC` and status `REGISTERED`. A registered-only
+release must have its own internally consistent manifest, part inventory and
+candidate count. The adapter's required status configuration is part of the scope
+and drives acquisition, completeness and resume checks; filtering a candidate array
+without changing its release contract is invalid.
+
+Registered-only NSW release `nsw-01804a60-a82d-4135-9d0f-cee6d300c7e5` was staged
+through the restricted chunked boundary as hosted private release 3. Finalization
+validated 1,420 ordered candidates and an idempotent replay returned the same release
+before temporary upload candidates were cleared. This operation performed no triage,
+promotion or publication.
+
+Recurring NSW comparisons are allowed only between complete releases with identical
+postcode, organisation-type, status and query-plan scope. A missing native ID is a
+verification outcome, not an absence-reconciliation instruction. Exact-number
+provider verification must distinguish a status change from an office move outside
+the configured postcode scope. No partial/failed run or unverified disappearance may
+close, suppress, withdraw or delete a portal organisation.
+
 ## Retention
 
 Each release carries a retention policy:
