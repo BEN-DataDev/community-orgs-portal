@@ -159,7 +159,10 @@ P34a hosted rollout and run 30 validation are complete. P33 acquisition and priv
 staging are complete. The P34b acquisition
 engine and full-status evidence release are complete; the registered-only production
 release and restricted private staging are complete. Retained evidence remains on
-hold for P35/P36 review and publication decisions.
+hold for P35/P36 review and publication decisions. The hosted three-source readiness
+gate is satisfied by ABR release 2, derived ACNC run 34 and NSW registered-only
+release 3; the next operation is immutable `initial_seed` campaign creation through
+the authenticated Data Steward RPC.
 P16 live exact-ABN qualification and the first scheduled ACNC observation continue as parallel
 operational tracks and do not block P31–P36.
 

@@ -492,13 +492,15 @@ run cannot drive absence reconciliation. Bounded cohort decisions, campaign asse
 and operational handoff/publication remain. Pagination and cap handling fail closed,
 and there is no automatic name matching or absence-driven withdrawal.
 
-Candidate vetting is now gated on complete acquisition artifacts from all three
-establishment sources: an ABR registry-seed release, an ACNC ingestion run and a NSW
-incorporated-associations registry-seed release. Once ready, the default ABR cohort
-contains Other Incorporated Entities and Other Unincorporated Entities, plus other
-entity types only when an ACNC or NSW record provides an exact identifier or clearly
-labelled normalised-name suggestion. An explicit all-entity-types view remains for
-audit; suggestions never auto-link or publish a record.
+The three-source candidate-vetting gate is satisfied in hosted production by ABR
+registry-seed release 2, complete derived ACNC run 34 and NSW registered-only
+registry-seed release 3. All three sources are enabled, their evidence is retained,
+their artifacts have complete part/record counts and they have no unresolved
+validation blockers. The default ABR cohort contains Other Incorporated Entities
+and Other Unincorporated Entities, plus other entity types only when an ACNC or NSW
+record provides an exact identifier or clearly labelled normalised-name suggestion.
+An explicit all-entity-types view remains for audit; suggestions never auto-link or
+publish a record.
 
 ## Immediate next slice
 
@@ -507,8 +509,9 @@ private avatar storage and scheduled maintenance now use application-owned ports
 The Supabase production adapter and deliberately limited local proof adapter publish
 tested capabilities, and the fleet uses the same explicit provider vocabulary.
 
-The next slice is Phase 7: review hosted NSW release 3, resolve a bounded cross-source
-cohort inside an `initial_seed` campaign, publish it only through dual control,
-complete administrator handoff and begin organisation invitations. Recurring
-comparison follows only after a second complete comparable registered-only harvest
-and exact-number verification of disappearances.
+The next slice is Phase 7: create the immutable `initial_seed` campaign pinned to
+ABR release 2, derived ACNC run 34 and NSW release 3, then review a bounded
+cross-source cohort inside it. Publication remains behind dual control, followed by
+administrator handoff and organisation invitations. Recurring comparison follows
+only after a second complete comparable registered-only harvest and exact-number
+verification of disappearances.
