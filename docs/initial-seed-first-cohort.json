@@ -1,0 +1,30 @@
+{
+  "campaign_id": "f3856dbc-8ec1-4c87-87f5-dd487e78e22f",
+  "release_id": 2,
+  "acnc_run_id": 34,
+  "nsw_release_id": 3,
+  "selection_version": "initial-seed-first-cohort-v1",
+  "selected_count": 20,
+  "selected": [
+    { "stratum": "exact_abn_link", "version_id": 6163, "abn": "14514431039", "name": "YASS RAILWAY HERITAGE CENTRE INCORPORATED", "postcode": "2582", "target_record_id": 634 },
+    { "stratum": "exact_abn_link", "version_id": 150, "abn": "11099754393", "name": "TOORA WOMEN INCORPORATED", "postcode": "2611", "target_record_id": 169 },
+    { "stratum": "exact_abn_link", "version_id": 1096, "abn": "11664806991", "name": "MARTINS SOCIAL HOUSING LTD", "postcode": "2620", "target_record_id": 650 },
+    { "stratum": "exact_abn_link", "version_id": 11498, "abn": "17608575560", "name": "THE FLY PROGRAM LTD.", "postcode": "2627", "target_record_id": 512 },
+    { "stratum": "exact_abn_link", "version_id": 11162, "abn": "17375990600", "name": "BERRIDALE PUBLIC SCHOOL P&C ASSN", "postcode": "2628", "target_record_id": 331 },
+    { "stratum": "exact_abn_link", "version_id": 20902, "abn": "22863878651", "name": "ADAMINABY SNOWY SCHEME COLLECTION", "postcode": "2629", "target_record_id": 361 },
+    { "stratum": "exact_abn_link", "version_id": 1913, "abn": "12144851126", "name": "The Trustee for Rotary Club Of Albury Foundation", "postcode": "2640", "target_record_id": 178 },
+    { "stratum": "exact_abn_link", "version_id": 1444, "abn": "11867618398", "name": "YERONG CREEK PARENTS AND CITIZENS ASSOCIATION", "postcode": "2642", "target_record_id": 337 },
+    { "stratum": "exact_abn_link", "version_id": 4044, "abn": "13349283963", "name": "THE COMMANDER HOLBROOK RSL WAR MEMORIAL SCHOLARSHIP FUND", "postcode": "2644", "target_record_id": 436 },
+    { "stratum": "exact_abn_link", "version_id": 774, "abn": "11527622696", "name": "Regional Development Australia - Riverina", "postcode": "2650", "target_record_id": 122 },
+    { "stratum": "incorporated_dgr_review", "version_id": 50169, "abn": "39351702097", "name": "SIGNAL HILL SANCTUARY INCORPORATED", "postcode": "2582" },
+    { "stratum": "incorporated_dgr_review", "version_id": 122002, "abn": "80047534235", "name": "AUSTRALIAN ASSOCIATION FOR ENVIRONMENTAL EDUCATION INCORPORATED", "postcode": "2611" },
+    { "stratum": "incorporated_dgr_review", "version_id": 43172, "abn": "35419036094", "name": "Greyhound Connections Inc", "postcode": "2620" },
+    { "stratum": "incorporated_dgr_review", "version_id": 139285, "abn": "89863478126", "name": "Grafton Community Shed Incorporated", "postcode": "2640" },
+    { "stratum": "incorporated_dgr_review", "version_id": 23620, "abn": "24454028504", "name": "CAREVAN WAGGA INCORPORATED", "postcode": "2650" },
+    { "stratum": "unincorporated_dgr_review", "version_id": 5516, "abn": "14122528820", "name": "JEIR MARCHMONT BUSH FIRE BRIGADE", "postcode": "2582" },
+    { "stratum": "unincorporated_dgr_review", "version_id": 4232, "abn": "13462778021", "name": "AUSSIE BOOKS FOR ZIM", "postcode": "2620" },
+    { "stratum": "unincorporated_dgr_review", "version_id": 25439, "abn": "25519960624", "name": "TABLE TOP RURAL FIRE BRIGADE", "postcode": "2640" },
+    { "stratum": "name_suggestion_review", "version_id": 99106, "abn": "67082801857", "name": "ORDER OF ST LAZARUS (ACT COMMANDERY)", "postcode": "2611" },
+    { "stratum": "name_suggestion_review", "version_id": 149804, "abn": "95821519116", "name": "Queanbeyan Bible Baptist Church Inc", "postcode": "2620" }
+  ]
+}

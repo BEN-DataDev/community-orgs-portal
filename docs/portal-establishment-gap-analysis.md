@@ -52,8 +52,8 @@ or change production state.
 | Stewardship                         | Implemented         | Current state/events gate administrator editing; email-bound acceptance atomically grants ownership and completes the handoff                           |
 | Record edit audit                   | Partial             | Domain rows retain editor/timestamps and roles/imports have events, but no uniform before/after audit for Portal Administrator edits                    |
 | Source releases and private staging | Implemented/partial | Strong per-source releases and runs exist; cross-source campaign aggregation is absent                                                                  |
-| Initial seed workflow               | Partial             | ABN candidates and a mandatory independent initial-release gate exist; multi-source seed campaigns remain absent                                        |
-| Two-person approval                 | Implemented         | Frozen releases retain policy revisions and require a different approver for initial and destructive work                                               |
+| Initial seed workflow               | Partial             | ABN candidates and a one-person authorised Data Steward release gate exist; multi-source seed campaigns remain absent                                   |
+| Two-person approval                 | Implemented         | Frozen releases retain policy revisions; suppression and destructive work require a different approver                                                  |
 | Recurring updates                   | Partial             | ACNC scheduling, reconciliation and conflict protections exist; broader source and campaign orchestration is incomplete                                 |
 | Review UX                           | Implemented         | Focused validation, identity, field-change, release and suppression queues retain campaign and record context                                           |
 | Invitation evidence                 | Implemented         | Immutable email-bound terms and single-use events cover acceptance, cancellation and expiry independently of delivery provider                          |
@@ -294,10 +294,11 @@ campaign readiness without mutating the previous campaign.
 **Priority: critical. Status: implemented.**
 
 Publication releases now freeze exact change-set or suppression actions with a
-content hash, policy revision, submitter and immutable release revision. Initial
-seed, suppression and destructive releases always require a decision by a different
-actor. The Portal Administrator controls whether ordinary updates also require an
-independent approver.
+content hash, policy revision, submitter and immutable release revision. An
+authorised Data Steward may submit and publish an initial seed. Suppression and
+destructive releases always require a decision by a different actor. The Portal
+Administrator controls whether ordinary updates also require an independent
+approver.
 
 Decisions and release events are append-only. Revising contents creates a new
 revision without inheriting earlier approval. Publication rechecks the content hash,
@@ -311,9 +312,10 @@ transactional regression tests; provider API sessions cannot use it. Emergency
 withdrawal remains deferred until its retrospective-review operating procedure is
 defined.
 
-**Acceptance met:** the submitter cannot approve a dual-control release, changing
-its contents invalidates approval, and publication atomically records the exact
-approved writes, submitter, independent approver and publisher.
+**Acceptance met:** the submitter cannot approve a release that requires dual
+control, changing its contents invalidates approval, and publication atomically
+records the exact approved writes, submitter, any required independent approver and
+publisher.
 
 ### PEG11 — Review information architecture
 
@@ -449,7 +451,8 @@ bootstrap Portal Administrator only after verifying equivalent required access.
 
 Add publication releases, approval policies and actor separation. Wrap existing
 change sets and suppression actions rather than replacing their transactional
-checks. Make initial-seed and destructive dual control mandatory.
+checks. Keep suppression and destructive work behind mandatory dual control; allow
+an authorised Data Steward to complete the initial seed.
 
 ### Phase 4 — Campaign orchestration and UX split (complete)
 
@@ -476,31 +479,41 @@ scheduling, backups and migrations to meet the same acceptance tests.
 ### Phase 7 — Complete and operate the seed
 
 Integrate the state-register adapter, cross-source resolution and bounded first
-cohort into an `initial_seed` campaign. Publish only through the new dual-controlled
+cohort into an `initial_seed` campaign. Publish only through the frozen authorised
 release, complete Portal Administrator handoff, then begin organisation invitations
 and recurring refresh campaigns.
 
-**In progress:** the state-register acquisition boundary and focused P35
-cross-source triage queue are implemented locally. The source is qualified and
+**Initial population complete:** the state-register acquisition boundary and focused
+P35 cross-source triage queue are implemented. The source is qualified and
 enabled, and both the complete full-status qualification acquisition and complete
 registered-only initial-seed acquisition remain private. The registered-only release
 is now staged as hosted release 3. P34a is deployed and production-verified: partial
 ACNC run 30 remains unchanged, while its seven resolved website issues produced
 complete private derived run 34 with zero quarantine and zero acquisition errors.
 One intentional record rejection is retained in its replay evidence, so the derived
-run cannot drive absence reconciliation. Bounded cohort decisions, campaign assembly
-and operational handoff/publication remain. Pagination and cap handling fail closed,
-and there is no automatic name matching or absence-driven withdrawal.
+run cannot drive absence reconciliation. The corrected bounded cohort publication
+remains audit evidence. A later authorised full retained-source publication is now
+complete; operational handoff remains. Pagination and cap handling
+fail closed, and there is no automatic name matching or absence-driven withdrawal.
 
 The three-source candidate-vetting gate is satisfied in hosted production by ABR
 registry-seed release 2, complete derived ACNC run 34 and NSW registered-only
 registry-seed release 3. All three sources are enabled, their evidence is retained,
 their artifacts have complete part/record counts and they have no unresolved
-validation blockers. The default ABR cohort contains Other Incorporated Entities
-and Other Unincorporated Entities, plus other entity types only when an ACNC or NSW
-record provides an exact identifier or clearly labelled normalised-name suggestion.
-An explicit all-entity-types view remains for audit; suggestions never auto-link or
-publish a record.
+validation blockers. The first immutable campaign,
+`f3856dbc-8ec1-4c87-87f5-dd487e78e22f`, pinned those exact artifacts but is now
+blocked as superseded: its cohort used discovery postcode as local-relevance
+evidence. All 20 decisions are excluded and its ten private run 35 reviews are
+rejected; nothing was published. Replacement campaign
+`1079eb35-e8e0-46a4-8583-1af77f3d23ce` pins the same artifact, scope, policy and
+mapping revisions plus the ten-record confirmed-local v2 cohort. Hosted readiness
+therefore remains bounded and does not treat all source records as campaign
+decisions.
+The default ABR cohort contains Other
+Incorporated Entities and Other Unincorporated Entities, plus other entity types
+only when an ACNC or NSW record provides an exact identifier or clearly labelled
+normalised-name suggestion. An explicit all-entity-types view remains for audit;
+suggestions never auto-link or publish a record.
 
 ## Immediate next slice
 
@@ -509,9 +522,36 @@ private avatar storage and scheduled maintenance now use application-owned ports
 The Supabase production adapter and deliberately limited local proof adapter publish
 tested capabilities, and the fleet uses the same explicit provider vocabulary.
 
-The next slice is Phase 7: create the immutable `initial_seed` campaign pinned to
-ABR release 2, derived ACNC run 34 and NSW release 3, then review a bounded
-cross-source cohort inside it. Publication remains behind dual control, followed by
-administrator handoff and organisation invitations. Recurring comparison follows
-only after a second complete comparable registered-only harvest and exact-number
-verification of disappearances.
+The original 20-record [first cohort](initial-seed-first-cohort.md) is superseded and
+retained only for audit. Its broad discovery postcode did not establish portal
+scope; DGR flags and name similarity carry no decision weight. Replacement
+[confirmed-local cohort v2](initial-seed-local-cohort-v2.md) contains ten ABR
+candidates with exact-ABN ACNC run 34 matches and separately recorded current
+evidence of operation in Adelong, Batlow, Talbingo, Tumbarumba or Tumut. Its
+immutable manifest hash is
+`7352c3856b82544b55ec758fe024451f7064af693074d38d76e08fe0c87c227b`; its server
+selection hash is
+`2630b0665b74293654bba96b00a345dd741bfe594365f9cb2ba71e2aa5846858`.
+Private run 36 contains exactly those ten records and remains explicitly
+non-publication-eligible and non-snapshot. Nine have `create` identity decisions
+and private `entity_name`/`abn` change sets. SMART already exists under the same ABN
+and name, so its redundant promoted copy is rejected without a no-op change set.
+Initial-seed release `f80c76d3-233a-4505-bbcf-4e9fce5e5f25`, revision 1, published
+the nine active run 36 change sets and created nine public organisations. Its frozen
+content hash is
+`dd5ecb73572775a7f4dfaf14d6a6b938e8ae45352294c0019c8f73222534d843`.
+Readiness is `published` with zero identity, promotion, validation and field
+backlogs. The later full retained-source publication
+`ab7f6eeb-7ebd-457c-a754-8f827654f0a1` used a dedicated authenticated
+Data-Steward-only, resumable path to publish the deduplicated union of ABR release 2,
+ACNC run 34 and NSW release 3. It reduced 159,200 source rows to 158,662 canonical
+organisations using only exact ABNs or verified NSW incorporation identifiers;
+names never merged records. Final verification counted 157,242 represented ABNs,
+1,420 represented NSW identifiers, 158,662 distinct public organisations,
+158,662 verified identifiers, zero pending items and zero owner grants to the
+publishing steward. The immutable selection SHA-256 is
+`1ea79843192b8f877409473378d458413acfeff62e55353cb74a81e766f5722a`.
+See [the full seed record](full-seed-union.md). Administrator handoff and
+organisation invitations follow. Recurring
+comparison begins only after a second complete
+comparable registered-only harvest and exact-number verification of disappearances.

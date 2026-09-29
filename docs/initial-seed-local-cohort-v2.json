@@ -1,0 +1,102 @@
+{
+  "campaign_id": "1079eb35-e8e0-46a4-8583-1af77f3d23ce",
+  "replaces_campaign_id": "f3856dbc-8ec1-4c87-87f5-dd487e78e22f",
+  "release_id": 2,
+  "acnc_run_id": 34,
+  "nsw_release_id": 3,
+  "selection_version": "initial-seed-local-cohort-v2",
+  "selected_count": 10,
+  "selection_rule": "Exact ABN match to retained ACNC run 34 plus current evidence of operation in a named Snowy Valleys locality; discovery postcode and DGR flags carry no decision weight.",
+  "selected": [
+    {
+      "version_id": 145138,
+      "abn": "93180549485",
+      "name": "Adelong Alive Museum Inc",
+      "locality": "Adelong",
+      "postcode": "2729",
+      "target_record_id": 1320,
+      "local_evidence_url": "https://mgnsw.org.au/organisations/adelong-alive-museum/"
+    },
+    {
+      "version_id": 100665,
+      "abn": "67964567863",
+      "name": "SMART Animal Sanctuary & Rehoming Centre Incorporated",
+      "locality": "Batlow",
+      "postcode": "2730",
+      "target_record_id": 573,
+      "local_evidence_url": "https://www.smartrescue.org.au/"
+    },
+    {
+      "version_id": 104210,
+      "abn": "69843539724",
+      "name": "The Talbingo Mens Shed Incorporated",
+      "locality": "Talbingo",
+      "postcode": "2720",
+      "target_record_id": 110,
+      "local_evidence_url": "https://visittalbingo.com.au/community-calendar/"
+    },
+    {
+      "version_id": 44625,
+      "abn": "36249983693",
+      "name": "Tumbarumba Historical Society Incorporated",
+      "locality": "Tumbarumba",
+      "postcode": "2653",
+      "target_record_id": 127,
+      "local_evidence_url": "https://www.nsw.gov.au/visiting-and-exploring-nsw/locations-and-attractions/tumbarumba-visitor-information-centre-and-museum"
+    },
+    {
+      "version_id": 39219,
+      "abn": "33108337408",
+      "name": "Community Foundation for Tumut Region",
+      "locality": "Tumut",
+      "postcode": "2720",
+      "target_record_id": 296,
+      "local_evidence_url": "https://cfsnowyvalleys.org.au/"
+    },
+    {
+      "version_id": 61598,
+      "abn": "45941425238",
+      "name": "Montreal Community Theatre Inc",
+      "locality": "Tumut",
+      "postcode": "2720",
+      "target_record_id": 210,
+      "local_evidence_url": "https://montrealtheatre.com.au/"
+    },
+    {
+      "version_id": 88926,
+      "abn": "61383607907",
+      "name": "Riverina Highlands Landcare Network",
+      "locality": "Tumut",
+      "postcode": "2720",
+      "target_record_id": 680,
+      "local_evidence_url": "https://www.riverinahighlandslandcare.com.au/about/"
+    },
+    {
+      "version_id": 83095,
+      "abn": "58094713742",
+      "name": "Tumut Community Preschool Incorporated",
+      "locality": "Tumut",
+      "postcode": "2720",
+      "target_record_id": 188,
+      "local_evidence_url": "https://www.tumutpreschool.com.au/"
+    },
+    {
+      "version_id": 125878,
+      "abn": "82232776832",
+      "name": "Tumut & District Neighbourhood Centre Inc",
+      "locality": "Tumut",
+      "postcode": "2720",
+      "target_record_id": 456,
+      "local_evidence_url": "https://tumutdnc.com.au/"
+    },
+    {
+      "version_id": 147122,
+      "abn": "94332248153",
+      "name": "Tumut Regional Family Services Incorporated",
+      "locality": "Tumut",
+      "postcode": "2720",
+      "target_record_id": 380,
+      "local_evidence_url": "https://www.tumutregionalfamilyservices.com.au/"
+    }
+  ]
+}

@@ -110,9 +110,10 @@ or suspended organisations.
 5. Operator authority does not bypass complete/enabled-source requirements,
    selected-field approval, target revision checks, manual-edit protection,
    projection visibility or suppression. A source enablement/configuration change
-   does not itself publish. Publication releases freeze those decisions. Initial,
-   suppression and destructive releases require a different approver; ordinary
-   releases follow the portal's retained one- or two-person policy revision.
+   does not itself publish. Publication releases freeze those decisions. An
+   authorised Data Steward may submit and publish an initial seed. Suppression and
+   destructive releases require a different approver; ordinary releases follow the
+   portal's retained one- or two-person policy revision.
    Under the approved [P34a model](staged-validation-resolution.md), an operator may
    resolve only issue modes declared by the validator. A resolution creates no
    public write and cannot change an original partial run; only a separately

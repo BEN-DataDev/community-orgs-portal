@@ -17,7 +17,8 @@ portal and campaign boundaries rather than discarded.
 Updated previously: 23 September 2026 for the approved P34a cross-source
 staged-validation workflow.
 Status: P31's private registry candidate boundary and P32 directory readiness are
-deployed. ACNC
+deployed. The complete deterministic union of retained ABR release 2, derived ACNC
+run 34 and NSW registered-only release 3 is now published and verified. ACNC
 acquisition, reviewed publication, complete-snapshot reconciliation,
 withdrawal/redaction and guarded rollback are implemented. The monthly 23-postcode
 schedule is enabled. Exact-ABN live qualification remains externally gated. The
@@ -49,12 +50,12 @@ published. The scheduled-run observation remains due after
 `2026-10-19T03:18:23Z`; P34a addresses the cross-source validation gap revealed by
 run 30.
 
-“Fully seeded” means complete, reproducible candidate coverage for the configured
-registry scopes. It does not mean that every ABN becomes a public community
-organisation. Registry records first enter a private candidate layer. Inclusion,
-identity and field decisions still pass through deterministic matching and operator
-review. Registered address/postcode is discovery evidence, not proof of local
-service delivery.
+“Fully seeded” means complete, reproducible coverage for the configured registry
+scopes. Registry records first enter a private candidate layer. For the initial
+population, the portal owner separately authorised publication of the complete
+retained-source union through the deterministic Data Steward path. That decision
+does not make registered address/postcode proof of local service delivery, and it
+does not relax identifier or review rules for later refreshes.
 
 ### Source implementation status
 
@@ -65,11 +66,11 @@ automatically acquire other providers.
 
 | Source                                                      | Current status                                                                                                                                                                                                                 | Remaining work                                                                                                                                                                                 |
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ACNC Register                                               | CKAN worker and 23-postcode Snowy Valleys configuration deployed; [P13 bulk fallback](acnc-acquisition.md) and complete-field reviewed publication implemented; partial run 30 retained unchanged and resolved into complete private derived run 34 | Use run 34 as the ACNC establishment artifact; then observe the first scheduled job after the October 2026 due time                                                                            |
+| ACNC Register                                               | CKAN worker and 23-postcode Snowy Valleys configuration deployed; [P13 bulk fallback](acnc-acquisition.md) and complete-field reviewed publication implemented; partial run 30 retained unchanged; derived run 34 is included in the published full seed | Observe the first scheduled job after the October 2026 due time                                                                                                                               |
 | Approved CSV files (P12)                                    | Implemented and deployed; hosted database verification passed; [CLI and verification](approved-csv-import.md); shared structured P34a issues/replay boundary deployed and production-verified with ACNC run 30                    | Receipt and controlled onboarding of an approved provider export remain deferred                                                                                                                |
 | Exact-ABN Lookup (P16)                                      | [Bounded adapter implemented](exact-abn-lookup.md); live qualification pending                                                                                                                                                 | Provision access GUID and approved exact-ABN set; complete live/withdrawal checks                                                                                                              |
-| ABN public bulk extract                                     | P33 complete: approved workstation release `2026-09-23` validated 20,545,089 records; 157,156 scoped candidates finalized as private hosted release `2`; source enabled at revision 1; nothing triaged, promoted or published  | Retain evidence under hold; P35 defines reviewed candidate triage and cross-source resolution before any separately authorised promotion                                                       |
-| NSW incorporated associations                               | Bounded public-register adapter qualified and enabled; the complete 1,420-candidate registered-only release is hosted private release 3; the 2,519-candidate full-status artifact remains qualification evidence               | Perform P35 review and bounded cross-source resolution before any promotion; retain non-current statuses as private qualification evidence                                                     |
+| ABN public bulk extract                                     | P33 complete: approved workstation release `2026-09-23` validated 20,545,089 records; 157,156 scoped candidates were finalized as hosted release `2` and are represented in the published full seed | Retain the acquisition evidence; require deterministic identifiers and explicit authority for later refresh publication                                                                        |
+| NSW incorporated associations                               | Adapter qualified and enabled; all 1,420 candidates in registered-only release 3 are represented in the published full seed; the 2,519-candidate full-status artifact remains qualification evidence                          | Retain non-current statuses as private qualification evidence; wait for a second complete scope-identical `REGISTERED` harvest before recurring comparison                                     |
 | Landcare, neighbourhood houses, sports and arts directories | Expansion backlog                                                                                                                                                                                                              | Select pilot providers, qualify access/reuse and implement provider mappings/adapters                                                                                                          |
 | My Community Directory                                      | Planned; not integrated                                                                                                                                                                                                        | Obtain partner agreement and technical documentation before implementing the adapter                                                                                                           |
 | ACNC AIS financial history                                  | Deferred beyond the initial release                                                                                                                                                                                            | Separate adapter and reporting-period schema with explicit financial-measure definitions                                                                                                       |
@@ -113,7 +114,7 @@ automatically acquire other providers.
    issues. Six validated corrections and one explicit record rejection produced
    complete private derived run 34 with 624 accepted records, zero quarantine and
    zero acquisition errors. Run 30 remains unchanged and run 34 is not publication
-   eligible; its intentional rejection also sets `complete_snapshot=false`.
+eligible; its intentional rejection also sets `complete_snapshot=false`.
 5. **P34b — Implement the NSW register scraper — complete for the configured
    23-postcode acquisition.** The adapter uses only the ordinary
    unauthenticated postcode search flow, with conservative pacing, finite transport
@@ -137,7 +138,7 @@ automatically acquire other providers.
    restricted worker staged it privately as hosted registry-seed release 3 through
    the resumable six-batch boundary. No triage, promotion or publication occurred.
    See the [adapter guide](nsw-associations-adapter.md).
-6. **P35 — Add candidate triage and cross-source resolution — implemented locally.**
+6. **P35 — Add candidate triage and cross-source resolution — implemented; corrected local cohort privately reviewed.**
    The focused seed-candidate queue presents exact qualified identifiers first and
    labels same-normalised-name suggestions as weak review evidence. Revision-fenced
    include, exclude, defer and link decisions retain their reason and target. Raw
@@ -145,9 +146,23 @@ automatically acquire other providers.
    promotion into ordinary reviewed staging is a separate bounded action. For the
    initial NSW cohort, only `INCORASSOC` + `REGISTERED` candidates may enter this
    seed review; historical/non-current statuses remain private evidence and default
-   to exclusion from the initial seed.
-7. **P36 — Publish and maintain the registry seed.** Review a bounded first cohort,
-   publish attributable records, add source/postcode/freshness/failure reporting,
+   to exclusion from the initial seed. The original 20-record cohort is
+   [superseded](initial-seed-first-cohort.md): its discovery postcodes did not
+   establish Snowy Valleys relevance. All 20 decisions are now revision-2
+   `exclude`; the ten private run 35 reviews are revision-2 `reject`, their change
+   sets are stale, and nothing was published. Replacement campaign
+   `1079eb35-e8e0-46a4-8583-1af77f3d23ce` immutably pins the ten-record
+   [confirmed-local cohort](initial-seed-local-cohort-v2.md). Every candidate has an
+   exact-ABN ACNC match plus separately recorded current evidence of operation in a
+   named Snowy Valleys locality. All ten were promoted into private run 36. Nine
+   have `create` reviews and eligible `entity_name`/`abn` change sets; the already
+   represented SMART record is explicitly rejected as redundant. There are zero
+   publications.
+7. **P36 — Publish and maintain the registry seed — initial population complete.**
+   The bounded first cohort remains immutable workflow evidence. Following the
+   portal owner's revised authorisation, a Data-Steward-only resumable RPC published
+   the complete deterministic union of ABR release 2, ACNC run 34 and NSW release 3.
+   Maintain source/postcode/freshness/failure reporting,
    then exercise unchanged refresh, field change, missing-record verification,
    confirmed status change, withdrawal, partial-run and rollback paths before
    enabling recurring ABN and NSW collection. NSW refresh comparison uses complete
@@ -161,8 +176,36 @@ engine and full-status evidence release are complete; the registered-only produc
 release and restricted private staging are complete. Retained evidence remains on
 hold for P35/P36 review and publication decisions. The hosted three-source readiness
 gate is satisfied by ABR release 2, derived ACNC run 34 and NSW registered-only
-release 3; the next operation is immutable `initial_seed` campaign creation through
-the authenticated Data Steward RPC.
+release 3. Authenticated Data Steward RPC creation produced immutable `initial_seed`
+campaign `f3856dbc-8ec1-4c87-87f5-dd487e78e22f`, pinned to those artifacts, portal
+scope revision 1, inclusion policy `legacy-portal-scope-v1`, approval-policy revision
+1 and the deployed mapping/contract versions. It has zero validation blockers; its
+ordered 20-record first cohort is immutably pinned with external manifest hash
+`fb6e5c09c65acc730f7a45824e21427bed0384969ff89afb712509d34656664e`
+and server selection hash
+`3fe204141684e903e8da477db729177d00e87a26782db233a54010dc720ec2a1`.
+That campaign is now blocked as superseded after the portal owner rejected its
+postcode-derived scope assumption. Replacement campaign
+`1079eb35-e8e0-46a4-8583-1af77f3d23ce` pins the same three retained artifacts and a
+ten-record confirmed-local manifest with hash
+`7352c3856b82544b55ec758fe024451f7064af693074d38d76e08fe0c87c227b` and server
+selection hash
+`2630b0665b74293654bba96b00a345dd741bfe594365f9cb2ba71e2aa5846858`.
+Initial-seed release `f80c76d3-233a-4505-bbcf-4e9fce5e5f25`, revision 1, published
+the nine active run 36 change sets and created nine organisations. Its frozen content
+hash is `dd5ecb73572775a7f4dfaf14d6a6b938e8ae45352294c0019c8f73222534d843`.
+Hosted campaign readiness is `published` with one release, one published release and
+no blockers.
+The later full retained-source publication
+`ab7f6eeb-7ebd-457c-a754-8f827654f0a1` supersedes the bounded cohort as the
+operational initial population while preserving its immutable audit history. It
+deduplicated 159,200 source rows strictly by exact ABN or verified NSW incorporation
+identifier and published 158,662 canonical organisations: 157,242 represented ABNs
+and 1,420 represented NSW identifiers. Selection SHA-256 is
+`1ea79843192b8f877409473378d458413acfeff62e55353cb74a81e766f5722a`.
+Final verification found 158,662 distinct public organisations, 158,662 verified
+identifiers, zero pending items and zero owner grants to the publishing steward.
+See [the full seed record](full-seed-union.md).
 P16 live exact-ABN qualification and the first scheduled ACNC observation continue as parallel
 operational tracks and do not block P31–P36.
 

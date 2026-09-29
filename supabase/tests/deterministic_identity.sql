@@ -1,5 +1,14 @@
 -- Synthetic P14 acceptance; all data and evidence roll back.
 begin;
+
+do $$
+begin
+  if pg_get_functiondef('ingestion.identity_audit()'::regprocedure)
+     not like '%where singleton%' then
+    raise exception 'Identity clock update is not scoped to its singleton row';
+  end if;
+end
+$$;
 insert into auth.users(id,email,created_at,updated_at) values('00000000-0000-4000-8000-000000001401','p14-verification@example.invalid',now(),now());
 insert into ingestion.operators values('00000000-0000-4000-8000-000000001401',now());
 insert into community_orgs.organisations(org_id,entity_name,slug,is_public) values

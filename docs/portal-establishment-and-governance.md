@@ -282,7 +282,7 @@ completeness, suppression or manual-edit protections.
 
 | Release class                      | Minimum approval                                                     |
 | ---------------------------------- | -------------------------------------------------------------------- |
-| Initial seed                       | Submitter plus a different approver                                  |
+| Initial seed                       | One authorised Data Steward may submit and publish                   |
 | Suppression or destructive release | Submitter plus a different approver                                  |
 | Ordinary update                    | Portal-configurable one- or two-person approval                      |
 | Emergency withdrawal               | Immediate authorised suppression plus mandatory retrospective review |
@@ -292,8 +292,8 @@ published fact, withdrawing a source link, bulk replacement, a rollback that
 affects later data, or a stewardship change that removes existing access.
 
 Approval is revision-fenced. The publisher rechecks current source, target,
-stewardship and approval revisions in the publication transaction. The submitter
-cannot be counted as the independent approver.
+stewardship and approval revisions in the publication transaction. Where an
+independent approval is required, the submitter cannot be counted as that approver.
 
 ## Administrative information architecture
 
@@ -374,7 +374,8 @@ created_at
 - Original source assertions and their provenance are not destroyed by merging.
 - Partial snapshots cannot infer disappearance.
 - Local or representative edits cannot be silently overwritten.
-- Initial and destructive releases cannot be self-approved.
+- Suppression and destructive releases cannot be self-approved. Initial seeds may
+  be submitted and published by one authorised Data Steward.
 - Automatic unclaimed-record access ends atomically at self-managed handoff.
 - Technical fleet authority is not ordinary portal-record authority.
 - Provider changes do not weaken the portal's authorization, audit or publication

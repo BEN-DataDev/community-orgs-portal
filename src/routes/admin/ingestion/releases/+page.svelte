@@ -27,8 +27,8 @@
 			>{/if}
 		<h1 class="text-2xl font-bold">Publication releases</h1>
 		<p>
-			Approve and publish frozen release revisions. Initial and destructive work always requires a
-			different person.
+			Approve and publish frozen release revisions. An authorised Data Steward may complete an
+			initial seed; suppression and destructive work always require a different person.
 		</p>
 	</header>
 	<QueueNavigation current="releases" campaign={data.campaign} />

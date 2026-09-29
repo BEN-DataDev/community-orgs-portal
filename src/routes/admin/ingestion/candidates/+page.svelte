@@ -106,7 +106,7 @@
 					/>
 				</label>
 				<label>
-					<span class="mb-1 block text-sm font-medium">DGR evidence</span>
+					<span class="mb-1 block text-sm font-medium">DGR source flag</span>
 					<select class="select" name="dgr" value={data.filters.dgr}>
 						<option value="all">All</option>
 						<option value="present">Present</option>
@@ -157,7 +157,7 @@
 										'No postcode'}
 								</span>
 								<span class="text-surface-600-400 block text-sm">
-									{candidate.has_dgr ? 'DGR evidence' : 'No DGR evidence'} · {candidate.match_strength ===
+									{candidate.has_dgr ? 'DGR flag present' : 'No DGR flag'} · {candidate.match_strength ===
 									'strong'
 										? 'exact-identifier suggestion'
 										: candidate.match_strength === 'weak'

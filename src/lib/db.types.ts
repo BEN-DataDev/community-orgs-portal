@@ -1644,6 +1644,17 @@ export type Database = {
 				Returns: string;
 			};
 			campaign_readiness: { Args: { p_campaign: string }; Returns: Json };
+			pin_campaign_registry_cohort: {
+				Args: {
+					p_campaign: string;
+					p_release: string;
+					p_versions: string[];
+					p_selection_version: string;
+					p_manifest_sha256: string;
+					p_reason: string;
+				};
+				Returns: Json;
+			};
 			create_campaign: {
 				Args: {
 					p_campaign_type: string;
