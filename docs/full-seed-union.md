@@ -2,7 +2,8 @@
 
 Publication date: 30 September 2026 (Australia/Sydney)
 
-Status: published and verified.
+Status: published, then corrected. The publication was over-broad; see
+[Scope correction](#scope-correction) for the current state.
 
 ## Authorised boundary
 
@@ -48,3 +49,35 @@ database population without rewriting its campaign, review or release history.
 Recurring NSW absence comparison remains disabled until a second complete,
 scope-identical `REGISTERED` harvest exists. Later postcode absence must not be
 treated as withdrawal.
+
+## Scope correction
+
+The union above bypassed candidate triage, validation-issue, three-source vetting
+and publication-release gates, and published every in-scope ABR row regardless of
+entity type. Correction `d10ac695-7cf3-4ab2-bc07-e22ea1beb11a` (rule
+`community-entities-v1`, migration `20260930010000_correct_full_seed_scope.sql`)
+was prepared at `2026-09-30T03:17:25Z` and applied at `2026-09-30T08:01:08Z`
+through a management database session.
+
+Of the 158,662 published organisations:
+
+- 4,359 were kept: ABR `OIE`/`UIE` entities and every ACNC-backed ABN;
+- 153,829 were removed; and
+- 474 NSW associations were merged into a retained ABN entity — 457 on a unique
+  normalised name and 17 on trigram name similarity (threshold 0.90, margin 0.10).
+
+Item-level evidence remains in `ingestion.full_seed_items` and
+`ingestion.seed_publication_correction_items`. Identity events for the removed rows
+were collapsed to one `BULK_SEED_CORRECTION` event per batch.
+
+**Open issue.** All 474 merges used names alone, which contradicts the rule above
+that names are never identity keys and
+[the ingestion strategy](data-ingestion-strategy.md) ("Do not automatically merge on
+a fuzzy name score"). They require human review before being treated as verified.
+
+**Closed paths (applied 1 October 2026).**
+`20260930230051_ingestion_acl_hardening.sql` revokes `prepare_full_seed_union`,
+`apply_full_seed_union_batch` and `full_seed_union_status` from client roles, and
+`20260930230128_retire_seed_correction_bypass.sql` removes the correction's trigger
+bypasses. Future seeding must use
+the governed triage and publication-release path.

@@ -203,7 +203,7 @@ assertion and cannot clear published data. Dates accept only DD/MM/YYYY,
 calendars DD-Mon (English), flags Y/N; other tokens require qualification.
 Names and country lists remain unsplit text. Address lines retain their positions.
 
-Apply `20260916070000_acnc_register_details.sql` through the normal migration
+Apply `20260916230347_acnc_register_details.sql` through the normal migration
 process. It adds default-private storage with validated JSON groups and no browser
 writes. Public column grants exclude source-record IDs. F03 implements
 per-fact provenance, approval and suppression for these projections.
@@ -213,7 +213,7 @@ No existing pilot version or approval is rewritten. Run transformation tests wit
 
 ## F03 review and publication
 
-`20260916080000_complete_field_publication.sql` adds a private, closed allowlist
+`20260916230353_complete_field_publication.sql` adds a private, closed allowlist
 that is checked against the mapping manifest by the Python suite. It supports 62
 review units for 69 organisation columns: address components form one atomic
 merge; each flag is independent. Preview shows missing, invalid, unmapped,
@@ -249,7 +249,7 @@ reprocessing the retained pilot with new approvals remains F05.
 
 ## F04 public presentation
 
-`20260916090000_public_register_facts.sql` adds a public-only RPC for latest
+`20260916230358_public_register_facts.sql` adds a public-only RPC for latest
 approved observations per source identity/field. It returns a closed set of public
 fields and attribution metadata. It excludes raw envelopes, internal IDs, reviewer
 notes, unpublished approvals, hidden projections and suppression/withdrawal data.
@@ -282,10 +282,15 @@ administrator database login for the deployed worker.
 
 The operator UI queues work; the cron route enqueues due configurations; only the
 worker fetches CKAN. The worker saves a private envelope checkpoint, then commits
-staging and job completion together. No publication is performed. Schedules start
+staging and job completion together; the checkpoint is cleared once staged, because
+the run envelope retains the evidence. No publication is performed. Schedules start
 off and require platform-admin configuration. See [deployment, recovery and
 validation](../../../docs/acquisition-jobs.md) and the optional service/timer files
 in `../deploy`.
+
+Operator access in the portal is the `data_steward` capability
+(`portal.capability_appointments`); `community_orgs.is_ingestion_operator()` is an
+alias for `is_data_steward()`. The legacy `ingestion.operators` table is unused.
 
 ## Approved CSV files (P12)
 

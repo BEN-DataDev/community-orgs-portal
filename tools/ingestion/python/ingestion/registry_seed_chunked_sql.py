@@ -5,10 +5,7 @@ import json
 import os
 from pathlib import Path
 
-
-def expression(value) -> str:
-    encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode().hex()
-    return f"convert_from(decode('{encoded}', 'hex'), 'UTF8')::jsonb"
+from ingestion.staging_sql import expression
 
 
 def statements(manifest: dict, candidates: list, batch_size: int = 250):

@@ -87,11 +87,11 @@ The relevant implementation is in these existing migrations, in order:
 - `20260916020408_ingestion_field_preview.sql`
 - `20260916020409_ingestion_publication.sql`
 - `20260916034216_attribution_and_suppression.sql`
-- `20260916070000_acnc_register_details.sql`
-- `20260916080000_complete_field_publication.sql`
-- `20260916090000_public_register_facts.sql`
-- `20260917010000_acnc_reprocessing.sql`
-- `20260917020000_acnc_website_normalisation.sql`
+- `20260916230347_acnc_register_details.sql`
+- `20260916230353_complete_field_publication.sql`
+- `20260916230358_public_register_facts.sql`
+- `20260916230402_acnc_reprocessing.sql`
+- `20260916232821_acnc_website_normalisation.sql`
 
 Hosted F02–F05 timestamps differ from local filenames; the exact deployed mapping
 is recorded in [F05 deployment evidence](acnc-reprocessing-validation.md#live-execution).

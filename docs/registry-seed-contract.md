@@ -11,7 +11,7 @@ delivery, identity equivalence or permission to publish.
 ## Storage boundary
 
 Migration
-[`20260922010000_registry_seed_candidates.sql`](../supabase/migrations/20260922010000_registry_seed_candidates.sql)
+[`20260922051805_registry_seed_candidates.sql`](../supabase/migrations/20260922051805_registry_seed_candidates.sql)
 adds these private `ingestion` tables:
 
 | Table                                                  | Purpose                                                                                                  |

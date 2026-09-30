@@ -56,7 +56,7 @@ def validate(envelope: dict) -> None:
             fields.add(field)
 
 
-def expression(value: dict) -> str:
+def expression(value) -> str:
     # Hex encoding avoids quoting or interpreting source data as SQL/psql commands.
     encoded = json.dumps(value, ensure_ascii=False).encode().hex()
     return f"convert_from(decode('{encoded}', 'hex'), 'UTF8')::jsonb"

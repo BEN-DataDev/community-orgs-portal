@@ -27,9 +27,9 @@ and its raw quarantine evidence remain immutable and private.
 ## Deployment record
 
 - `acquisition_jobs` applied through Supabase MCP as version `20260917014227`
-  (local migration `20260917030000_acquisition_jobs.sql`).
+  (local migration `20260917014227_acquisition_jobs.sql`).
 - `acquisition_worker_login` applied as version `20260917014304`
-  (local migration `20260917040000_acquisition_worker_login.sql`).
+  (local migration `20260917014304_acquisition_worker_login.sql`).
 - Database role `community_orgs_acquisition` has LOGIN, NOINHERIT, a connection
   limit of 2, no superuser/BYPASSRLS privileges, and only `ingestion_worker`
   membership. It explicitly assumes that role for each worker transaction.
@@ -191,7 +191,7 @@ retention/pruning remains a separate maintenance task.
 
 ## Deployment
 
-1. Apply `supabase/migrations/20260917030000_acquisition_jobs.sql` after the existing
+1. Apply `supabase/migrations/20260917014227_acquisition_jobs.sql` after the existing
    ingestion migrations, then deploy the application. Deploy the migration first:
    the cron route now calls `community_orgs.enqueue_due_acquisitions()`.
 2. Provision a dedicated PostgreSQL LOGIN with membership in `ingestion_worker`,

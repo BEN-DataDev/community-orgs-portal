@@ -474,6 +474,10 @@ can correct their own records. A public visitor cannot see staged/rejected recor
 | P29 | Implement guarded rollback                     | Reverse import changes when revisions still match; queue conflicts with later human edits               |
 | P30 | Run a second import cycle                      | Demonstrate unchanged replay, a legitimate change, a manual conflict, source failure and withdrawal     |
 
+P27 and P28 were implemented locally but never deployed; their migrations were
+removed on 1 October 2026 (see [private staging](private-staging.md)). Treat both as
+outstanding.
+
 The existing cron route should enqueue bounded work rather than parse national
 extracts within an HTTP request. Choose worker hosting after measuring sample
 runtime, memory and expected volume.
@@ -745,6 +749,15 @@ Keep real publication separate from acquisition until the source terms and mappi
 have been reviewed. Full rollback operations and scheduled refresh remain later work.
 
 ## Retained suppression redaction — 20 September 2026
+
+> **Removed 1 October 2026.** This migration was never applied to the hosted
+> database; complete-snapshot reconciliation (P27) was never applied either. Both
+> migration files and their test suites were deleted so the repository matches the
+> hosted schema. Consequences: suppression does not redact retained raw copies
+> (source versions, run envelopes, change-set snapshots), and a replay of withdrawn
+> evidence can be re-staged; the suppression itself still prevents publication or
+> restoration. Any future redaction or reconciliation work needs a new migration
+> written against the current function chain.
 
 Implemented P28 retained-copy cleanup for suppression and withdrawal. Suppression
 now redacts matching values from retained source versions, run envelopes, acquisition

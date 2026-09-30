@@ -86,10 +86,10 @@ publications. Its staging time is `2026-09-16T23:05:55.357757+00:00`.
 
 Applied migrations, in order (Supabase MCP assigned the deployment timestamps):
 
-1. [F02 register storage](../supabase/migrations/20260916070000_acnc_register_details.sql) — deployed `20260916230347`
-2. [F03 complete publication](../supabase/migrations/20260916080000_complete_field_publication.sql) — deployed `20260916230353`
-3. [F04 public facts](../supabase/migrations/20260916090000_public_register_facts.sql) — deployed `20260916230358`
-4. [F05 replay lineage and reporting](../supabase/migrations/20260917010000_acnc_reprocessing.sql) — deployed `20260916230402`
+1. [F02 register storage](../supabase/migrations/20260916230347_acnc_register_details.sql) — deployed `20260916230347`
+2. [F03 complete publication](../supabase/migrations/20260916230353_complete_field_publication.sql) — deployed `20260916230353`
+3. [F04 public facts](../supabase/migrations/20260916230358_public_register_facts.sql) — deployed `20260916230358`
+4. [F05 replay lineage and reporting](../supabase/migrations/20260916230402_acnc_reprocessing.sql) — deployed `20260916230402`
 
 Live before/after checks confirm that run 6's envelope hash, all six original
 version hashes and both existing source links are unchanged. Organisation,

@@ -352,6 +352,15 @@ sample remains untouched and can be used for a signed-in browser walkthrough.
 
 ## Retained suppression redaction — 20 September 2026
 
+> **Removed 1 October 2026.** This migration was never applied to the hosted
+> database; complete-snapshot reconciliation (P27) was never applied either. Both
+> migration files and their test suites were deleted so the repository matches the
+> hosted schema. Consequences: suppression does not redact retained raw copies
+> (source versions, run envelopes, change-set snapshots), and a replay of withdrawn
+> evidence can be re-staged; the suppression itself still prevents publication or
+> restoration. Any future redaction or reconciliation work needs a new migration
+> written against the current function chain.
+
 Apply `20260920020000_retained_suppression_redaction.sql` after complete-snapshot
 reconciliation. Suppression remains the operator-facing withdrawal/correction
 decision; this increment adds targeted private retained-copy cleanup behind that

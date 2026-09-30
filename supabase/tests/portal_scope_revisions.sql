@@ -25,7 +25,6 @@ declare
   job uuid;
   run_one bigint;
   run_two bigint;
-  reason text;
 begin
   begin
     perform community_orgs.configure_portal_scope(
@@ -129,9 +128,10 @@ begin
     'acnc-register', '00000000-0000-4000-8000-000000000094', 'scope-two', 'complete',
     '2026-09-24T00:00:00Z', '{"scope":{"portal_scope_revision_id":"2"},"errors":[],"quarantine":[]}'
   ) returning id into run_two;
-  reason := ingestion.reconciliation_missing_reason(run_two, run_one);
-  if reason not like 'Baseline uses an incompatible portal scope revision%' then
-    raise exception 'Reconciliation did not reject incompatible portal scopes: %', reason;
+  -- Runs carry distinct portal scope revisions, which makes them incomparable.
+  if ingestion.run_portal_scope_revision((select r from ingestion.ingestion_runs r where r.id = run_one)) is distinct from 1
+     or ingestion.run_portal_scope_revision((select r from ingestion.ingestion_runs r where r.id = run_two)) is distinct from 2 then
+    raise exception 'Runs were not attributed to their portal scope revisions';
   end if;
 end
 $$;

@@ -47,7 +47,7 @@ Validation:
 The live replay key is `acnc-reprocess-run-6-v3`, linked directly to complete
 acquisition run 6. It does not replay the partial run 7 or replace its evidence.
 
-Following explicit user approval, [the v3 migration](../supabase/migrations/20260917020000_acnc_website_normalisation.sql)
+Following explicit user approval, [the v3 migration](../supabase/migrations/20260916232821_acnc_website_normalisation.sql)
 was applied as deployment `20260916232821_acnc_website_normalisation`. The replay
 was staged as **run 8: complete, six accepted, zero quarantined**, at
 `2026-09-16T23:28:32.843439+00:00`. Its observation time remains the original

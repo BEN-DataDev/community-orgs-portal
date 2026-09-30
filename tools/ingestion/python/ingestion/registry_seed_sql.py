@@ -1,12 +1,6 @@
 """Render a registry-seed manifest and candidate array for the private staging RPC."""
 
-import json
-
-
-def expression(value) -> str:
-    # Hex encoding prevents source text being interpreted as SQL or psql commands.
-    encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode().hex()
-    return f"convert_from(decode('{encoded}', 'hex'), 'UTF8')::jsonb"
+from ingestion.staging_sql import expression
 
 
 def render(manifest: dict, candidates: list) -> str:

@@ -103,7 +103,7 @@ try:
     setup = command([sys.executable, str(ROOT / 'scripts/build-ingestion-test-sql.py')])
     sql(setup)
     record('full_ingestion_sql_suites', coverage='manual edits, stale approvals, withdrawal replay, access, queue recovery')
-    sql((ROOT / 'supabase/migrations/20260917040000_acquisition_worker_login.sql').read_text())
+    sql((ROOT / 'supabase/migrations/20260917014304_acquisition_worker_login.sql').read_text())
     sql(f"""insert into auth.users values('{ACTOR}');
       insert into ingestion.operators(user_id) values('{ACTOR}');
       insert into ingestion.sources(source_id,resource_id,metadata,enabled)

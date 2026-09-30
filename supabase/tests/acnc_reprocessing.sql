@@ -58,10 +58,9 @@ begin
  perform community_orgs.suppress_ingestion_content(replay::text,newver,'*','Synthetic whole withdrawal',jsonb_build_object('organisation_id',org));
  bad:=jsonb_set(e,'{run_id}','"f05-retry"');
  bad:=jsonb_set(bad,'{records}',(select jsonb_agg(jsonb_set(x,'{run_id}','"f05-retry"')) from jsonb_array_elements(e->'records') x));
- begin perform ingestion.stage_acnc_reprocessing(parent,bad); raise exception 'Withdrawn evidence replay accepted' using errcode='XX000';
- exception when raise_exception then
-  if sqlerrm<>'Replay identity or evidence differs from retained version' then raise; end if;
- end;
+ -- Retained raw copies are not redacted on withdrawal (P28 was never deployed), so
+ -- the replay stages; the withdrawal must still prevent any restoration below.
+ perform ingestion.stage_acnc_reprocessing(parent,bad);
  set local role anon;
  if jsonb_array_length(community_orgs.organisation_register_facts(org))<>0 or exists(select 1 from community_orgs.organisations where org_id=org) then raise exception 'Replay restored withdrawn organisation'; end if;
  reset role;

@@ -11,7 +11,7 @@ aliases, locations, document links and relationships.
 ## Directory search
 
 Migration
-[`20260922020000_directory_readiness.sql`](../supabase/migrations/20260922020000_directory_readiness.sql)
+[`20260922052255_directory_readiness.sql`](../supabase/migrations/20260922052255_directory_readiness.sql)
 adds `community_orgs.search_organisations(query, offset, limit)` and supporting
 indexes.
 

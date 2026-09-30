@@ -18,21 +18,19 @@ for name in [
     '20260916020409_ingestion_publication.sql',
     '20260916034216_attribution_and_suppression.sql',
     '20260916060046_source_approval.sql',
-    '20260916070000_acnc_register_details.sql',
-    '20260916080000_complete_field_publication.sql',
-    '20260916090000_public_register_facts.sql',
-    '20260917010000_acnc_reprocessing.sql',
-    '20260917020000_acnc_website_normalisation.sql',
-    '20260917030000_acquisition_jobs.sql',
+    '20260916230347_acnc_register_details.sql',
+    '20260916230353_complete_field_publication.sql',
+    '20260916230358_public_register_facts.sql',
+    '20260916230402_acnc_reprocessing.sql',
+    '20260916232821_acnc_website_normalisation.sql',
+    '20260917014227_acquisition_jobs.sql',
     '20260917071152_private_raw_retention.sql',
     '20260917230927_approved_csv_import.sql',
-    '20260919010000_multi_postcode_acquisition.sql',
-    '20260920010000_complete_snapshot_reconciliation.sql',
-    '20260920020000_retained_suppression_redaction.sql',
-    '20260920030000_guarded_import_rollback.sql',
-    '20260922010000_registry_seed_candidates.sql',
-    '20260923010000_register_abr_bulk_source.sql',
-    '20260923020000_chunked_registry_seed_staging.sql',
+    '20260919070025_multi_postcode_acquisition.sql',
+    '20260920023251_guarded_import_rollback.sql',
+    '20260922051805_registry_seed_candidates.sql',
+    '20260923010117_register_abr_bulk_source.sql',
+    '20260923014057_chunked_registry_seed_staging.sql',
     '20260924010000_staged_validation_resolution.sql',
     '20260924020000_validation_run_readiness.sql',
     '20260924030000_replay_rejected_records.sql',
@@ -45,7 +43,5 @@ runpy.run_path(str(package / 'tests/emit_reprocessing_fixture.py'))
 for name in ['ingestion_staging.sql', 'ingestion_review.sql', 'ingestion_field_preview.sql',
              'ingestion_publication.sql', 'ingestion_complete_fields.sql', 'acnc_register_details.sql', 'public_register_facts.sql', 'acnc_reprocessing.sql', 'acnc_website_normalisation.sql', 'acquisition_jobs.sql', 'private_raw_retention.sql']:
     print((root / 'supabase/tests' / name).read_text())
-print((root / 'supabase/tests/complete_snapshot_reconciliation.sql').read_text())
-print((root / 'supabase/tests/retained_suppression_redaction.sql').read_text())
 print((root / 'supabase/tests/guarded_import_rollback.sql').read_text())
 print((root / 'supabase/tests/staged_validation_resolution.sql').read_text())
