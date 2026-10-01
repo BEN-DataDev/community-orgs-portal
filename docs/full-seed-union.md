@@ -75,6 +75,26 @@ that names are never identity keys and
 [the ingestion strategy](data-ingestion-strategy.md) ("Do not automatically merge on
 a fuzzy name score"). They require human review before being treated as verified.
 
+**Review task (1 October 2026).** Admin → Seed merge review
+(`/admin/ingestion/merges`, migration `20261001025644_seed_merge_review`) lists
+each merge, similar-name matches first. A Data Steward decides alone:
+
+- **Confirm** keeps the merge and records the review on the NSW identifier key.
+- **Split** (note required) restores the association under its original
+  organisation id from its full-seed item, unclaimed and public, moves its key
+  back, restores the ABN entity's own full-seed incorporation values and removes
+  the alias the merge added.
+
+Decisions are final and kept in `ingestion.seed_merge_reviews`. A merge whose key
+or incorporation number changed after the correction is refused and must be fixed
+on the organisation or through identity review.
+
+**Stewardship correction (1 October 2026).** The full-seed union recorded its
+4,344 new organisations as `self_managed` although nobody held a role in them.
+`20261001044648_unclaim_full_seed_organisations` moved each to `unclaimed` with an
+appended stewardship event that references the publication, and the stewardship
+trigger now treats full-seed organisations as imports.
+
 **Closed paths (applied 1 October 2026).**
 `20260930230051_ingestion_acl_hardening.sql` revokes `prepare_full_seed_union`,
 `apply_full_seed_union_batch` and `full_seed_union_status` from client roles, and

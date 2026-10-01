@@ -97,7 +97,8 @@ or usability evaluation was performed. “Legacy model” below means a
 - **Reconciliation and rollback:** checked-in migrations implement
   [guarded rollback](../supabase/migrations/20260920023251_guarded_import_rollback.sql).
   Complete-snapshot reconciliation (P27) and retained-evidence redaction (P28) were
-  never deployed and their migrations were removed on 1 October 2026.
+  never deployed and their migrations were removed on 1 October 2026. Redaction
+  was then ruled not required; P27 remains outstanding.
 - **Administration and roles:** Admin is a task hub, and organisation role
   assignments have a working code path. Older README/gap-analysis statements
   describing both as absent are stale.

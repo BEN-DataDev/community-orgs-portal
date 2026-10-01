@@ -1,6 +1,5 @@
 import type { LayoutServerLoad } from './$types';
 import { loadAccountAvatar } from '$lib/server/account-avatar';
-import { isIngestionOperator } from '$lib/server/ingestion-review';
 import { isSiteAdmin } from '$lib/server/authorization';
 
 export const load: LayoutServerLoad = async ({ locals, cookies }) => {
@@ -47,9 +46,7 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 			scopePostcodes: locals.portal.scopePostcodes
 		},
 		isIngestionOperator:
-			locals.user && !locals.isAnonymous
-				? await isIngestionOperator(locals.providers.database)
-				: false,
+			locals.user && !locals.isAnonymous ? await locals.isIngestionOperator() : false,
 		avatar,
 		session: locals.session,
 		user: locals.user,

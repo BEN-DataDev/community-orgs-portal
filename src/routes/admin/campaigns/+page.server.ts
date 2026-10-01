@@ -1,13 +1,12 @@
 import { error } from '@sveltejs/kit';
 import { isSiteAdmin } from '$lib/server/authorization';
 import { campaignDashboardSchema } from '$lib/server/campaigns';
-import { isIngestionOperator } from '$lib/server/ingestion-review';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
 	const [canSteward, canAdmin] = await Promise.all([
-		isIngestionOperator(locals.providers.database),
+		locals.isIngestionOperator(),
 		isSiteAdmin(locals.providers.database, locals.user?.id)
 	]);
 	if (!canSteward && !canAdmin) error(403, 'Campaign authority required.');

@@ -358,8 +358,12 @@ sample remains untouched and can be used for a signed-in browser walkthrough.
 > hosted schema. Consequences: suppression does not redact retained raw copies
 > (source versions, run envelopes, change-set snapshots), and a replay of withdrawn
 > evidence can be re-staged; the suppression itself still prevents publication or
-> restoration. Any future redaction or reconciliation work needs a new migration
-> written against the current function chain.
+> restoration. Any future reconciliation work needs a new migration written
+> against the current function chain.
+>
+> **Decision 1 October 2026: retained-evidence redaction is not required.**
+> Suppression blocks publication and restoration; retained private copies are
+> left as they are. P28 will not be rebuilt.
 
 Apply `20260920020000_retained_suppression_redaction.sql` after complete-snapshot
 reconciliation. Suppression remains the operator-facing withdrawal/correction

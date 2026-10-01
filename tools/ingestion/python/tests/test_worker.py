@@ -2,7 +2,7 @@ import copy
 import unittest
 from unittest.mock import patch
 
-from ingestion.worker import Database, run_one, run_validation_one
+from ingestion.worker import Database, LeasedTransport, run_one, run_validation_one
 from ingestion.live_acnc import acquire
 from test_live_acnc import CONFIG, Reader
 
@@ -55,6 +55,18 @@ class WorkerTests(unittest.TestCase):
         self.assertEqual(reader.requests, 0)
         self.assertNotIn('checkpoint_acquisition', [x[0] for x in db.calls])
         self.assertNotIn('secret', str(result))
+
+    def test_heartbeat_throttled_to_lease_interval(self):
+        beats, now = [], [0.0]
+        class Source:
+            requests = 0
+            def get(self, action, params):
+                return {}
+        transport = LeasedTransport(Source(), lambda: beats.append(now[0]), lambda: now[0])
+        for t in (0, 1, 59, 60, 61, 125):
+            now[0] = t
+            transport.get('package_show', {})
+        self.assertEqual(beats, [0, 60, 125])
 
     def test_staging_failure_keeps_checkpoint(self):
         db = DB(fail='finish_acquisition')

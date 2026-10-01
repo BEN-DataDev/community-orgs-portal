@@ -88,7 +88,7 @@ implementation delegates to Supabase.
 | --------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | Platform operator                 | Fleet                           | Provision, migrate, monitor, recover and retire deployments through the operations capability                  |
 | Technical support operator        | One explicitly appointed portal | Time-bounded recovery or support; no implicit ordinary record-editing role                                     |
-| Bootstrap release reviewer        | One portal establishment        | Prepare or independently approve the initial release; one person cannot do both                                |
+| Bootstrap release reviewer        | One portal establishment        | Prepare and approve the initial release; one person may do both (decided 1 October 2026)                       |
 | Portal Administrator              | One portal                      | Portal governance, invitations, policies, sources, releases and unclaimed or explicitly portal-managed records |
 | Data Steward / Ingestion Operator | One portal                      | Acquire, validate, resolve identity and prepare change proposals within policy                                 |
 | Organisation Owner                | One organisation                | Accept stewardship, manage organisation access and govern its record                                           |
@@ -98,7 +98,10 @@ implementation delegates to Supabase.
 
 One person may hold more than one application role, but capabilities remain
 separate. Where separation of duties is required, a second role held by the same
-person does not satisfy the second approval.
+person does not satisfy the second approval. The initial seed release is the
+exception: one Data Steward may prepare and approve it
+(`20260929030000_one_person_initial_seed_publication`), and the seed merge review
+is likewise a single-steward decision.
 
 The platform operator does not receive a permanent application assignment in every
 portal. Exceptional application access uses an explicit support appointment with a

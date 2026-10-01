@@ -5,10 +5,11 @@ or writes to the portal. Markup changes fail closed instead of becoming empty da
 """
 
 import hashlib
-import json
 import re
 from datetime import datetime
 from html.parser import HTMLParser
+
+from ingestion.adapters.acnc import digest
 
 SOURCE_ID = "nsw-incorporated-associations"
 RESOURCE_ID = "public-register-search"
@@ -17,11 +18,6 @@ REGISTER_URL = "https://applications.fairtrading.nsw.gov.au/assocregister/"
 NUMBER = re.compile(r"[A-Z0-9][A-Z0-9 ./_-]{0,99}")
 DATE = re.compile(r"\d{1,2}/\d{1,2}/\d{4}")
 ORG_ID = re.compile(r"(?:Organisationid|OrganisationID)=(\d+)", re.I)
-
-
-def digest(value):
-    encoded = json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
-    return hashlib.sha256(encoded.encode()).hexdigest()
 
 
 class Node:

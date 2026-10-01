@@ -1,11 +1,9 @@
 import { error } from '@sveltejs/kit';
-import { isIngestionOperator } from '$lib/server/ingestion-review';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ locals, url, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
-	if (!(await isIngestionOperator(locals.providers.database)))
-		error(403, 'Ingestion operator access required.');
+	if (!(await locals.isIngestionOperator())) error(403, 'Ingestion operator access required.');
 	const run = url.searchParams.get('run') ?? '';
 	const baseline = url.searchParams.get('baseline') || undefined;
 	if (

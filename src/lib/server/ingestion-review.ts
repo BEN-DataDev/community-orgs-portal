@@ -433,3 +433,44 @@ export const validationResolutionInput = z.object({
 	note: z.string().trim().min(1).max(2000),
 	evidence: z.string().trim().max(2000).optional().default('')
 });
+
+export const seedMergeFilter = z.object({
+	status: z.enum(['pending', 'confirmed', 'split', 'all']).catch('pending'),
+	method: z.enum(['unique_normalised_name', 'trigram_name_similarity']).optional().catch(undefined),
+	offset: z.coerce.number().int().min(0).max(100000).catch(0)
+});
+
+export const seedMergeQueueSchema = z.object({
+	counts: z.object({ pending: z.number(), confirmed: z.number(), split: z.number() }),
+	total: z.number(),
+	items: z.array(
+		z.object({
+			source_organisation_id: z.string().uuid(),
+			source_name: z.string(),
+			incorporation_number: z.string().nullable(),
+			registration_date: z.string().nullable(),
+			source_entity_type: z.string().nullable(),
+			source_website: z.string().nullable(),
+			target_organisation_id: z.string().uuid(),
+			target_name: z.string().nullable(),
+			target_abn: z.string().nullable(),
+			target_entity_type: z.string().nullable(),
+			match_method: z.enum(['unique_normalised_name', 'trigram_name_similarity']),
+			similarity_score: z.number(),
+			second_similarity_score: z.number().nullable(),
+			decision: z.enum(['confirmed', 'split']).nullable(),
+			note: z.string().nullable(),
+			reviewed_at: z.string().nullable()
+		})
+	)
+});
+
+export const seedMergeDecisionInput = z
+	.object({
+		source: z.string().uuid(),
+		decision: z.enum(['confirmed', 'split']),
+		note: z.string().trim().max(2000)
+	})
+	.refine((x) => x.decision !== 'split' || x.note !== '', {
+		message: 'Explain why the records are different organisations.'
+	});

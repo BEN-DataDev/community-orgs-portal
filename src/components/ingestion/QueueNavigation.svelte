@@ -12,14 +12,21 @@
 		['identity', 'Identity and eligibility', '/admin/ingestion/identity'],
 		['changes', 'Field changes', '/admin/ingestion/changes'],
 		['releases', 'Release decisions', '/admin/ingestion/releases'],
-		['suppressions', 'Suppression and withdrawal', '/admin/ingestion/suppressions']
+		['suppressions', 'Suppression and withdrawal', '/admin/ingestion/suppressions'],
+		['merges', 'Seed merges', '/admin/ingestion/merges']
 	] as const;
 	function href(path: (typeof queues)[number][2]) {
 		const base = resolve(path);
 		const params = new URLSearchParams();
 		if (campaign) params.set('campaign', campaign);
-		if (run) params.set(path.endsWith('/validation') ? 'issue_run' : 'run', run);
-		if (version && !path.endsWith('/validation') && !path.endsWith('/releases'))
+		if (run && !path.endsWith('/merges'))
+			params.set(path.endsWith('/validation') ? 'issue_run' : 'run', run);
+		if (
+			version &&
+			!path.endsWith('/validation') &&
+			!path.endsWith('/releases') &&
+			!path.endsWith('/merges')
+		)
 			params.set('version', version);
 		return params.size ? `${base}?${params}` : base;
 	}
@@ -31,7 +38,7 @@
 		<a class="anchor" href={resolve('/admin/campaigns')}>Return to campaign dashboard</a>
 	</p>
 {/if}
-<nav aria-label="Ingestion decision queues" class="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
+<nav aria-label="Ingestion decision queues" class="grid gap-2 sm:grid-cols-2 xl:grid-cols-7">
 	{#each queues as [key, label, path]}
 		<a
 			class={`card border-surface-200-800 block border p-3 ${key === current ? 'preset-filled-primary-500' : 'hover:preset-tonal'}`}

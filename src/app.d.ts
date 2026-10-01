@@ -13,6 +13,8 @@ declare global {
 			supabase: TypedSupabaseClient;
 			providers: RequestProviders;
 			portal: PortalIdentity;
+			/** `is_data_steward()` for this request, called at most once and then reused. */
+			isIngestionOperator: () => Promise<boolean>;
 			safeGetSession: () => Promise<SafeSession>;
 			session: Session | null;
 			user: User | null;

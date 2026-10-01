@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ingestion-python:
+    name: Ingestion tools (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # The declared floor (pyproject requires-python) and the current release.
+        python: ['3.10', '3.x']
+    defaults:
+      run:
+        working-directory: tools/ingestion/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      # Standard library only; the suite is offline and needs no database.
+      - run: python -m unittest discover -s tests
+
+  sveltekit:
+    name: SvelteKit type check
+    runs-on: ubuntu-latest
+    # $env/static/* imports must resolve for svelte-check. Placeholders only:
+    # the check never contacts Supabase.
+    env:
+      PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      PUBLIC_SUPABASE_ANON_KEY: placeholder
+      PRIVATE_SUPABASE_SERVICE_ROLE_KEY: placeholder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run check

@@ -1804,6 +1804,14 @@ export type Database = {
 				Returns: Json;
 			};
 			publication_release_queue: { Args: Record<PropertyKey, never>; Returns: Json };
+			seed_merge_review_queue: {
+				Args: { p_status?: string; p_method?: string; p_offset?: number; p_limit?: number };
+				Returns: Json;
+			};
+			review_seed_merge: {
+				Args: { p_source: string; p_decision: string; p_note?: string };
+				Returns: Json;
+			};
 			publish_ingestion_fields: { Args: { p_change_set: string }; Returns: string };
 			set_publication_approval_policy: {
 				Args: {

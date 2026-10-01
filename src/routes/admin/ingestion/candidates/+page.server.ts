@@ -1,7 +1,6 @@
 import { error, fail } from '@sveltejs/kit';
 import { z } from 'zod';
 import {
-	isIngestionOperator,
 	registrySeedReadinessSchema,
 	registrySeedPromotionInput,
 	registrySeedQueueSchema,
@@ -29,8 +28,7 @@ const id = /^[1-9][0-9]*$/;
 
 export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
-	if (!(await isIngestionOperator(locals.providers.database)))
-		error(403, 'Data Steward access required.');
+	if (!(await locals.isIngestionOperator())) error(403, 'Data Steward access required.');
 	const release = url.searchParams.get('release') ?? undefined;
 	const version = url.searchParams.get('version') ?? undefined;
 	const decision = url.searchParams.get('decision') ?? undefined;
@@ -93,8 +91,7 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 
 export const actions: Actions = {
 	triage: async ({ locals, request }) => {
-		if (!(await isIngestionOperator(locals.providers.database)))
-			error(403, 'Data Steward access required.');
+		if (!(await locals.isIngestionOperator())) error(403, 'Data Steward access required.');
 		const parsed = registrySeedTriageInput.safeParse(Object.fromEntries(await request.formData()));
 		if (!parsed.success)
 			return fail(400, { message: parsed.error.issues[0]?.message ?? 'Invalid triage decision.' });
@@ -117,8 +114,7 @@ export const actions: Actions = {
 		return { message: 'Registry candidate triage saved. Promotion remains a separate action.' };
 	},
 	promote: async ({ locals, request }) => {
-		if (!(await isIngestionOperator(locals.providers.database)))
-			error(403, 'Data Steward access required.');
+		if (!(await locals.isIngestionOperator())) error(403, 'Data Steward access required.');
 		const parsed = registrySeedPromotionInput.safeParse(
 			Object.fromEntries(await request.formData())
 		);

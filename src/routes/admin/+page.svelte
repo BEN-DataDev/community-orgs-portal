@@ -79,6 +79,14 @@
 				<span class="font-medium">Open publication releases →</span>
 			</a>
 			<a
+				href={resolve('/admin/ingestion/merges')}
+				class="card border-surface-200-800 hover:preset-tonal space-y-3 border p-5 focus-visible:outline-2 focus-visible:outline-offset-2"
+			>
+				<h2 class="text-lg font-semibold">Seed merge review</h2>
+				<p>Confirm or split the NSW associations the seed correction merged by name.</p>
+				<span class="font-medium">Open seed merge review →</span>
+			</a>
+			<a
 				href={resolve('/admin/ingestion')}
 				class="card border-surface-200-800 hover:preset-tonal space-y-3 border p-5 focus-visible:outline-2 focus-visible:outline-offset-2"
 			>

@@ -1,25 +1,19 @@
 import { error, fail } from '@sveltejs/kit';
-import {
-	approvalInput,
-	isIngestionOperator,
-	releaseSubmissionInput
-} from '$lib/server/ingestion-review';
+import { approvalInput, releaseSubmissionInput } from '$lib/server/ingestion-review';
 import { loadFieldContext, loadReviewQueue } from '$lib/server/ingestion-queue';
 import type { Json } from '$lib/db.types';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
-	if (!(await isIngestionOperator(locals.providers.database)))
-		error(403, 'Data Steward access required.');
+	if (!(await locals.isIngestionOperator())) error(403, 'Data Steward access required.');
 	const loaded = await loadReviewQueue(locals.providers.database, url);
 	return { ...loaded, ...(await loadFieldContext(locals.providers.database, url, loaded)) };
 };
 
 export const actions: Actions = {
 	default: async ({ locals, request }) => {
-		if (!(await isIngestionOperator(locals.providers.database)))
-			error(403, 'Data Steward access required.');
+		if (!(await locals.isIngestionOperator())) error(403, 'Data Steward access required.');
 		const form = await request.formData();
 		const intent = form.get('intent');
 		if (intent === 'submit_publication') {

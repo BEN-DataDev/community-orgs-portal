@@ -1,6 +1,5 @@
 import { error, fail } from '@sveltejs/kit';
 import { z } from 'zod';
-import { isIngestionOperator } from '$lib/server/ingestion-review';
 import { isSiteAdmin } from '$lib/server/authorization';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -40,21 +39,19 @@ const dashboard = z.object({
 });
 export const load: PageServerLoad = async ({ locals, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
-	if (!(await isIngestionOperator(locals.providers.database)))
-		error(403, 'Ingestion operator required.');
-	const result = await locals.providers.database.rpc('acquisition_dashboard');
+	if (!(await locals.isIngestionOperator())) error(403, 'Ingestion operator required.');
+	const [result, canConfigure] = await Promise.all([
+		locals.providers.database.rpc('acquisition_dashboard'),
+		isSiteAdmin(locals.providers.database, locals.user?.id)
+	]);
 	if (result.error) error(500, 'Could not load acquisition jobs.');
 	const parsed = dashboard.safeParse(result.data);
 	if (!parsed.success) error(500, 'Unexpected acquisition response.');
-	return {
-		...parsed.data,
-		canConfigure: await isSiteAdmin(locals.providers.database, locals.user?.id)
-	};
+	return { ...parsed.data, canConfigure };
 };
 export const actions: Actions = {
 	run: async ({ locals, request }) => {
-		if (!(await isIngestionOperator(locals.providers.database)))
-			error(403, 'Ingestion operator required.');
+		if (!(await locals.isIngestionOperator())) error(403, 'Ingestion operator required.');
 		const input = z
 			.object({ resource: z.string().uuid() })
 			.safeParse(Object.fromEntries(await request.formData()));

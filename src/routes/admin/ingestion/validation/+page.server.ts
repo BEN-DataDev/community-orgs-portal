@@ -1,7 +1,6 @@
 import { error, fail } from '@sveltejs/kit';
 import { z } from 'zod';
 import {
-	isIngestionOperator,
 	validationAttemptInput,
 	validationFilterInput,
 	validationQueueSchema,
@@ -13,8 +12,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
-	if (!(await isIngestionOperator(locals.providers.database)))
-		error(403, 'Data Steward access required.');
+	if (!(await locals.isIngestionOperator())) error(403, 'Data Steward access required.');
 	const filter = validationFilterInput.safeParse({
 		issue: url.searchParams.get('issue') || '',
 		run: url.searchParams.get('issue_run') || url.searchParams.get('run') || '',
@@ -54,8 +52,7 @@ export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 
 export const actions: Actions = {
 	default: async ({ locals, request }) => {
-		if (!(await isIngestionOperator(locals.providers.database)))
-			error(403, 'Data Steward access required.');
+		if (!(await locals.isIngestionOperator())) error(403, 'Data Steward access required.');
 		const form = await request.formData();
 		const intent = form.get('intent');
 		if (intent === 'validate_issue') {

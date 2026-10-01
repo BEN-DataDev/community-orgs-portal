@@ -756,8 +756,12 @@ have been reviewed. Full rollback operations and scheduled refresh remain later 
 > hosted schema. Consequences: suppression does not redact retained raw copies
 > (source versions, run envelopes, change-set snapshots), and a replay of withdrawn
 > evidence can be re-staged; the suppression itself still prevents publication or
-> restoration. Any future redaction or reconciliation work needs a new migration
-> written against the current function chain.
+> restoration. Any future reconciliation work needs a new migration written
+> against the current function chain.
+>
+> **Decision 1 October 2026: retained-evidence redaction is not required.**
+> Suppression blocks publication and restoration; retained private copies are
+> left as they are. P28 will not be rebuilt.
 
 Implemented P28 retained-copy cleanup for suppression and withdrawal. Suppression
 now redacts matching values from retained source versions, run envelopes, acquisition

@@ -8,10 +8,12 @@ const server = await createServer({
 });
 try {
 	const { requireAdminAccess } = await server.ssrLoadModule('/src/lib/server/admin-access.ts');
+	const { isIngestionOperator } = await server.ssrLoadModule('/src/lib/server/ingestion-review.ts');
 	const hub = await server.ssrLoadModule('/src/routes/admin/+page.server.ts');
 	const review = await server.ssrLoadModule('/src/routes/admin/ingestion/+page.server.ts');
 	const jobs = await server.ssrLoadModule('/src/routes/admin/ingestion/jobs/+page.server.ts');
 	const sources = await server.ssrLoadModule('/src/routes/admin/sources/+page.server.ts');
+	const merges = await server.ssrLoadModule('/src/routes/admin/ingestion/merges/+page.server.ts');
 	let operator = false;
 	let admin = false;
 	let capabilityError = null;
@@ -39,7 +41,9 @@ try {
 		user: { id: 'fixture-user' },
 		isAnonymous: false,
 		supabase: client,
-		providers: { database: client }
+		providers: { database: client },
+		// Unmemoised here: this fixture's locals outlive one request (see revocation below).
+		isIngestionOperator: () => isIngestionOperator(client)
 	};
 	const headers = {};
 	const event = {
@@ -73,7 +77,7 @@ try {
 		capabilityError = state === 'capability RPC failure' ? { message: 'unavailable' } : null;
 		malformed = state === 'malformed response';
 		for (const path of paths) await denied(() => requireAdminAccess(client, locals.user.id, path));
-		for (const route of [hub, jobs, sources]) {
+		for (const route of [hub, jobs, sources, merges]) {
 			await denied(() => route.load(event));
 			for (const action of Object.values(route.actions ?? {})) await denied(() => action(event));
 		}
@@ -106,6 +110,14 @@ try {
 	calls.length = 0;
 	await requireAdminAccess(client, undefined, '/organisations');
 	assert.equal(calls.length, 0);
+	// Within one request the gate and later checks share a single steward RPC.
+	operator = true;
+	let memo;
+	const once = () => (memo ??= isIngestionOperator(client));
+	calls.length = 0;
+	await requireAdminAccess(client, locals.user.id, '/admin/ingestion/jobs', once);
+	await jobs.load({ ...event, locals: { ...locals, isIngestionOperator: once } });
+	assert.equal(calls.filter((name) => name === 'is_data_steward').length, 1);
 	console.log(
 		'P07 admin paths, every task loader/action, operator/admin split, RPC failures and revocation passed.'
 	);

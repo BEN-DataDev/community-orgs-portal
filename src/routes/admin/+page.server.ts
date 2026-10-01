@@ -6,7 +6,8 @@ export const load: PageServerLoad = async ({ locals, setHeaders }) => {
 	await requireAdminAccess(
 		locals.providers.database,
 		locals.isAnonymous ? undefined : locals.user?.id,
-		'/admin'
+		'/admin',
+		locals.isIngestionOperator
 	);
 	return { adminData: {} };
 };

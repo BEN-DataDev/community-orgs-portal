@@ -6,6 +6,7 @@ No publication calls. A supervisor invokes this command periodically.
 import json
 import subprocess
 import sys
+import time
 import uuid
 from datetime import datetime, timezone
 
@@ -36,15 +37,24 @@ class Database:
 
 
 class LeasedTransport:
-    def __init__(self, transport, heartbeat):
-        self.transport, self.heartbeat = transport, heartbeat
+    """Renew the lease before the first source request, then at most once per
+    HEARTBEAT_SECONDS. The 5-minute lease outlasts any bounded request, and each
+    heartbeat takes the global acquisition lock, so per-request renewal is waste."""
+    HEARTBEAT_SECONDS = 60
+
+    def __init__(self, transport, heartbeat, clock=time.monotonic):
+        self.transport, self.heartbeat, self.clock = transport, heartbeat, clock
+        self.renewed_at = None
 
     @property
     def requests(self):
         return self.transport.requests
 
     def get(self, action, params):
-        self.heartbeat()
+        now = self.clock()
+        if self.renewed_at is None or now - self.renewed_at >= self.HEARTBEAT_SECONDS:
+            self.heartbeat()
+            self.renewed_at = now
         return self.transport.get(action, params)
 
 

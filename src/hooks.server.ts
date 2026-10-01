@@ -8,6 +8,7 @@ import type { Database } from '$lib/db.types';
 import type { TypedSupabaseClient } from '$lib/supabase-client';
 import { requireAdminAccess } from '$lib/server/admin-access';
 import { guardRedirect } from '$lib/server/guard';
+import { isIngestionOperator } from '$lib/server/ingestion-review';
 import { PortalIdentityError, requirePortalIdentity } from '$lib/server/portal';
 import { supabaseRequestProviders } from '$lib/server/providers/supabase';
 
@@ -51,6 +52,14 @@ const supabase: Handle = async ({ event, resolve }) => {
 		}
 	) as unknown as TypedSupabaseClient;
 	event.locals.providers = supabaseRequestProviders(event.locals.supabase);
+	/**
+	 * The admin gate, the root layout and each ingestion loader/action all ask
+	 * the same question. Memoise it per request so it costs one RPC, while a new
+	 * request still sees a revoked appointment.
+	 */
+	let operator: Promise<boolean> | undefined;
+	event.locals.isIngestionOperator = () =>
+		(operator ??= isIngestionOperator(event.locals.providers.database));
 
 	try {
 		event.locals.portal = await requirePortalIdentity(event.locals.providers.database);
@@ -129,7 +138,8 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	await requireAdminAccess(
 		event.locals.providers.database,
 		isAnonymous ? undefined : user?.id,
-		pathname
+		pathname,
+		event.locals.isIngestionOperator
 	);
 
 	return resolve(event);

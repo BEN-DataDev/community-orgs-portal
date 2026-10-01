@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { error, fail } from '@sveltejs/kit';
 import { isSiteAdmin } from '$lib/server/authorization';
-import { isIngestionOperator, publicationReleaseQueueSchema } from '$lib/server/ingestion-review';
+import { publicationReleaseQueueSchema } from '$lib/server/ingestion-review';
 import type { Actions, PageServerLoad } from './$types';
 
 const releaseDecisionInput = z.object({
@@ -24,7 +24,7 @@ const policyInput = z.object({
 
 async function access(locals: App.Locals) {
 	const [canSteward, canAdmin] = await Promise.all([
-		isIngestionOperator(locals.providers.database),
+		locals.isIngestionOperator(),
 		isSiteAdmin(locals.providers.database, locals.user?.id)
 	]);
 	if (!canSteward && !canAdmin) error(403, 'Release authority required.');

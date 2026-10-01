@@ -1,19 +1,17 @@
 import { error, fail } from '@sveltejs/kit';
-import { isIngestionOperator, reviewInput } from '$lib/server/ingestion-review';
+import { reviewInput } from '$lib/server/ingestion-review';
 import { loadReviewQueue } from '$lib/server/ingestion-queue';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url, setHeaders }) => {
 	setHeaders({ 'cache-control': 'private, no-store' });
-	if (!(await isIngestionOperator(locals.providers.database)))
-		error(403, 'Data Steward access required.');
+	if (!(await locals.isIngestionOperator())) error(403, 'Data Steward access required.');
 	return loadReviewQueue(locals.providers.database, url);
 };
 
 export const actions: Actions = {
 	default: async ({ locals, request }) => {
-		if (!(await isIngestionOperator(locals.providers.database)))
-			error(403, 'Data Steward access required.');
+		if (!(await locals.isIngestionOperator())) error(403, 'Data Steward access required.');
 		const parsed = reviewInput.safeParse(Object.fromEntries(await request.formData()));
 		if (!parsed.success)
 			return fail(400, {
