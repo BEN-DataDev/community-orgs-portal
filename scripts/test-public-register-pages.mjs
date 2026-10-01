@@ -94,10 +94,10 @@ try {
 			if (scenario === 'public') {
 				for (const [, key] of html.matchAll(/data-register-field="([^"]+)"/g)) seen.add(key);
 				if (section === 'legal') {
-					assert.match(html, /Public Benevolent Institution/);
-					assert.match(html, />Yes</);
-					assert.match(html, />No</);
-					assert.equal([...html.matchAll(/data-register-field="pbi"/g)].length, 2);
+					// PBI/HPC are ACNC subtypes: summarised here, listed on Operations.
+					assert.match(html, /Charity Subtypes:<\/strong> Public Benevolent Institution/);
+					assert.match(html, /href="\/organisations\/[^"]+\/operations"/);
+					assert.doesNotMatch(html, /data-register-field="pbi"/);
 					assert.match(html, /Source-reported date/);
 				}
 				if (section === 'contact') {
@@ -110,8 +110,13 @@ try {
 					assert.match(html, /reporting calendar/);
 				}
 				if (section === 'operations') {
-					assert.match(html, /Charitable purposes/);
-					assert.match(html, /Beneficiaries/);
+					assert.match(html, /Charity subtypes/);
+					assert.match(html, /Who the charity helps/);
+					assert.match(html, /Public Benevolent Institution/);
+					assert.match(html, />Yes</);
+					assert.match(html, />No</);
+					assert.equal([...html.matchAll(/data-register-field="pbi"/g)].length, 2);
+					assert.ok(html.indexOf('Charity subtypes') < html.indexOf('Who the charity helps'));
 					assert.match(html, /unknown or not published/);
 				}
 				if (section === '') {

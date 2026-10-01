@@ -51,9 +51,25 @@ export const registerFactSchema = z.object({
 export const registerFactsSchema = z.array(registerFactSchema);
 export type RegisterFact = z.infer<typeof registerFactSchema>;
 export type RegisterSection = RegisterFact['section'];
-export function factGroup(field: string) {
-	if (field.startsWith('purposes.')) return 'Charitable purposes';
-	if (field.startsWith('beneficiaries.')) return 'Beneficiaries';
+// The ACNC lists PBI and HPC among a charity's subtypes, alongside its purposes.
+const subtypeFlags = new Set(['pbi', 'hpc']);
+export function isCharitySubtype(field: string) {
+	return field.startsWith('purposes.') || subtypeFlags.has(field);
+}
+/** The page a fact appears on; subtypes are kept together on Operations. */
+export function factSection(fact: RegisterFact): RegisterSection {
+	return subtypeFlags.has(fact.field) ? 'Operations' : fact.section;
+}
+/** Group names follow the ACNC Charity Register's own headings. */
+export const factGroupOrder = [
+	'Charity subtypes',
+	'Who the charity helps',
+	'Operating states and territories',
+	'Register details'
+] as const;
+export function factGroup(field: string): (typeof factGroupOrder)[number] {
+	if (isCharitySubtype(field)) return 'Charity subtypes';
+	if (field.startsWith('beneficiaries.')) return 'Who the charity helps';
 	if (field.startsWith('operating_jurisdictions.')) return 'Operating states and territories';
 	return 'Register details';
 }

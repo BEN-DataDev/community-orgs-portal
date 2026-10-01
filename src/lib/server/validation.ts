@@ -129,7 +129,6 @@ export const contactSchema = z.object({
 
 export const legalSchema = z.object({
 	entity_type: optionalText.optional(),
-	charity_type: optionalText.optional(),
 	abn: optionalText.optional(),
 	abn_status: optionalBoolean,
 	abn_activated: optionalDate.optional(),

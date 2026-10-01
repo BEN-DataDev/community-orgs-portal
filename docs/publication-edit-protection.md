@@ -6,6 +6,10 @@ no new application behaviour or database migration was required for closure.
 ACNC has 62 review units covering 69 source columns. CSV currently publishes only
 name, ABN and website through the same controls; unmapped assertions remain private.
 
+**Amended 1 October 2026:** legal details supplied by a public register are no
+longer subject to manual field ownership; portal users cannot edit them. See
+[Amendment: register-sourced legal details](#amendment-register-sourced-legal-details-1-october-2026).
+
 ## Acceptance and evidence
 
 | P10 requirement                           | Implemented behaviour                                                                                                                                                                                                                                                                      | Current regression evidence                                                                                        |
@@ -19,6 +23,9 @@ name, ABN and website through the same controls; unmapped assertions remain priv
 
 The SQL suites live in [supabase/tests](../supabase/tests). Manual field ownership
 means precedence over source writes, not a new per-field user permission system.
+It no longer applies to register-sourced legal details, which portal users cannot
+edit (see the amendment below); it still governs the organisation name, website and
+other mapped fields.
 These import revision checks do not establish optimistic concurrency for every
 ordinary portal edit form.
 
@@ -120,3 +127,76 @@ transaction-failure recovery. Unsuppression and conflict overrides remain separa
 work. Suppression does not erase private evidence, purge external caches or find
 duplicates under unrelated source identities. The current table-level publication
 locks remain appropriate only for the bounded pilot.
+
+## Amendment: register-sourced legal details (1 October 2026)
+
+Legal details supplied by a public register are read-only to portal users. This
+replaces manual field ownership for those columns only: a portal edit can no longer
+replace a register value, so imports and the register facts shown on organisation
+pages cannot drift from what the register says.
+
+### Scope
+
+A `legal_details` column is locked for an organisation only when that organisation
+holds the register record that supplied it:
+
+| Register record held                                                                | Locked columns                                                                                   |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| ABR, via a verified ABN key matching a full-seed ABR item                           | `abn`, `abn_status`, `abn_activated`, `abn_last_updated`, `dgr_endorsement`, `entity_type`       |
+| ACNC, via a source link to an `acnc-register` record                                | `abn`, `acnc_registered_date`                                                                    |
+| NSW Incorporated Associations, via a verified incorporation key matching a NSW item | `incorporation_number`, `incorporation_status`, `incorporation_registration_date`, `entity_type` |
+
+Everything else stays editable:
+
+- The organisation name and website remain under manual field ownership by
+  decision, so organisations can keep their public name and web address current.
+- Columns no register supplied (ACN, ACNC status, tax and GST
+  concession details), and the ABR status and DGR columns for an organisation whose
+  ABN came only from ACNC. The ACNC register carries no DGR or concession data, and
+  the ABR bulk extract carries DGR but not concession endorsements.
+- All legal details of organisations that hold no register record.
+
+### Enforcement
+
+- `community_orgs.register_sourced_legal_fields(org)` returns the locked columns.
+  It is executable by `authenticated` only.
+- The `guard_register_sourced_legal_fields` trigger runs before update or delete on
+  `legal_details`. It rejects any change to, clearing of, or row deletion holding a
+  locked column with `42501` when the current role is `authenticated` or `anon`, so
+  it covers every direct client write. The trigger function is security invoker on
+  purpose: inside reviewed workflows (publication, steward corrections, merge review),
+  which are security definer functions, the current role is the function owner and
+  the write proceeds.
+- The Legal page shows locked columns as text and the save action omits them, so an
+  ordinary save never sends them. ABN status, where editable, is a three-way select
+  (Active, Cancelled, Not recorded).
+
+A wrong register value is corrected at the register and picked up by the next
+reviewed import, or through the existing steward correction and suppression
+workflows. There is no portal override.
+
+### Evidence
+
+- Migration: `20261001061149_register_sourced_legal_fields.sql` (hosted version
+  `20261001061149`). DGR was added to the ABR columns by
+  `20261001062645_backfill_dgr_endorsement.sql`, which also backfilled it: an ABR
+  record listing a DGR endorsement, for the entity or for a fund it operates, sets
+  Yes (273 organisations); one listing none sets No (3,054). Related backfills
+  applied the same day: `20261001053609_backfill_nsw_registration_dates.sql` and
+  `20261001055633_backfill_abn_status.sql`.
+- The single-choice `charity_type` column (PBI, HPC or Other) was never populated
+  from a register and could not hold a charity's several ACNC subtypes. It was
+  retired by `20261001063200_retire_charity_type.sql`; the Legal page lists the
+  ACNC subtypes instead and links to the Operations tab, where they appear with
+  their sources under "Charity subtypes".
+- Regression suite: [register_sourced_legal_fields.sql](../supabase/tests/register_sourced_legal_fields.sql),
+  a hosted-data check that rolls back. As an owner of real seeded organisations it
+  asserts that every locked column rejects edits and row deletion, that unlocked
+  columns and unchanged locked values save, that ACNC-only organisations can still
+  set ABN status and DGR, that organisations outside the registers keep full control, that
+  anonymous callers cannot read provenance, and that the owner-role path is not
+  restricted. It passed against hosted data on 1 October 2026, and failed as
+  expected with the trigger disabled.
+- Coverage at deployment: all 4,360 organisations hold at least one register
+  record; 87 lock only `abn` and `acnc_registered_date`, and 3,327 lock
+  `dgr_endorsement`.

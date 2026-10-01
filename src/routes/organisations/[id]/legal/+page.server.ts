@@ -1,7 +1,7 @@
-import { loadRegisterFacts } from '$lib/server/register-facts';
+import { loadRegisterFacts, loadRegisterSourcedLegalFields } from '$lib/server/register-facts';
 import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
-import { requireOrgAccess, requireOrgEditor } from '$lib/server/authorization';
+import { EDITOR_LEVEL, requireOrgAccess, requireOrgEditor } from '$lib/server/authorization';
 import {
 	actionFailure,
 	actionSuccess,
@@ -59,6 +59,8 @@ export const load: PageServerLoad = async ({ locals: { supabase, user }, params,
 
 	return {
 		registerFacts: await loadRegisterFacts(supabase, orgId.data),
+		registerSourcedFields:
+			roleLevel >= EDITOR_LEVEL ? await loadRegisterSourcedLegalFields(supabase, orgId.data) : [],
 		organisation,
 		roleLevel,
 		legalInfo: legal.data,
@@ -84,6 +86,13 @@ export const actions: Actions = {
 			);
 		}
 
+		// Register-supplied columns are read-only; the form shows them as text, so
+		// leave them out rather than writing back nulls the database would reject.
+		const columns: Record<string, unknown> = toColumns(parsed.data);
+		for (const field of await loadRegisterSourcedLegalFields(supabase, orgId.data)) {
+			delete columns[field];
+		}
+
 		/**
 		 * `onConflict` is required here. This table is keyed on `legal_id`,
 		 * which the payload does not carry, so without it every save would
@@ -92,7 +101,7 @@ export const actions: Actions = {
 		const { error: saveError } = await supabase.from('legal_details').upsert(
 			{
 				org_id: orgId.data,
-				...toColumns(parsed.data),
+				...columns,
 				...auditColumns(user?.id)
 			},
 			{ onConflict: 'org_id' }

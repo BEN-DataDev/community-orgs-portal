@@ -1,6 +1,8 @@
 <script lang="ts">
 	import {
 		factGroup,
+		factGroupOrder,
+		factSection,
 		factValue,
 		observationDate,
 		safePublicUrl,
@@ -8,8 +10,10 @@
 		type RegisterSection
 	} from '../../lib/register-facts';
 	let { facts, section }: { facts: RegisterFact[]; section: RegisterSection } = $props();
-	const selected = $derived(facts.filter((fact) => fact.section === section));
-	const groups = $derived([...new Set(selected.map((fact) => factGroup(fact.field)))]);
+	const selected = $derived(facts.filter((fact) => factSection(fact) === section));
+	const groups = $derived(
+		factGroupOrder.filter((group) => selected.some((fact) => factGroup(fact.field) === group))
+	);
 </script>
 
 <section

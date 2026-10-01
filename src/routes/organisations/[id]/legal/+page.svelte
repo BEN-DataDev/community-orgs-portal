@@ -2,11 +2,21 @@
 	import RegisterFacts from '$components/organisations/RegisterFacts.svelte';
 	import LegalForm from '$components/forms/LegalForm.svelte';
 	import { EDITOR_LEVEL } from '$lib/role-levels';
+	import { isCharitySubtype } from '$lib/register-facts';
 	import { formatDate } from '$lib/utils/formatters';
 
 	let { data, form } = $props();
 	let { legalInfo, documents, organisation, roleLevel } = $derived(data);
 	let canEdit = $derived(roleLevel >= EDITOR_LEVEL);
+	// ACNC subtypes replace the old single-choice charity type; the full list, with
+	// sources, is on the Operations tab.
+	let subtypes = $derived([
+		...new Set(
+			data.registerFacts
+				.filter((fact) => isCharitySubtype(fact.field) && fact.value === true)
+				.map((fact) => fact.label)
+		)
+	]);
 	let isEditing = $state(false);
 	let editingDocumentId = $state<string | null>(null);
 
@@ -32,18 +42,38 @@
 	{/if}
 
 	{#if isEditing && canEdit}
-		<LegalForm {legalInfo} errors={form?.errors} onSave={() => (isEditing = false)} />
+		<LegalForm
+			{legalInfo}
+			registerSourcedFields={data.registerSourcedFields}
+			errors={form?.errors}
+			onSave={() => (isEditing = false)}
+		/>
 	{:else}
 		<div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
 			<div class="card preset-outlined-surface-200-800 space-y-2 p-4">
 				<h2 class="font-medium">Entity Details</h2>
 				<p><strong>Entity Type:</strong> {legalInfo?.entity_type ?? '—'}</p>
-				<p><strong>Charity Type:</strong> {legalInfo?.charity_type ?? '—'}</p>
+				<p>
+					<strong>Charity Subtypes:</strong>
+					{#if subtypes.length}
+						{subtypes.join(', ')}
+						(<a class="anchor" href="/organisations/{organisation.org_id}/operations"
+							>details and sources</a
+						>)
+					{:else}—{/if}
+				</p>
 				<p>
 					<strong>ABN:</strong>
-					{legalInfo?.abn ?? '—'} ({yesNo(legalInfo?.abn_status ?? null)})
+					{#if legalInfo?.abn}
+						{legalInfo.abn} ({legalInfo.abn_status === null
+							? 'status unknown'
+							: legalInfo.abn_status
+								? 'Active'
+								: 'Cancelled'})
+					{:else}—{/if}
 				</p>
 				<p><strong>ABN Activated:</strong> {orDash(legalInfo?.abn_activated ?? null)}</p>
+				<p><strong>ABN Last Updated:</strong> {orDash(legalInfo?.abn_last_updated ?? null)}</p>
 				<p><strong>ACN:</strong> {legalInfo?.acn ?? '—'}</p>
 			</div>
 

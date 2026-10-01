@@ -900,7 +900,6 @@ export type Database = {
 					acnc_registered: boolean | null;
 					acnc_registered_date: string | null;
 					acnc_status: boolean | null;
-					charity_type: string | null;
 					dgr_endorsement: boolean | null;
 					entity_type: string | null;
 					gst_concession_endorsement_date: string | null;
@@ -926,7 +925,6 @@ export type Database = {
 					acnc_registered?: boolean | null;
 					acnc_registered_date?: string | null;
 					acnc_status?: boolean | null;
-					charity_type?: string | null;
 					dgr_endorsement?: boolean | null;
 					entity_type?: string | null;
 					gst_concession_endorsement_date?: string | null;
@@ -952,7 +950,6 @@ export type Database = {
 					acnc_registered?: boolean | null;
 					acnc_registered_date?: string | null;
 					acnc_status?: boolean | null;
-					charity_type?: string | null;
 					dgr_endorsement?: boolean | null;
 					entity_type?: string | null;
 					gst_concession_endorsement_date?: string | null;
@@ -1827,6 +1824,7 @@ export type Database = {
 				Returns: Json;
 			};
 			organisation_register_facts: { Args: { p_organisation: string }; Returns: Json };
+			register_sourced_legal_fields: { Args: { p_organisation: string }; Returns: string[] };
 			ingestion_change_report: {
 				Args: { p_run: string; p_baseline?: string };
 				Returns: Json;

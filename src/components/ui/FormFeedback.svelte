@@ -87,7 +87,8 @@
 			activeSubmitter = event.submitter instanceof HTMLElement ? event.submitter : null;
 			pendingLabel = activeSubmitter?.textContent?.trim() || 'Submitting form';
 			pending = true;
-			submittedPost = form.method.toLowerCase() === 'post';
+			// Read the attribute: a control named "method" shadows form.method.
+			submittedPost = form.getAttribute('method')?.toLowerCase() === 'post';
 			notice = null;
 			form.dataset.submitting = 'true';
 			form.setAttribute('aria-busy', 'true');
