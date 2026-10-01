@@ -89,6 +89,7 @@
 												rel="noopener noreferrer">{fact.licence}</a
 											>{:else}{fact.licence}{/if}
 									</p>{/if}
+								{#if fact.attribution}<p class="text-sm">{fact.attribution}</p>{/if}
 							</dd>
 						</div>
 					{/each}

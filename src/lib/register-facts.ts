@@ -41,6 +41,7 @@ export const registerFactSchema = z.object({
 	resource_id: z.string(),
 	licence: z.string().nullable(),
 	licence_url: z.string().nullable().transform(safePublicUrl),
+	attribution: z.string().nullable().default(null),
 	observed_at: z.string().datetime({ offset: true }),
 	published_at: z.string().datetime({ offset: true }),
 	effective_date: z.string().nullable(),

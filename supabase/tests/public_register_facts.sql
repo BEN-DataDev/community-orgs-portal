@@ -28,7 +28,7 @@ begin
   {"field":"administrative_address","value":{"line_3":"Synthetic Address Line 3","postcode":"0800"}}]' then raise exception 'Typed public values lost'; end if;
  if exists(select 1 from jsonb_array_elements(facts) x where x->>'observed_at'<>'2026-09-16T00:00:00+00:00') then raise exception 'Observation timestamp replaced'; end if;
  if exists(select 1 from jsonb_array_elements(facts) x, jsonb_object_keys(x) k
-  where k not in ('field','section','label','kind','value','source_title','source_url','resource_id','licence','licence_url',
+  where k not in ('field','section','label','kind','value','source_title','source_url','resource_id','licence','licence_url','attribution',
                  'observed_at','published_at','effective_date','unchanged_since_import','retained_address_components'))
   or facts::text like '%PRIVATE_SENTINEL%' then raise exception 'Private evidence exposed'; end if;
  if not exists(select org_id from community_orgs.acnc_register_details where org_id=org and pbi=false) then raise exception 'Anonymous published projection unreadable'; end if;

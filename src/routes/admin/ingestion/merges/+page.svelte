@@ -1,9 +1,25 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { afterNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { SvelteSet } from 'svelte/reactivity';
 	import QueueNavigation from '$components/ingestion/QueueNavigation.svelte';
+	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { PageProps } from './$types';
 	let { data, form }: PageProps = $props();
+
+	// Cards decided on this view leave it immediately, whatever the status filter.
+	// Changing the filter or page starts afresh, so decided merges can be revisited.
+	const decided = new SvelteSet<string>();
+	afterNavigate(() => decided.clear());
+	const items = $derived(data.items.filter((i) => !decided.has(i.source_organisation_id)));
+	const removeOnSuccess =
+		(source: string): SubmitFunction =>
+		() =>
+		async ({ result, update }) => {
+			if (result.type === 'success') decided.add(source);
+			await update();
+		};
 
 	const methodLabel = {
 		unique_normalised_name: 'Same name after normalisation',
@@ -67,8 +83,8 @@
 		<button class="btn preset-filled-primary-500">Show</button>
 	</form>
 
-	<!-- A decided merge leaves the "To review" list, so report it here instead. -->
-	{#if form?.message && !data.items.some((i) => i.source_organisation_id === form.source)}<p
+	<!-- A decided card is removed, so report its outcome here instead. -->
+	{#if form?.message && !items.some((i) => i.source_organisation_id === form.source)}<p
 			role="status"
 			class="card preset-tonal p-4"
 		>
@@ -77,12 +93,12 @@
 
 	<p>{data.total} {data.total === 1 ? 'merge' : 'merges'} match this filter.</p>
 	<ul class="space-y-4">
-		{#each data.items as item (item.source_organisation_id)}
+		{#each items as item (item.source_organisation_id)}
 			<li class="card border-surface-200-800 space-y-4 border p-4">
 				<div class="grid gap-4 md:grid-cols-2">
 					<section class="min-w-0 space-y-1">
 						<h2 class="text-sm font-semibold uppercase">NSW association (merged away)</h2>
-						<p class="text-lg font-bold break-words">{item.source_name}</p>
+						<p class="text-lg font-bold wrap-break-word">{item.source_name}</p>
 						<p class="text-sm">
 							Incorporation number {item.incorporation_number ?? '—'}{#if item.registration_date}
 								· registered {item.registration_date}{/if}
@@ -92,7 +108,7 @@
 					</section>
 					<section class="min-w-0 space-y-1">
 						<h2 class="text-sm font-semibold uppercase">Merged into ABN entity</h2>
-						<p class="text-lg font-bold break-words">
+						<p class="text-lg font-bold wrap-break-word">
 							<a
 								class="anchor"
 								href={resolve('/organisations/[id]', { id: item.target_organisation_id })}
@@ -125,7 +141,11 @@
 							· {item.note}{/if}
 					</p>
 				{:else}
-					<form method="POST" use:enhance class="space-y-3">
+					<form
+						method="POST"
+						use:enhance={removeOnSuccess(item.source_organisation_id)}
+						class="space-y-3"
+					>
 						<input type="hidden" name="source" value={item.source_organisation_id} />
 						<label class="label"
 							>Note (required to split)<textarea
